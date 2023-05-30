@@ -1,0 +1,66 @@
+<div class="page-content p-0">
+    <div class="v-center justify-content-end">
+        <button class="btn btn-primary f-6 font-weight-bold" (click)="addForm()">New Form</button>
+    </div>
+    <div class="page-wrapper mt-3">
+        <div class="forms" *ngFor="let form of garbage.capture_field | keyvalue" [class.selected]="form.key == garbage.capture_form">
+            <ng-container *ngIf="form.value.capture_video; else noVideo">
+                <video>
+                    <source [src]="form.value.capture_video">
+                </video>
+            </ng-container>
+            <ng-template #noVideo>
+                <img src="./assets/img/no_video.png">
+            </ng-template>
+            <div class="form-detail">
+                <div class="v-center justify-content-between mb-2">
+                    <span class="f-8 font-weight-bold c-blue">{{form.value.name}}</span>
+                    <div class="v-center material-actions ml-auto">
+                        <div ngbDropdown placement="bottom-right" class="ml-auto">
+                          <a ngbDropdownToggle class="v-center btn bgc-white c-dark f-3 no-carot px-0">
+                            <i class="d-block i-icon i-menu-more bgc-grey-light"></i>
+                          </a>
+                          <div ngbDropdownMenu class="light">
+                            <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editForm(form.key)">
+                                <i class="i-icon i-edit bgc-dark ml-1" aria-hidden="true"></i>
+                                <span class="ml-3 f-3 font-weight-bold">Edit</span>
+                            </button>
+                            <button class="v-center border-0 py-2 c-dark dropdown-item"  *ngIf="form.key !== 'default'" (click)="deleteForm(form.key)">
+                                <i class="i-icon i-trash bgc-dark ml-1" aria-hidden="true"></i>
+                                <span class="ml-3 f-3 font-weight-bold">Delete</span>
+                            </button>
+                            <button class="v-center border-0 py-2 c-dark dropdown-item" *ngIf="form.key !== garbage.capture_form" (click)="setDefault(form.key)">
+                                <i class="i-icon i-template bgc-dark ml-1" aria-hidden="true"></i>
+                                <span class="ml-3 f-3 font-weight-bold">Set default</span>
+                            </button>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="v-center justify-content-between mb-2">
+                    <span class="f-4 font-weight-bold">Delay time</span>
+                    <span class="f-4 c-grey-light ml-3">{{getDelayTime(form.value.capture_delay)}}</span>
+                </div>
+                <div class="v-center justify-content-between mb-2">
+                    <span class="f-4 font-weight-bold">Required fields</span>
+                    <span class="f-4 c-grey-light ml-3">{{form.value.fields.length}} fields</span>
+                </div>
+                <div class="v-center justify-content-between mb-2">
+                    <span class="f-4 font-weight-bold">Video</span>
+                    <span class="f-4 c-grey-light ml-3" *ngIf="form.value.capture_video">Yes</span>
+                    <span class="f-4 c-grey-light ml-3" *ngIf="!form.value.capture_video">No</span>
+                </div>
+                <div class="v-center justify-content-between">
+                    <span class="f-4 font-weight-bold">Automation</span>
+                    <span class="f-4 c-grey-light ml-3" *ngIf="form.value?.automation">Subscribe</span>
+                    <span class="f-4 c-grey-light ml-3" *ngIf="!form.value?.automation">Unsubscribe</span>
+                </div>
+                <div class="v-center mt-4" *ngIf="form.value.tags.length">
+                    <span class="f-4 c-grey-light px-2 py-1 tag-label" *ngFor="let tag of form.value.tags">
+                        {{tag}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

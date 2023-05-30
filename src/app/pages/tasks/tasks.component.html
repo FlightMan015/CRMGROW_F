@@ -1,0 +1,296 @@
+<div class="custom-mat-table">
+  <div class="d-flex table-control-header v-center">
+    <div class="shadow-dropdown ml-auto" ngbDropdown>
+      <div class="v-center c-pointer f-3 px-3 py-2 justify-content-end" ngbDropdownToggle>
+        <span class="pr-2">
+          <ng-container *ngIf="!deadline || deadline.id === 'all'; else deadlineTemplate">
+            <span class="font-weight-bold">Sort by</span>
+          </ng-container>
+          <ng-template #deadlineTemplate>
+            <span class="font-weight-bold">{{deadline.label + ' tasks'}}</span>
+          </ng-template>
+        </span>
+      </div>
+      <div ngbDropdownMenu aria-labelledby="taskSortTypes">
+        <div class="py-2" ngbDropdownItem *ngFor="let type of DEADLINE_TYPES" (click)="changeDeadlineType(type)">
+          <span class="f-3 v-center" [class.font-weight-bold]="type.id === deadline.id">
+            {{type.label}}
+            <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === deadline.id"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="border-left px-3 py-1 text-center ml-3 mr-1 v-center">
+      <div class="ml-1 v-center c-pointer f-3 px-2 py-2 justify-content-end" placement="bottom" ngbTooltip="Setting" (click)="openTaskSettingDlg()">
+        <i class="d-block i-icon i-setting bgc-dark"></i>
+      </div>
+      <a class="ml-3 f-5 font-weight-bold c-pointer c-dark td-none" (click)="openDrawer(false)">
+        Filter
+        <img src="../../../assets/img/filter.svg" alt="filter-icon" style="width: 23px;" />
+        <span *ngIf="(taskService.searchOption$ | async).name === 'custom'"
+          class="badge badge-primary ml-2 f-1">{{(taskService.searchOption$ | async).getActiveOptions()}}</span>
+      </a>
+    </div>
+  </div>
+  <div class="position-relative">
+    <div class="mat-table-wrapper" [class.empty]="!(storeService.tasks$ | async).length && !(taskService.total$ | async)">
+      <table class="w-100 page-table" mat-table multiTemplateDataRows
+        [dataSource]="storeService.tasks$ | async | paginate: {id: 'tasks', itemsPerPage: pageSize.id, currentPage: page, totalItems: taskService.total$ | async}">
+
+        <ng-container matColumnDef="loader-cell">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="loader-cell">
+            <div class="updating-status" *ngIf="(storeService.tasks$ | async).length && (taskService.loading$ | async) === STATUS.REQUEST">
+              LOADING
+            </div>
+          </th>
+        </ng-container>
+
+        <!-- Select Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="pl-2 checkbox-col">
+            <div class="custom-control custom-checkbox" [class.indeterminate]="selection.length && !isAllSelected()">
+              <input type="checkbox" class="custom-control-input" id="selectAllContacts" (change)="$event ? masterToggle() : null"
+                [checked]="selection.length && isAllSelected()" />
+              <label class="custom-control-label" for="selectAllContacts"></label>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="pl-2">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="contact-{{element._id}}" (change)="toggle(element)"
+                [checked]="isSelected(element._id)" />
+              <label class="custom-control-label" for="contact-{{element._id}}"></label>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Complete Status Column -->
+        <ng-container matColumnDef="status">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="pl-3 pr-4" *ngIf="!selection.length; else toolHeader">DONE</th>
+            <ng-template #toolHeader>
+              <th mat-header-cell colspan="7">
+                <div class="v-center">
+                  <span class="c-dark f-3 text-lowercase font-weight-bold">{{selection.length}} selected</span>
+                  <app-actions-header [actions]="ACTIONS" (doCommand)="doAction($event)"></app-actions-header>
+                </div>
+              </th>
+            </ng-template>
+          </ng-container>
+          <th mat-header-cell *matHeaderCellDef class="done-cell pl-3 pr-4">DONE</th>
+          <td mat-cell *matCellDef="let element" class="done-cell pl-3 pr-4">
+            <i class="i-icon d-block {{element.status === 1 ? 'i-round-check bgc-accept' : 'i-round bgc-dark op-40 c-pointer'}} done-status"
+              (click)="taskComplete(element)"></i>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="contact_name">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> contact name </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <a class="v-center c-pointer undecoration" [routerLink]="['/contacts/' + element.contact?._id]">
+              <div class="contact-avatar f-3 mr-2">{{element.contact?.avatarName}}</div>
+              <span class="c-dark fw-600">{{element.contact?.fullName}}</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="contact_address">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length" class="address-col"> address </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="address-col">
+            <a class="v-center c-pointer undecoration" [routerLink]="['/contacts/' + element.contact._id]">
+              <span class="c-dark">{{element.contact.shortAddress}}</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Position Column -->
+        <ng-container matColumnDef="contact_label">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> label </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="label-cell">
+            <app-label-select [value]="element.contact.label" (valueChange)="updateLabel($event, element.contact._id)"></app-label-select>
+            <span class="d-none">{{element.contact.label}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="subject">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> subject </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <a class="v-center c-pointer undecoration" (click)="element.status !== 1 ? openEdit(element) : false;">
+              <div class="v-center">
+                <i class="i-icon {{TASK_ICONS[element.type] || 'i-task'}} d-block bgc-dark mr-2"></i>
+                <span class="c-dark">{{element.content}}</span>
+              </div>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="contact_phone">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> phone number </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <a class="v-center c-pointer undecoration" [routerLink]="['/contacts/' + element.contact._id]">
+              <span class="c-blue font-weight-bold">{{element.contact.cell_phone | phone_format}}</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Star Column -->
+        <ng-container matColumnDef="deadline">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length">
+              <div class="v-center c-pointer" (click)="changeSort()">
+                <div>deadline</div>
+                <i
+                  class="d-block i-icon s-8 ml-2 mb-1 bgc-dark {{(taskService.sortOption$ | async) === -1 ? 'i-triangle-up' : 'i-triangle-down'}}"></i>
+              </div>
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <a class="v-center c-pointer undecoration" (click)="element.status !== 1 ? openEdit(element) : false;">
+              <span class="c-dark f-2">{{element.due_date | date: element.is_full? 'MMM d, y':'MMM d, y, h:mm a'}}</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- ActioN Column -->
+        <ng-container matColumnDef="action">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="p-0 actions">
+            <div class="c-pointer" *ngIf="element.status !== 1">
+              <i class="i-icon i-edit op-28 d-block bgc-dark ml-auto" placement="bottom" ngbTooltip="Edit" (click)="openEdit(element)"></i>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Recurring Column -->
+        <ng-container matColumnDef="is_recurrence">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length" class="text-center"> recurring </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <div class="c-dark text-center">
+              {{element.set_recurrence?element.recurrence_mode:''}}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="selection_info">
+          <th mat-header-cell *matHeaderCellDef colspan="9" class="text-center">
+            <span *ngIf="selection.length !== (taskService.total$ | async); else deselectTemplate" class="">
+              {{selection.length}} tasks are selected.
+              <span class="c-blue font-weight-bold" *ngIf="selecting && selectSource === 'page'">
+                <i class="small-spinner"></i>
+                <span>Selecting all. . .</span>
+              </span>
+              <span class="c-blue font-weight-bold c-pointer" *ngIf="!selecting" (click)="selectAll()">
+                Select all {{taskService.total$ | async}} tasks
+              </span>
+            </span>
+            <ng-template #deselectTemplate>
+              All {{selection.length}} tasks are selected. <span class="c-blue c-pointer font-weight-bold" (click)="deselectAll()">Clear
+                selection</span>
+            </ng-template>
+          </th>
+        </ng-container>
+
+        <!-- <ng-container matColumnDef="completed_info">
+          <td mat-cell *matCellDef="let element" class="p-0 completed-cell" colspan="10">
+            <div class="completed-mark"></div>
+          </td>
+        </ng-container> -->
+
+        <tr mat-header-row *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS" class="table-header" [class.selected]="selection.length"></tr>
+        <tr mat-header-row *matHeaderRowDef="['selection_info']" [class.d-none]="!selection.length" class='selection-info'></tr>
+        <tr mat-row *matRowDef="let row; columns: DISPLAY_COLUMNS;" [class.completed]="completedTasks.indexOf(row._id) !== -1"></tr>
+      </table>
+    </div>
+
+
+    <ng-container *ngIf="(storeService.tasks$ | async).length || (taskService.total$ | async); else emptyListTemplate">
+      <!-- <div class="updating-status"
+        *ngIf="(taskService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div> -->
+      <div class="my-2 table-control mode-1">
+        <div class="pagination-wrapper m-auto">
+          <pagination-controls (pageChange)="changePage($event)" (pageBoundsCorrection)="onOverPages($event)" id="tasks" maxSize="5"
+            previousLabel="" nextLabel="">
+          </pagination-controls>
+        </div>
+        <div class="shadow-dropdown ml-auto page-size-control" ngbDropdown placement="top-right">
+          <div class="v-center c-pointer f-3 p-3 font-weight-bold" ngbDropdownToggle>
+            <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+          </div>
+          <div ngbDropdownMenu aria-labelledby="contactPageSize">
+            <div class="py-2" ngbDropdownItem *ngFor="let type of PAGE_COUNTS" (click)="changePageSize(type)">
+              <span class="f-3 v-center" [class.font-weight-bold]="type.id === pageSize.id">
+                Show {{type.label}} rows per page
+                <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === pageSize.id"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #emptyListTemplate>
+      <ng-container [ngSwitch]="(taskService.loading$ | async)">
+        <div class="empty-list py-5" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-task d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            <ng-container *ngIf="(taskService.searchOption$ | async).name === 'overdue'; else anotherResult;">
+              <ng-container [ngSwitch]="(taskService.searchOption$ | async).status">
+                <div *ngSwitchCase="1">
+                  You did not have completed any {{(taskService.searchOption$ | async).types ? (taskService.searchOption$ |
+                  async).types.join(', ') : '' }} tasks before.
+                </div>
+                <div *ngSwitchCase="0">
+                  You completed all any {{(taskService.searchOption$ | async).types ? (taskService.searchOption$ | async).types.join(', ') :
+                  '' }} tasks before.
+                </div>
+                <div *ngSwitchDefault>
+                  You did not have any {{(taskService.searchOption$ | async).types ? (taskService.searchOption$ | async).types.join(', ') :
+                  '' }} tasks before.
+                </div>
+              </ng-container>
+            </ng-container>
+            <ng-template #anotherResult>
+              There are no {{(taskService.searchOption$ | async).status === TASK_STATUS.TODO ? 'todo' : (taskService.searchOption$ |
+              async).status === TASK_STATUS.COMPLETED ? 'completed' : ''}}
+              {{(taskService.searchOption$ | async).types ? (taskService.searchOption$ | async).types.join(', ') : '' }} tasks
+              {{(taskService.searchOption$ | async).isActive ? ' that fit your filter conditions ' : ''}}
+              {{((taskService.searchOption$ | async).name || 'all') !== 'all' ? ' for ' + (taskService.searchOption$ | async).name : 'in
+              your account'}}.
+            </ng-template>
+          </h4>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading tasks...</h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>
+
+<mat-drawer-container [hasBackdrop]="true">
+  <mat-drawer [opened]="opened" position="end" (closedStart)="closeDrawer()">
+    <app-task-filter [isFocus]="focusRequired" (onClose)="closeDrawer" (onFiltered)="customFiltered()"></app-task-filter>
+  </mat-drawer>
+</mat-drawer-container>

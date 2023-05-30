@@ -1,0 +1,29 @@
+<form #cardForm="ngForm" (ngSubmit)="cardForm.form.valid ? editPayment() : false;">
+  <div class="v-center justify-content-between">
+    <h1 mat-dialog-title>Update payment information</h1>
+    <i class="i-icon i-close d-block bgc-black c-pointer" (click)="close()"></i>
+  </div>
+  <mat-dialog-content>
+    <div class="form-group card-detail mt-3">
+      <label>Credit or Debit Card</label>
+      <stripe-card #stripeCard
+                   [options]="stripeOptions"
+                   (invalidChange)="cardInvalid($event)"
+                   (completeChange)="cardComplete($event)"
+      ></stripe-card>
+    </div>
+    <div class="cards-preview v-center mt-3">
+      <img src="../../../assets/img/card_visa.svg" alt="visa">
+      <img src="../../../assets/img/card_amex.svg" alt="amex">
+      <img src="../../../assets/img/card_master.svg" alt="master">
+      <img src="../../../assets/img/card_jcb.svg" alt="jcb">
+      <img src="../../../assets/img/card_discover.svg" alt="discover">
+      <img src="../../../assets/img/card_diners.svg" alt="diners">
+      <img src="../../../assets/img/card_unionpay.svg" alt="unionpay">
+    </div>
+  </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button class="btn c-blue" mat-dialog-close>Cancel</button>
+        <button class="btn btn-primary" type="submit" [class.loading]="saving">Save</button>
+    </mat-dialog-actions>
+</form>

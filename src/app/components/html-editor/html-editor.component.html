@@ -1,0 +1,144 @@
+<div class="html-editor position-relative">
+  <div class="position-relative">
+    <button class="link-action actions" cdkOverlayOrigin #linkOverlay="cdkOverlayOrigin" (click)="showLink = true">
+      OPEN
+    </button>
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="linkOverlay" [cdkConnectedOverlayOpen]="showLink"
+      (overlayOutsideClick)="closeLink($event)">
+      <form #linkForm="ngForm" (ngSubmit)="linkForm.form.valid ? insertLink() : false" [class.was-validated]="linkForm.submitted">
+        <div class="link-container p-2">
+          <p class="f-6 c-dark m-0">Edit link</p>
+          <div class="form-group mt-2 mb-0">
+            <label>Text to display:</label>
+            <input type="text" class="form-control" name="title" #title="ngModel" [(ngModel)]="displayText" />
+          </div>
+          <div class="form-group mt-2 mb-0">
+            <label>Link to:</label>
+            <input type="text" class="form-control" name="link" #link="ngModel" [(ngModel)]="displayLink" required />
+          </div>
+          <div class="v-center justify-content-end mt-2">
+            <button class="btn btn-primary f-3 font-weight-bold">Save</button>
+          </div>
+        </div>
+      </form>
+    </ng-template>
+    <button class="templates-action actions" cdkOverlayOrigin #trigger="cdkOverlayOrigin" (click)="showTemplates = true">
+      OPEN
+    </button>
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="trigger" [cdkConnectedOverlayOpen]="showTemplates"
+      (overlayOutsideClick)="closeTemplates($event)">
+      <div class="templates-container">
+        <div class="template" *ngIf="hasNewTemplateLink" (click)="createNew()">
+          <a class="f-3 font-weight-bold">Create New Template ...</a>
+        </div>
+        <ng-container *ngFor="let template of (templateService.templates$ | async)">
+          <div class="position-relative template-wrapper" *ngIf="template.type === 'email'">
+            <div class="template dropdown-item v-center" (click)="selectTemplate(template, true)">
+              <div class="f-3 font-weight-bold w-100 text-ellipse template-title">{{template.title}}</div>
+            </div>
+            <a class="abrc-y" [routerLink]="['/templates/edit/' + template._id]" target="_blank">
+              <i class="d-block i-icon i-expand bgc-dark"></i>
+            </a>
+          </div>
+        </ng-container>
+      </div>
+    </ng-template>
+    <button class="emoji-action actions" cdkOverlayOrigin #emojiOverlay="cdkOverlayOrigin" (click)="showEmoji = true">
+      OPEN
+    </button>
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="emojiOverlay" [cdkConnectedOverlayOpen]="showEmoji"
+      (overlayOutsideClick)="closeEmoji($event)">
+      <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertValue($event.emoji.native)"
+        title="Pick your emoji…">
+      </emoji-mart>
+    </ng-template>
+    <button class="calendly-action actions" cdkOverlayOrigin #calendlyOverlay="cdkOverlayOrigin" (click)="showCalendly = true">
+      OPEN
+    </button>
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="calendlyOverlay" [cdkConnectedOverlayOpen]="showCalendly"
+      (overlayOutsideClick)="closeCalendly($event)">
+      <div class="templates-container">
+        <ng-container *ngFor="let calendly of (connectService.calendlyAll$ | async)">
+          <div class="template" (click)="selectCalendly(calendly.attributes.url)">
+            <div class="v-center">
+              <div class="f-3 font-weight-bold flex-grow-1 h-100 v-center">{{calendly.attributes.name}}</div>
+              <a class="ml-auto" [href]="calendly.attributes.url" target="blank">
+                <i class="d-block i-icon i-expand bgc-dark"></i>
+              </a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-template>
+    <button class="record-action actions" cdkOverlayOrigin #recordOverlay="cdkOverlayOrigin">
+      OPEN
+    </button>
+    <quill-editor [placeholder]="placeholder" [ngModel]="value" (ngModelChange)="onChangeValue($event)" [modules]="config" [styles]="style"
+      [class]="class" image-resize="true" (onEditorCreated)="getEditorInstance($event)" [formControl]="editorForm" (click)="onFocusEvt()"
+      #emailEditor>
+    </quill-editor>
+    <button class="calendly-action actions" cdkOverlayOrigin #schedulerOverlay="cdkOverlayOrigin" (click)="showScheduler = true">
+      OPEN
+    </button>
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="schedulerOverlay" [cdkConnectedOverlayOpen]="showScheduler"
+      (overlayOutsideClick)="closeScheduler($event)">
+      <div class="templates-container">
+        <ng-container *ngFor="let eventType of (scheduleService.eventTypes$ | async)">
+          <div class="template" (click)="selectCalendly(eventType.link)">
+            <div class="v-center">
+              <div class="f-3 font-weight-bold flex-grow-1 h-100 v-center">{{eventType.title}}</div>
+              <a class="ml-auto" [href]="eventType.link" target="blank">
+                <i class="d-block i-icon i-expand bgc-dark"></i>
+              </a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-template>
+
+    <!-- [required]="required ? true : false" -->
+
+    <span class="c-red error" *ngIf="isEmpty() && (editorForm.touched || editorForm.dirty) && required">
+      Required!
+    </span>
+    <ng-container *ngIf="hasToken">
+      <div ngbDropdown class="insert-token bottom-right">
+        <div class="v-center no-carot" ngbDropdownToggle>
+          <span class="f-1 font-weight-bold mr-1">Token</span>
+          <i class="d-block i-icon i-triangle-down bgc-dark"></i>
+          <i class="d-block i-icon i-triangle-up bgc-dark"></i>
+        </div>
+        <div ngbDropdownMenu class="light py-1">
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_name}')">Your Name</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_email}')">Your Email</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_phone}')">Your Phone</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_company}')">Your Company</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_first_name}')">Contact Firstname</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_last_name}')">Contact Lastname</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_email}')">Contact Email</div>
+          <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_phone}')">Contact Phone</div>
+
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <div class="v-center mt-1 px-3" *ngIf="attachments && attachments.length">
+    <i class="i-icon i-attachment d-block bgc-dark"></i>
+    <span class="ml-2">{{ attachments.length }} file(s) attached.</span>
+  </div>
+  <div class="attach-files my-1 px-3" *ngIf="attachments && attachments.length">
+    <div class="attachment" *ngFor="let attachment of attachments; let i = index">
+      <div class="name">{{ attachment.filename }}</div>
+      <div class="size">{{ attachment.size }}</div>
+      <div class="close c-pointer" (click)="removeAttachment(i)">
+        &times;
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #createNewContent>
+  <app-template-create class="w-100" [value]="value" (onClose)="closeOverlay($event)" [subject]="subject">
+  </app-template-create>
+</ng-template>

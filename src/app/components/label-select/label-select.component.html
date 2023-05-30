@@ -1,0 +1,71 @@
+<div class="custom-mat-field label-select-wrapper" [class.label_form]="type === 'form'">
+  <mat-form-field style="display: block;" appearance="outline" (click)="focusField()">
+    <mat-chip-list aria-label="Contact Selection" #contactList>
+      <mat-basic-chip >
+        <ng-container *ngIf="formControl.value && formControl.value === 'keep'; else normalSelectedLabel">
+          <div class="v-center py-1">
+            <span class="f-3 fw-600 py-1 px-2" style="min-height: 22px;"></span>
+          </div>
+        </ng-container>
+        <ng-template #normalSelectedLabel>
+          <ng-container *ngIf="formControl.value; else emptyLabel">
+            <div class="v-center py-1">
+              <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="formControl.value.color === '#FFF' ? '#000' : formControl.value.color"></i>
+              <span class="f-3 fw-600">{{formControl.value.name}}</span>
+            </div>
+          </ng-container>
+          <ng-template #emptyLabel>
+            <div class="v-center py-1">
+              <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="'#000'"></i>
+              <span class="f-3 fw-600">{{defaultLabel}}</span>
+            </div>
+          </ng-template>
+        </ng-template>
+      </mat-basic-chip>
+      <input
+        #inputField
+        [formControl]="formControl"
+        [matChipInputFor]="contactList"
+        [matAutocomplete]="auto"
+      >
+    </mat-chip-list>
+    <mat-autocomplete
+      #auto="matAutocomplete"
+      (optionSelected)="onChangeLabel($event)"
+      [class]="(type === 'form' ? 'form-' : '') + 'label-panel'"
+    >
+      <mat-option style="height: unset; line-height: unset;" [disabled]="true">
+        <a class="py-2 text-primary f-2 v-center border rounded mt-2 mb-2 px-2 td-none c-pointer manage-label" (click)="openManageLabel()">
+          <i class="i-icon i-setting bgc-blue mr-1 sm"></i>
+          <span class="c-blue fw-600">Create Label</span>
+        </a>
+      </mat-option>
+      <ng-container *ngIf="hasKeepLabel">
+        <mat-option [value]="'keep'"
+          style="height: unset; line-height: unset;">
+          <div class="v-center py-1 f-3 fw-600">
+            <span class="py-1" style="min-height: 24px;"></span>
+          </div>
+        </mat-option>
+      </ng-container>
+      <mat-option [value]="null"
+        style="height: unset; line-height: unset;">
+        <div class="v-center py-1 f-3 fw-600">
+          <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="'#000'"></i>
+          <span>{{defaultLabel}}</span>
+        </div>
+      </mat-option>
+      <ng-container>
+        <ng-container *ngFor="let item of labelService.allLabels$ | async">
+          <mat-option  [value]="item" *ngIf="item.user === user || item.role == 'admin' || (!user && item.mine)"
+                    style="height: unset; line-height: unset;">
+            <div class="v-center py-1 f-3 fw-600">
+              <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="item.color === '#FFF' ? '#000' : item.color"></i>
+              <span>{{item.name}}</span>
+            </div>
+          </mat-option>
+        </ng-container>
+      </ng-container>
+    </mat-autocomplete>
+  </mat-form-field>
+</div>

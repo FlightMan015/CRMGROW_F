@@ -1,0 +1,180 @@
+<div class="record-dialog" #dialog>
+  <ng-container *ngIf="recordStep == 1">
+    <div class="config-back-drop"></div>
+    <div class="setting-screen">
+      <div class="v-center justify-content-between">
+        <h1 mat-dialog-title class="m-0">Record Setting</h1>
+        <button class="v-center border-0 bgc-trans" (click)="close()">
+            <i class="d-block i-icon i-close bgc-dark"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <div class="record-mode-wrapper my-3">
+          <div class="record-item c-pointer" [class.active]="mode == 'screenCam'" (click)="setRecordMode('screenCam')">
+            <i class="i-icon i-screen-camera both" aria-hidden="true"></i>
+            <div class="text f-1 font-weight-bold mt-2">Screen and Cam</div>
+          </div>
+          <div class="record-item c-pointer" [class.active]="mode == 'screen'" (click)="setRecordMode('screen')">
+            <i class="i-icon i-screen single" aria-hidden="true"></i>
+            <div class="text f-1 font-weight-bold mt-2">Screen Only</div>
+          </div>
+          <div class="record-item c-pointer" [class.active]="mode == 'camera'" (click)="setRecordMode('camera')">
+            <i class="i-icon i-camera single" aria-hidden="true"></i>
+            <div class="text f-1 font-weight-bold mt-2">Cam only</div>
+          </div>
+        </div>
+        <div class="my-4" *ngIf="mode !== 'screenCam'">
+          <div class="type-item v-center" *ngIf="mode === 'camera'">
+            <i class="i-icon i-camera bgc-record" aria-hidden="true"></i>
+            <select class="form-control theme-control ml-2" [(ngModel)]="selectedCamera" name="camera_type" #camera_type="ngModel">
+              <option value="" disabled *ngIf="!cameraList.length">Camera not found</option>
+              <option *ngFor="let camera of cameraList; let i = index;" [value]="camera.deviceId">{{camera.label ? camera.label : 'Camera Input ' + (i + 1)}}</option>
+            </select>
+          </div>
+          <div class="type-item v-center mt-2">
+            <i class="i-icon i-mic bgc-record" aria-hidden="true"></i>
+            <span class="mic-status"></span>
+            <select class="form-control theme-control ml-2" [(ngModel)]="selectedMic" name="mic_type" #mic_type="ngModel" (ngModelChange)="detectAudio($event)">
+              <option value="" disabled *ngIf="!micList.length">Mic not found</option>
+              <option *ngFor="let mic of micList; let i = index;" [value]="mic.deviceId">{{mic.label ? mic.label : 'Microphone Input ' + (i + 1)}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="my-4 d-flex" *ngIf="mode === 'screenCam'">
+        <a class="v-center justify-content-center btn f-6 font-weight-bold record-button w-100 mr-1" (click)="downloadApp()" style="background: #eee;">
+          <i class="bgc-dark i-icon i-download mr-2"></i>
+          <div class="f-3">Download Application</div>
+        </a>
+        <button type="button" class="v-center justify-content-center btn btn-primary f-6 font-weight-bold record-button w-100 ml-1" (click)="openApp()">
+          <i class="bgc-white i-icon i-record mr-2"></i>
+          <div class="f-3">Open Desktop Application</div>
+        </button>
+      </div>
+      <div class="my-4" *ngIf="mode === 'screen'">
+        <button type="button" class="v-center justify-content-center btn btn-primary f-6 font-weight-bold record-button w-100" (click)="record()">
+          <i class="bgc-white i-icon i-record mr-2"></i>
+          <div class="f-3">Start Recording</div>
+        </button>
+      </div>
+      <div class="my-4" *ngIf="mode === 'camera'">
+        <button type="button" class="v-center justify-content-center btn btn-primary f-6 font-weight-bold record-button w-100" (click)="openWidget()">
+          <i class="bgc-white i-icon i-record mr-2"></i>
+          <div class="f-3">Open Camera Popup</div>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+  <div class="counting-screen" *ngIf="recordStep == 2">
+    <span class="record-ready count-number">{{ countNum }}</span>
+  </div>
+  <div
+    class="record-screen"
+    [hidden]="recordStep !== 3"
+    [class.closed]="collapse"
+  >
+    <div class="preview-container">
+      <video id="video" #video></video>
+    </div>
+    <div class="action-container">
+      <div class="elapse-time" *ngIf="recording">{{elapseTime}}</div>
+      <div class="recording-mark"
+         [class.recording]="!pauseFlag"
+         [class.passed-bounced]="!pauseFlag && passAlertBounce"
+           *ngIf="recording"
+      ></div>
+      <div class="v-center mb-1">
+        <div class="tooltip-box" *ngIf="hovered == 'stop'">
+          <span class="tip tip-right"></span>
+          <div class="f-1 font-weight-bold c-white">
+            Stop recording
+          </div>
+        </div>
+        <button class="v-center justify-content-center"
+          (click)="stopRecording()"
+          (mouseenter)="hoverButton('stop')"
+          (mouseleave)="blurButton()"
+          [class.disable]="!recording">
+          <i class="i-icon i-record-check complete"></i>
+        </button>
+      </div>
+      <div class="v-center mb-1">
+        <div class="tooltip-box" *ngIf="hovered == 'toggle_record'">
+          <span class="tip tip-right"></span>
+          <div class="f-1 font-weight-bold c-white">
+            {{pauseFlag == true ? 'Resume' : 'Pause'}} recording
+          </div>
+        </div>
+        <button class="v-center justify-content-center"
+            (click)="toggleRecording()"
+            (mouseenter)="hoverButton('toggle_record')"
+            (mouseleave)="blurButton()"
+            [class.disable]="!recording"
+            *ngIf="!pauseFlag">
+          <i class="i-icon i-record-pause"></i>
+        </button>
+        <button class="v-center justify-content-center"
+            (click)="toggleRecording()"
+            (mouseenter)="hoverButton('toggle_record')"
+            (mouseleave)="blurButton()"
+            [class.disable]="!recording"
+            *ngIf="pauseFlag">
+          <i class="i-icon i-record-play"></i>
+        </button>
+      </div>
+      <div class="v-center mb-1">
+        <div class="tooltip-box" *ngIf="hovered == 'toggle_mic'">
+          <span class="tip tip-right"></span>
+          <div class="f-1 font-weight-bold c-white">
+            {{micRecording == true ? 'Disable' : 'Enable'}} microphone
+          </div>
+        </div>
+        <button class="v-center justify-content-center"
+                (click)="toggleMic()"
+                (mouseenter)="hoverButton('toggle_mic')"
+                (mouseleave)="blurButton()"
+                [class.disable]="!micFlag">
+          <i class="i-icon i-record-mic"></i>
+          <span class="mic-status-btn"></span>
+        </button>
+      </div>
+      <div class="v-center mb-1">
+        <div class="tooltip-box" *ngIf="hovered == 'cancel'">
+          <span class="tip tip-right"></span>
+          <div class="f-1 font-weight-bold c-white">
+            Cancel recording
+          </div>
+        </div>
+        <button class="v-center justify-content-center"
+                (click)="cancelRecording()"
+                (mouseenter)="hoverButton('cancel')"
+                (mouseleave)="blurButton()"
+                [class.disable]="!recording">
+          <i class="i-icon i-record-close"></i>
+        </button>
+      </div>
+      <div class="v-center mb-1">
+        <div class="tooltip-box" *ngIf="hovered == 'arrow'">
+          <span class="tip tip-right"></span>
+          <div class="f-1 font-weight-bold c-white">
+            Collapse preview
+          </div>
+        </div>
+        <button class="v-center justify-content-center"
+                (click)="collapseVideo()"
+                (mouseenter)="hoverButton('arrow')"
+                (mouseleave)="blurButton()"
+                [class.disable]="!recording">
+          <i class="i-icon i-record-arrow"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="recordStep == 4">
+    <div class="config-back-drop"></div>
+    <div class="upload-screen">
+      <div class="loader lg"></div>
+    </div>
+  </ng-container>
+</div>
+

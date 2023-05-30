@@ -1,0 +1,175 @@
+<form #form="ngForm" (ngSubmit)="edit()">
+  <h1 mat-dialog-title>Edit contact to import</h1>
+  <mat-dialog-content>
+    <div class="row">
+      <div class="col-sm-6 col-12 form-group" >
+        <label for="first_name_cc">first name</label>
+        <input type="text" id="first_name_cc" class="form-control" name="first_name"  #first_name="ngModel" [(ngModel)]="contact.first_name" [class.disabled]="fields && !fields['first_name']"/>
+      </div>
+      <div class="col-sm-6 col-12 form-group">
+        <label for="last_name_cc">last name</label>
+        <input type="text" id="last_name_cc" class="form-control" name="last_name"  #last_name="ngModel" [(ngModel)]="contact.last_name" [class.disabled]="fields && !fields['last_name']"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-12 form-group" [ngClass]="{invalid: email.invalid}">
+        <div class="v-center justify-content-between">
+          <label for="email_cc">Primary Email</label>
+          <span class="error d-block mb-1" *ngIf="email.invalid">
+            Email is invalid!
+          </span>
+        </div>
+        <input type="email" id="email_cc" class="form-control" name="email"
+          [(ngModel)]="contact.email"
+          pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,4}$"
+          #email="ngModel"
+          [class.disabled]="fields && !fields['email']"
+        />
+      </div>
+      <div class="col-sm-6 col-12 form-group phone-form" [ngClass]="{invalid: phoneControl && contact_phone && !phoneControl.valid}" [class.disabled]="fields && !fields['email']">
+        <div class="v-center justify-content-between">
+          <label for="cell_phone_cc">Primary Phone</label>
+          <span class="error d-block mb-1" *ngIf="phoneControl && contact_phone && !phoneControl.valid">
+            Wrong phone number!
+          </span>
+        </div>
+        <app-phone-input
+          [cssClass]="'form-control phone-form'"
+          [onlyCountries]="countries"
+          [selectedCountryISO]="CountryISO.UnitedStates"
+          [(ngModel)]="contact_phone"
+          name="phone"
+          #phoneControl
+        >
+        </app-phone-input>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-12 form-group" [ngClass]="{invalid: secondary_email.invalid}">
+        <div class="v-center justify-content-between">
+          <label for="secondary_email_cc">Secondary Email</label>
+          <span class="error d-block mb-1 font-weight-bold" *ngIf="secondary_email.invalid">
+            Email is invalid!
+          </span>
+        </div>
+        <input type="email" id="secondary_email_cc" class="form-control" name="secondary_email"
+               [(ngModel)]="contact['secondary_email']"
+               pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,4}$"
+               #secondary_email="ngModel"
+               [class.disabled]="fields && !fields['secondary_email']"
+        />
+      </div>
+      <div class="col-sm-6 col-12 form-group phone-form" [class.invalid]="secondPhoneControl && second_contact_phone && !secondPhoneControl.valid" [class.disabled]="fields && !fields['secondary_email']">
+        <div class="v-center justify-content-between">
+          <label for="secondary_cell_phone_cc">Secondary Phone</label>
+          <span class="error d-block mb-1" *ngIf="secondPhoneControl && second_contact_phone && !secondPhoneControl.valid">
+            Wrong phone number!
+          </span>
+        </div>
+        <app-phone-input
+          [cssClass]="'form-control phone-form'"
+          [onlyCountries]="countries"
+          [selectedCountryISO]="CountryISO.UnitedStates"
+          [(ngModel)]="second_contact_phone"
+          name="secondary_phone"
+          #secondPhoneControl
+        >
+        </app-phone-input>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-4 form-group">
+        <label for="label_cc">label</label>
+        <app-label-select type="form" [value]="contact.label"></app-label-select>
+      </div>
+      <div class="col-sm-4 form-group">
+        <label for="source_cc">source</label>
+        <input type="text" id="source_cc" class="form-control" required name="source"  #source="ngModel" [(ngModel)]="contact.source" [class.disabled]="fields && !fields['source']"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 form-group">
+        <label for="website_cc">website</label>
+        <input type="text" id="website_cc" class="form-control" required name="website"  #website="ngModel" [(ngModel)]="contact.website" [class.disabled]="fields && !fields['website']"/>
+      </div>
+      <div class="col-sm-6 form-group">
+        <label for="company_cc">company</label>
+        <input type="text" id="company_cc" class="form-control" required name="company"  #company="ngModel" [(ngModel)]="contact.brokerage" [class.disabled]="fields && !fields['brokerage']"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-12 form-group">
+        <label for="address_cc">address</label>
+        <input
+          type="text"
+          placeholder=""
+          id="address_cc"
+          class="form-control"
+          [(ngModel)]="contact.address"
+          name="address"
+          #address="ngModel"
+          ngx-google-places-autocomplete
+          #addressplacesRef="ngx-places"
+          [options]="{types: [], componentRestrictions: { country: contact.country || LOCATION_COUNTRIES }}"
+          (onAddressChange)="handleAddressChange($event)"
+          [class.disabled]="fields && !fields['address']"
+        />
+      </div>
+      <div class="col-sm-6 col-12 form-group">
+        <label for="city_cc">city</label>
+        <input
+          type="text"
+          placeholder=""
+          id="city_cc"
+          class="form-control"
+          [(ngModel)]="contact.city"
+          name="city"
+          #city="ngModel"
+          ngx-google-places-autocomplete
+          #cityplacesRef="ngx-places"
+          [options]="{types: ['(cities)'], componentRestrictions: { country: contact.country || LOCATION_COUNTRIES }}"
+          (onAddressChange)="handleAddressChange($event)"
+          [class.disabled]="fields && !fields['city']"
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-4 col-12 form-group">
+        <label for="country_cc">country</label>
+        <select id="country_cc" class="form-control" [(ngModel)]="contact.country" name="country" #country="ngModel" (ngModelChange)="setContactStates()" [class.disabled]="fields && !fields['country']">
+          <option *ngFor="let country of COUNTRIES" value="{{country.code}}">{{country.name}}</option>
+        </select>
+      </div>
+      <div class="col-sm-4 col-12 form-group">
+        <label for="state_cc">state</label>
+        <select id="state-cc" class="form-control" [(ngModel)]="contact.state" name="state" #state="ngModel" [class.disabled]="fields && !fields['state']">
+          <!-- <optgroup *ngFor="let country of COUNTRY_REGIONS | keyvalue: orderOriginal" label="{{country.key}}">
+            <option *ngFor="let region of country.value" value="{{region}}">{{region}}</option>
+          </optgroup> -->
+          <ng-container *ngIf="!contact.country; else selectedState">
+            <optgroup *ngFor="let country of DefaultCountryStates | keyvalue : orderOriginal" label="{{country.key}}">
+              <option *ngFor="let region of country.value" value="{{region}}">{{region}}</option>
+            </optgroup>
+          </ng-container>
+          <ng-template #selectedState>
+            <option *ngFor="let region of COUNTRY_REGIONS[contact.country]" value="{{region}}">{{region}}</option>
+          </ng-template>
+        </select>
+      </div>
+      <div class="col-sm-4 col-12 form-group">
+        <label for="zipcode_cc">zipcode</label>
+        <input type="text" id="zipcode_cc" class="form-control" [(ngModel)]="contact.zip" name="zip" #zip="ngModel" [class.disabled]="fields && !fields['zipcode']"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 mb-3 form-group" [class.disabled]="fields && !fields['tags']">
+        <label for="zipcode_cc">Tags</label>
+        <app-input-tag [selectedTags]="contact.tags" [onlyFromSearch]="false"></app-input-tag>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button type="button" mat-dialog-close class="btn c-blue">Cancel</button>
+    <button type="submit" class="btn btn-primary">Update</button>
+  </mat-dialog-actions>
+</form>

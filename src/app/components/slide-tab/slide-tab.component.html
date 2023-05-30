@@ -1,0 +1,32 @@
+<ng-container *ngIf="tabs.length < 5 && method !== 'billing'; else matTemplate">
+  <div class="tab-container {{type}} {{class}}" #container>
+    <div class="tab-indicator" #indicator></div>
+    <ng-container *ngFor="let tab of tabs;">
+      <div class="tab"
+           [ngClass]="{'active': tab.id === _selected?.id}"
+           [class.disable]="isDisableTab(tab)"
+           (click)="changeTab($event, tab)"
+      >
+        <i *ngIf="tab.icon" class="tab-icon {{tab.icon}} mr-2"></i>
+        <span class="tab-label">{{tab.label | translate}}</span>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
+<ng-template #matTemplate>
+  <mat-tab-group
+    animationDuration="0ms"
+    disableRipple="true"
+    [(selectedIndex)]="currentIndex"
+    (selectedIndexChange)="changeTabIndex($event)"
+  >
+    <mat-tab *ngFor="let tab of tabs" label="{{tab.id}}" [disabled]="isDisableTab(tab)">
+      <ng-template mat-tab-label>
+          <i *ngIf="tab.icon" class="tab-icon {{tab.icon}} mr-2"></i>
+          <span class="tab-label">{{tab.label | translate}}</span>
+          <!-- <span class="badge" *ngIf="tab.badge">{{tab.badge}}</span> -->
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</ng-template>
+

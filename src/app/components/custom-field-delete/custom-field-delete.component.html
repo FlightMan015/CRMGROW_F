@@ -1,0 +1,20 @@
+<div class="v-center justify-content-between">
+    <div class="warning d-flex">
+        <h1 class="m-0 ml-2" mat-dialog-title>
+            Delete Custom Field
+        </h1>
+    </div>
+    <div>
+        <i class="d-block i-icon i-close bgc-dark" mat-dialog-close></i>
+    </div>
+</div>
+<mat-dialog-content>
+    <div class="c-dark mt-3 ml-3">
+        <p class="title">Are you sure to delete this Field?</p>
+        <p class="f-5 mt-2">By clicking on Delete, all data on Contacts that have this Custom Field will be deleted.</p>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button class="btn btn-white f-6 font-weight-bold c-blue mr-2" mat-dialog-close>Cancel</button>
+    <button class="btn btn-red f-6 font-weight-bold" [class.loading]="deleting" (click)="deleteField()">Delete</button>
+</mat-dialog-actions>

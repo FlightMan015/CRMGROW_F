@@ -1,0 +1,8 @@
+:host ::ng-deep {
+    color-swatches {
+        .swatches-overflow {
+            height: unset !important;
+            overflow: hidden;
+        }
+    }
+}

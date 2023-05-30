@@ -1,0 +1,54 @@
+<div class="page-content p-2">
+  <!-- <div class="v-center mb-3" *ngIf="!isLoading && !user.onboard.sms_service">
+    <img src="../../../assets/img/onboarding/sms.svg">
+    <div class="ml-3">
+      <div class="f-6 font-weight-bold">Set Up Your SMS Service</div>
+      <div class="f-4 font-weight-bold mt-2">Send text messages on the go</div>
+    </div>
+  </div> -->
+  <div class="f-3 font-weight-bold">
+    Current SMS limit details
+  </div>
+  <div class="f-5 mt-3">
+    You have <span class="font-weight-bold">{{leftSms || 0}} SMS messages</span> remaining.
+  </div>
+  <button class="btn btn-primary f-6 mt-3" (click)="purchase()">Purchase messages</button>
+  <hr class="my-4"/>
+  <div class="f-3 font-weight-bold">
+    Phone number
+  </div>
+  <ng-container *ngIf="user.proxy_number || user.twilio_number; else noNumber">
+    <ng-container *ngIf="user.proxy_number">
+      <div class="d-flex align-items-center mt-2">
+        <span class="op-56 f-3">Inactive number - ({{user.proxy_number}})</span>
+        <ng-template #tipContent>
+          <div>
+            200 of our users were using Signal Wire as a texting provider with crmgrow.  If you see this, you are one of them.  There has been a very abrupt change to their policy.  Please visit this link to read up on what we are doing to ensure your service level and communications stay in tact.
+            <a href="https://docs.google.com/document/d/1MIt_JHrpNyFL0gVA3p1lsrHAoL-j5i9LlhRN4dhKRB4/edit" target="_blank">Check here</a>
+          </div>
+        </ng-template>
+        <i class="i-icon tooltip-icon i-information bgc-dark d-block" placement="bottom" ngbButtonLabel [ngbPopover]="tipContent"></i>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="user.twilio_number; else createNumber">
+      <div class="f-3 mt-2">
+        {{user.twilio_number}}
+      </div>
+      <div class="v-center mt-2">
+        <button class="v-center btn btn-white border-dark py-1 mr-2" (click)="changePhone()">
+          <span class="c-black font-weight-bold f-2">Change</span>
+        </button>
+      </div>
+    </ng-container>
+    <ng-template #createNumber>
+      <button class="btn btn-white border-dark v-center mt-2" (click)="addPhone()">
+        <span class="c-black font-weight-bold f-2">Create New Smart Number</span>
+      </button>
+    </ng-template>
+  </ng-container>
+  <ng-template #noNumber>
+    <button class="btn btn-white border-dark v-center mt-2" (click)="addPhone()">
+      <span class="c-black font-weight-bold f-2">Create Smart Number</span>
+    </button>
+  </ng-template>
+</div>

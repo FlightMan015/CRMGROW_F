@@ -1,0 +1,375 @@
+<ng-container *ngIf="!confirmStep">
+    <ng-container *ngIf="flowStep < 0">
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <div class="v-center justify-content-between mt-2">
+            <h1 mat-dialog-title class="custom-dlg-title deep-primary-color m-0">
+                Just one moment!
+            </h1>
+            <!-- <button class="v-center border-0 bgc-trans" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark"></i>
+        </button> -->
+
+        </div>
+        <div class="v-center justify-content-between mt-2">
+            <label class="deep-primary-color">We'd love to gather your feedback. Why would you like to cancel?</label>
+        </div>
+        <mat-dialog-content>
+
+            <div class="form-group">
+                <div class="reason_table mt-5 mb-5">
+                    <div class='reason' *ngFor="let button of reasonButtons; let i = index" (click)='selectReason(button)'>
+                        <input class="custom-radio" type="radio" [id]="'select-reason-' + i" [name]="'select-reason-' + i"
+                            [checked]="isSelected(button)">
+                        <label [class.primary-color]="isSelected(button)" class="deep-primary-color f-6 font-weight-bold"
+                            for="'select-reason-' + i">{{button}}</label>
+                    </div>
+                </div>
+            </div>
+            <ng-container *ngIf="selectedReasonId === 5">
+                <div class="mt-3">
+                    <p class="mute-color f-4"> What is the reason you would like to cancel your subscription? </p>
+                </div>
+                <div class="functionality-field mb-4">
+                    <textarea [(ngModel)]="reasonFeedback" class="form-control mb-2" placeholder="" rows="4" required>
+            </textarea>
+                </div>
+            </ng-container>
+        </mat-dialog-content>
+        <mat-dialog-actions align="center">
+            <div class="text-toolbar v-center mt-2 w-100">
+                <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                    (click)="closeDialog()">Cancel</button>
+                <button class="custom-next-btn btn btn-white f-6 font-weight-bold" type="button" (click)="nextAction()">Next</button>
+            </div>
+        </mat-dialog-actions>
+    </ng-container>
+    <ng-container *ngIf="selectedReasonId === 0 && flowStep === 0">
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <!-- <button class="v-center border-0 bgc-trans" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button> -->
+        <div class="mt-2">
+            <h1 mat-dialog-title class="custom-dlg-sub-title third-color text-center m-0">
+                Do you need a different plan?
+            </h1>
+        </div>
+        <div class="mt-3">
+            <p class="mute-color text-center"> Perhaps there's a better plan to fit your needs </p>
+        </div>
+        <mat-dialog-content>
+
+            <div class="plans-field">
+                <div class="plan">
+                    <div class="mb-2">
+                        <span class="plan-name font-weight-bold green-color">Lite</span>
+                        <span class="ml-3 deep-primary-color font-weight-bold">
+                            $ <span class="plan-name">29</span> / Month
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        Best for business and growth leaders newer to their business.
+                    </div>
+                    <a class="primary-color font-weight-bold text-decoration-none" [routerLink]="['/profile/subscription']" target="_blank">
+                        Learn more
+                    </a>
+                </div>
+                <div class="plan">
+                    <div class="mb-2">
+                        <span class="plan-name font-weight-bold orange-color">Pro</span>
+                        <span class="ml-3 deep-primary-color font-weight-bold">
+                            $ <span class="plan-name">49</span> / Month
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        Best for business leaders and enterpreneurs with one business and focus.
+                    </div>
+                    <a class="primary-color font-weight-bold text-decoration-none" [routerLink]="['/profile/subscription']" target="_blank">
+                        Learn more
+                    </a>
+                </div>
+                <div class="plan last">
+                    <div class="mb-2">
+                        <span class="plan-name font-weight-bold purple-color">Elite</span>
+                        <span class="ml-3 deep-primary-color font-weight-bold">
+                            $ <span class="plan-name">99</span> / Month
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        Best for Enterpreneurs, Influencers, and people looking to become Growth Leaders.
+                    </div>
+                    <a class="primary-color font-weight-bold text-decoration-none" [routerLink]="['/profile/subscription']" target="_blank">
+                        Learn more
+                    </a>
+                </div>
+                <!-- <div class="reason_table mt-5 mb-5" >
+                <div class='reason' *ngFor="let button of reasonButtons; let i = index" (click)='selectReason(button)'>
+                    <input class="custom-radio" type="radio" [id]="'select-reason-' + i" [name]="'select-reason-' + i" [checked]="isSelected(button)">
+                    <label [class.custom-label-option-selected]="isSelected(button)" class="custom-label-option f-6 font-weight-bold" for="'select-reason-' + i">{{button}}</label>
+                </div>
+            </div> -->
+            </div>
+        </mat-dialog-content>
+        <mat-dialog-actions align="center">
+            <div class="text-toolbar v-center mt-2 w-100">
+                <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                    (click)="backAction()">Back</button>
+                <button class="custom-next-btn btn btn-white f-6 font-weight-bold" type="button" (click)="confirmAction()">No thanks, I like
+                    to
+                    cancel</button>
+            </div>
+        </mat-dialog-actions>
+    </ng-container>
+    <ng-container *ngIf="(selectedReasonId === 1 || selectedReasonId  ===2) && flowStep === 0">
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <div class="mt-2">
+            <h1 mat-dialog-title class="custom-dlg-sub-title third-color text-center m-0">
+                Book a free One-on-One online meeting with a crmgrow Expert
+            </h1>
+        </div>
+        <mat-dialog-content>
+            <!-- <iframe src="https://scheduler.crmgrow.com/supermain/schedular-one" width="100%" height="600" title="scheduler"></iframe> -->
+            <div class="msg-field">
+                <div class="mt-5 mb-4">
+                    <img [attr.src]="'./assets/img/cancellation/customer-support.svg'" />
+                </div>
+                <div class="msg-content mb-4 deep-primary-color font-weight-bold">
+                    <div>We’d love to help you learn how to leverage the powerful tool suite of crmgrow. Before “cutting the cord”, please
+                        feel welcome to book a free One-on-One meeting with one of our experts.</div>
+                    <!-- <div>Chat with a crmgrow expert now.</div> -->
+                </div>
+                <a class="btn btn-primary f-6 font-weight-bold text-decoration-none" [href]="chatWithUs" target="_blank">
+                    Chat with us
+                </a>
+            </div>
+        </mat-dialog-content>
+        <mat-dialog-actions align="center">
+            <div class="text-toolbar v-center mt-5 mb-4 w-100">
+                <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                    (click)="backAction()">Back</button>
+                <button class="custom-next-btn btn btn-white f-6 font-weight-bold" type="button"
+                    (click)="selectedReasonId === 1?confirmAction():nextAction()">No thanks, I like
+                    to cancel</button>
+            </div>
+        </mat-dialog-actions>
+    </ng-container>
+    <ng-container *ngIf="selectedReasonId === 2 && flowStep === 1">
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <div class="mt-2">
+            <h1 mat-dialog-title class="custom-dlg-sub-title third-color m-0">
+                Feature request
+            </h1>
+        </div>
+        <!-- <button class="v-center border-0 bgc-trans" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark"></i>
+        </button> -->
+        <div class="mt-3">
+            <p class="deep-primary-color font-weight-bold f-6"> Help us make the improvements you need. </p>
+        </div>
+        <div class="mt-3">
+            <p class="mute-color f-4"> What features of functionality that you need, is missing from crmgrow? </p>
+        </div>
+        <form #actionForm="ngForm" (ngSubmit)="submitted = true; actionForm.form.valid ? confirmAction() : false"
+            [class.was-validated]="submitted">
+            <mat-dialog-content>
+
+                <div class="functionality-field">
+                    <textarea [(ngModel)]="reasonFeedback" name="reasonFeedback" class="form-control mb-2" placeholder="" rows="4" required>
+                </textarea>
+                </div>
+            </mat-dialog-content>
+            <mat-dialog-actions align="center">
+                <div class="text-toolbar v-center mt-4 mb-3 w-100">
+                    <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                        (click)="backAction()">Back</button>
+                    <button class="custom-submit-btn btn btn-primary f-6 font-weight-bold" type="submit"
+                        [class.loading]="saving">Submit</button>
+                </div>
+            </mat-dialog-actions>
+        </form>
+    </ng-container>
+    <ng-container *ngIf="selectedReasonId === 3 && flowStep === 0">
+        <div class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <div class="mt-2">
+            <h1 mat-dialog-title class="custom-dlg-sub-title third-color m-0">
+                We value your feedback
+            </h1>
+        </div>
+        <!-- <button class="v-center border-0 bgc-trans" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark"></i>
+        </button> -->
+        <div class="mt-2">
+            <p class="deep-primary-color font-weight-bold f-6"> Help us improve our product to better suit your requirements. </p>
+        </div>
+        <div class="mt-4">
+            <p class="mute-color f-4"> What product are you using and why are you considering switching? </p>
+        </div>
+        <form #actionForm="ngForm" (ngSubmit)="submitted = true; actionForm.form.valid ? confirmAction() : false"
+            [class.was-validated]="submitted">
+            <mat-dialog-content>
+
+                <div class="functionality-field">
+                    <textarea [(ngModel)]="reasonFeedback" name="reasonFeedback" class="form-control mb-2" placeholder="" rows="4" required>
+            </textarea>
+                </div>
+            </mat-dialog-content>
+            <mat-dialog-actions align="center">
+                <div class="text-toolbar v-center mt-4 mb-3 w-100">
+                    <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                        (click)="backAction()">Back</button>
+                    <button class="custom-submit-btn btn btn-primary f-6 font-weight-bold" type="submit"
+                        [class.loading]="saving">Submit</button>
+                </div>
+            </mat-dialog-actions>
+        </form>
+    </ng-container>
+</ng-container>
+<ng-container *ngIf="confirmStep">
+    <div class="v-center justify-content-between close-panel" mat-dialog-close [class.d-none]="loadingCancelAccount || loadingSleepAccount">
+        <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+    </div>
+    <div class="v-center justify-content-between mt-2">
+        <h1 mat-dialog-title class="custom-dlg-sub-title deep-primary-color m-0">
+            Wait... don't lose your data!
+        </h1>
+        <!-- <button class="v-center border-0 bgc-trans" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark"></i>
+        </button> -->
+
+    </div>
+    <div class="v-center justify-content-between mt-2">
+        <label class="third-color">Would you like to pause your account and keep your data? We only charge a small fee for storing your
+            data.</label>
+    </div>
+    <mat-dialog-content>
+
+        <div class="form-group">
+            <div class="ml-5 mt-4 mb-5 f-6">
+                <div class='w-100 mb-2' (click)='selectKeepData(true)'>
+                    <input class="custom-radio" type="radio" [id]="select-keep" [name]="select-keep" [checked]="isKeepDataSelected">
+                    <label [class.primary-color]="isKeepDataSelected" class="deep-primary-color f-6 font-weight-bold"
+                        for="select-keep">Pause my account and keep my data for only $4.99/m</label>
+                </div>
+                <div class='w-100 mb-2' (click)='selectKeepData(false)'>
+                    <input class="custom-radio" type="radio" [id]="select-keep" [name]="select-keep" [checked]="!isKeepDataSelected">
+                    <label [class.primary-color]="!isKeepDataSelected" class="deep-primary-color f-6 font-weight-bold" for="select-keep">I
+                        want to cancel. I understand that my data will be deleted after 60 days</label>
+                </div>
+            </div>
+        </div>
+        <hr />
+    </mat-dialog-content>
+    <mat-dialog-actions align="center">
+        <div class="text-toolbar v-center mt-2 w-100">
+            <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button" (click)="backAction()"
+                [class.disabled]="loadingCancelAccount || loadingSleepAccount">Back</button>
+            <button class="custom-next-btn btn btn-white f-6 font-weight-bold" type="button"
+                [class.loading]="loadingCancelAccount || loadingSleepAccount" (click)="cancelAction()">Confirm</button>
+        </div>
+    </mat-dialog-actions>
+</ng-container>
+
+<!-- <ng-container *ngIf="(selectedReasonId === 3 || (selectedReasonId === 4 && !isKeepDataSelected))&& flowStep === 1">
+    <div class="v-center justify-content-between close-panel" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+    </div>
+    <div class="mt-2">
+        <h1 mat-dialog-title class="custom-dlg-sub-title third-color text-center m-0">
+            Thank you for your feedback
+        </h1>
+    </div>
+    <mat-dialog-content>
+
+        <div class="msg-field">
+            <div class="mt-4 mb-3">
+                <img [attr.src]="'./assets/img/cancellation/chat.svg'" height="100px" width="100px" />
+            </div>
+            <div class="msg-content mb-4 deep-primary-color font-weight-bold">
+                Chat with our support team about how we can help with your feature requirements.
+            </div>
+            <button class="btn btn-primary f-6 font-weight-bold">Chat with us</button>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="center">
+        <div class="text-toolbar v-center mt-5 mb-4 w-100">
+            <button class="custom-cancel-btn btn btn-white f-6 font-weight-bold ml-auto mr-2" type="button"
+                (click)="backAction()">Back</button>
+            <button class="custom-next-btn btn btn-white f-6 font-weight-bold" type="button" (click)="cancelAction()">No thanks, I like
+                to
+                cancel</button>
+        </div>
+    </mat-dialog-actions>
+</ng-container> -->
+<!-- <ng-container *ngIf="selectedReasonId === 4 && isKeepDataSelected && flowStep === 1">
+    <div class="mt-3">
+        <h1 mat-dialog-title class="custom-dlg-sub-title third-color text-center m-0">
+            Account paused
+        </h1>
+    </div>
+    <mat-dialog-content>
+
+        <div class="msg-field">
+            <div class="mt-4 mb-4">
+                <img [attr.src]="'./assets/img/cancellation/pause.svg'" height="75px" width="75px" />
+            </div>
+            <div class="msg-content mb-4 third-color font-weight-bold">
+                Your account has been paused. You can always resume your plan the via Billing screen.
+            </div>
+            <div class="mb-4">
+                <button class="btn btn-primary f-6 font-weight-bold">Return to billing</button>
+            </div>
+        </div>
+    </mat-dialog-content>
+</ng-container> -->
+<ng-container *ngIf="isCanceled">
+    <div class="mt-3">
+        <div *ngIf="isKeepDataSelected" class="v-center justify-content-between close-panel" mat-dialog-close>
+            <i class="d-block i-icon i-close bgc-dark custom-close-i"></i>
+        </div>
+        <h1 mat-dialog-title class="custom-dlg-sub-title third-color text-center m-0">
+            {{isKeepDataSelected?"Account Paused": "Subscription Canceled"}}
+        </h1>
+    </div>
+    <mat-dialog-content>
+
+        <div class="msg-field">
+            <div class="mt-4 mb-4">
+                <img *ngIf="!isKeepDataSelected" [attr.src]="'./assets/img/cancellation/cancel.svg'" height="75px" width="75px" />
+                <img *ngIf="isKeepDataSelected" [attr.src]="'./assets/img/cancellation/pause.svg'" height="75px" width="75px" />
+            </div>
+            <div class="msg-content mb-4 third-color font-weight-bold">
+                <ng-container *ngIf="isKeepDataSelected">
+                    <div> Your account has been paused. </div>
+                    <div>You can always resume your plan the via Billing screen. </div>
+                </ng-container>
+                <ng-container *ngIf="!isKeepDataSelected">
+                    <div>Thank you for using crmgrow.</div>
+                    <div> We hope you’ll join us again soon!</div>
+                </ng-container>
+            </div>
+            <div class="mb-4">
+                <a *ngIf="!isKeepDataSelected" class="btn btn-primary f-6 font-weight-bold text-decoration-none"
+                    (click)="completeCancelAccount()">
+                    Return to billing
+                </a>
+                <ng-container *ngIf="isKeepDataSelected">
+                    <a class="btn btn-primary f-6 font-weight-bold text-decoration-none" href="https://crmgrow.com/pricing.html">
+                        Return to billing
+                    </a>
+                </ng-container>
+            </div>
+        </div>
+    </mat-dialog-content>
+</ng-container>

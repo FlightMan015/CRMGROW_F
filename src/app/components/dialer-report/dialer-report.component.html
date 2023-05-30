@@ -1,0 +1,76 @@
+<div class="v-center justify-content-between">
+  <h1 mat-dialog-title class="m-0">
+    Wavv Campaign Report
+  </h1>
+  <button class="v-center border-0 bgc-trans" mat-dialog-close>
+      <i class="d-block i-icon i-close bgc-dark"></i>
+  </button>
+</div>
+<mat-dialog-content>
+
+  <ng-container *ngIf="data.deal">
+    <div class="form-group rate-form mt-2">
+      <label class="d-block mb-0">Call status</label>
+      <mat-select [(ngModel)]="dialCallStatus" name="dial-call-status" #callLabelSelector>
+        <mat-option *ngFor="let label of (userService.callLabels$ | async)" [value]="label">
+          <div class="d-flex chip py-2">
+            <div class="info">
+              <div class="f-4 fw-600">{{label}}</div>
+            </div>
+          </div>
+        </mat-option>
+      </mat-select>
+    </div>
+    <div class="form-group mb-2">
+      <label class="d-block mb-0">Call note</label>
+      <textarea
+        [(ngModel)]="dialCallNote"
+        class="form-control mb-2"
+        placeholder="Please type note for the call."
+        rows="4"
+        required
+      >
+      </textarea>
+    </div>
+    <div class="spliter v-center">
+      <hr class="flex-grow-1 my-1"/> <span class="mx-3 f-3 op-75 fw-600">AND</span> <hr class="flex-grow-1 my-1"/>
+    </div>
+  </ng-container>
+
+  <div class="history-list-wrapper">
+    <ng-container *ngFor="let contact of data.reports">
+      <div class="history-item">
+        <div class="v-center mt-2">
+          <div class="font-weight-bold">{{contacts[contact.contactId]}}</div>
+          <span class="center-dot mx-1"></span>
+          <ng-container *ngIf="contact.answered; else disconnectedStatus">
+            <span class="op-75">connected</span>
+            <i class="i-icon i-call-connected d-block sm mx-2"></i>
+          </ng-container>
+          <ng-template #disconnectedStatus>
+            <span class="op-75">disconnected</span>
+            <i class="i-icon i-call-disconnected d-block sm mx-2"></i>
+          </ng-template>
+          <span *ngIf="contact.duration" class="op-75 f-3 fw-600">{{contact.duration * 1000 | timeDuration}}</span>
+          <span class="op-75 fw-600 f-0 mt-1 ml-1">{{contact.outcome}}</span>
+        </div>
+    
+        <div class="form-group rate-form mt-2" *ngIf="!data.deal">
+          <label class="d-block mb-0">Call status</label>
+          <span class="op-75 f-3">{{contact.label}}</span>
+        </div>
+    
+        <div class="form-group mt-2" *ngIf="contact.content">
+          <label class="d-block mb-0">Call note</label>
+          <div class="note" [class.empty]="!contact.content">{{contact.content || 'You did not leave any note for this call.'}}</div>
+        </div>
+        <div class="spliter v-center">
+          <hr class="flex-grow-1 my-1"/> <span class="mx-3 f-3 op-75 fw-600">AND</span> <hr class="flex-grow-1 my-1"/>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button class="btn btn-blue f-6 font-weight-bold text-white" (click)="close()" [class.loading]="saving">Close</button>
+</mat-dialog-actions>

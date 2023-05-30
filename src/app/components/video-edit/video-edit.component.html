@@ -1,0 +1,70 @@
+<div class="v-center justify-content-between">
+    <h1 mat-dialog-title *ngIf="data.type == 'edit'; else duplicateVideo">
+        Edit your video
+    </h1>
+    <ng-template #duplicateVideo>
+        <h1 mat-dialog-title>
+            Duplicate your video
+        </h1>
+    </ng-template>
+    <button class="v-center border-0 bgc-trans" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<form #videoForm="ngForm" (ngSubmit)="submitted = true; videoForm.form.valid ? (data.type == 'edit' ? update() : duplicate()) : false" [class.was-validateed]="submitted">
+    <mat-dialog-content>
+        <div class="row mx-0 mt-2">
+            <div class="col-12 mb-2 rounded bgc-pale px-0">
+                <div class="thumbnail-wrapper">
+                <img class="thumbnail" src="{{video.thumbnail}}" />
+                <div class="v-center justify-content-center bgc-blue c-pointer edit-thumbnail" (click)="openPreviewDialog()">
+                  <i class="d-block i-icon sm i-edit bgc-white"></i>
+                </div>
+                </div>
+            </div>
+            <div class="w-100 d-flex justify-content-end">
+                <a class="border-0 c-blue c-pointer f-3 font-weight-bold undecoration" (click)="changeMaterial()">
+                  Change source
+                </a>
+            </div>
+        </div>
+        <div class="row mx-0">
+            <div class="col-12 px-0">
+                <div class="form-group mt-2">
+                <label>Title</label>
+                <input class="form-control"
+                    type="text"
+                    placeholder="Video Title"
+                    name="title"
+                    #title="ngModel"
+                    [(ngModel)]="video.title"
+                    required>
+                <span class="invalid-feedback" *ngIf="title.errors && ( title.touched || title.dirty || submitted ) && submitted">
+                    Video title is required
+                </span>
+                </div>
+            </div>
+        </div>
+        <div class="row mx-0">
+            <div class="col-12 px-0">
+                <div class="form-group">
+                    <label>Description</label>
+                    <app-html-editor
+                        [(value)]="video.description"
+                        placeholder="Video Description"
+                        [style]="{height: '150px'}"
+                        #emailEditor
+                        >
+                    </app-html-editor>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button class="btn btn-white f-6 font-weight-bold mr-2" mat-dialog-close>Cancel</button>
+        <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving" [disabled]="thumbnailLoading" *ngIf="data.type == 'edit'; else duplicateButton">Update</button>
+        <ng-template #duplicateButton>
+            <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving" [disabled]="thumbnailLoading">Duplicate</button>
+        </ng-template>
+    </mat-dialog-actions>
+</form>

@@ -1,0 +1,45 @@
+<div class="page-content">
+  <div class="v-center mb-3">
+    <h1 class="page-title">Materials</h1>
+    <div class="ml-auto v-center" [class.d-none]="selectedTab?.id !== 'own'">
+      <button class="v-center btn btn-blue shadow font-weight-bold text-white button-record px-2"
+        (click)="recordSetting()">
+        <i class="bgc-white i-icon i-record mr-2"></i>
+        Record Video
+      </button>
+      <div class="ml-1 ml-sm-3 border border-primary rounded" ngbDropdown>
+        <div class="font-weight-bold c-dark c-pointer px-2 button-add" ngbDropdownToggle>
+          New Material
+        </div>
+        <div ngbDropdownMenu>
+          <div class="dropdown-item v-center" (click)="createFolder()" *ngIf="!materialsList.selectedFolder">
+            <i class="i-icon d-block i-folder mr-2 bgc-dark"></i>
+            <span class="f-3">Folder</span>
+          </div>
+          <hr class="my-0" *ngIf="!materialsList.selectedFolder" />
+          <div class="dropdown-item v-center" (click)="createMaterial('video')">
+            <i class="i-icon d-block act-videos mr-2"></i>
+            <span class="f-3">Video</span>
+          </div>
+          <div class="dropdown-item v-center" (click)="createMaterial('pdf')">
+            <i class="i-icon d-block act-pdfs mr-2"></i>
+            <span class="f-3">PDF</span>
+          </div>
+          <div class="dropdown-item v-center" (click)="createMaterial('image')">
+            <i class="i-icon d-block act-images mr-2"></i>
+            <span class="f-3">Image</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mb-2">
+    <app-slide-tab [tabs]="tabs" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain"
+      class="border-bottom pl-0 rounded-0">
+    </app-slide-tab>
+  </div>
+  <div>
+    <app-materials-list #materialsList [class.d-none]="selectedTab?.id !== 'own'"></app-materials-list>
+    <app-materials-lib #materialsLib [class.d-none]="selectedTab?.id === 'own'"></app-materials-lib>
+  </div>
+</div>

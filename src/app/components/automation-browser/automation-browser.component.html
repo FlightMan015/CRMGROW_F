@@ -1,0 +1,175 @@
+<h1 mat-dialog-title class="v-center d-flex">
+  <span>Share Automation</span>
+  <button class="v-center border-0 bgc-trans ml-auto" mat-dialog-close>
+    <i class="d-block i-icon i-close bgc-dark"></i>
+  </button>
+</h1>
+<mat-dialog-content>
+  <div class="browser-container">
+    <div class="contact-list-controls mt-3 pt-0 pb-1">
+      <div class="form-group mb-0 search-form">
+        <div class="input-group-prepend">
+          <i class="i-icon i-search d-block bgc-dark"></i>
+        </div>
+        <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon" [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()" [class.disabled]="(automationService.loading$ | async) === STATUS.REQUEST">
+        <ng-container *ngIf="searchStr">
+          <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+            <i class="i-icon i-close d-block bgc-dark"></i>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="my-2 custom-mat-table position-relative" [class.no-selected]="selection.length <= 0">
+      <div class="mat-table-wrapper">
+        <table class="w-100 automation-table page-table"
+               mat-table
+               multiTemplateDataRows
+               [dataSource]="filteredResult"
+        >
+          <ng-container matColumnDef="loader-cell">
+            <th mat-header-cell
+                *matHeaderCellDef colspan="8" class="loader-cell">
+              <div class="updating-status"
+                   *ngIf="automations.length && (automationService.loading$ | async) === STATUS.REQUEST">
+                LOADING
+              </div>
+            </th>
+          </ng-container>
+
+          <ng-container matColumnDef="select">
+            <th mat-header-cell
+                *matHeaderCellDef
+                class="pl-0 checkbox-col">
+              <div class="custom-control custom-checkbox"
+                   [class.indeterminate]="selection.length && !isAllSelected()">
+                <input type="checkbox"
+                       class="custom-control-input"
+                       id="selectAllAutomations"
+                       (change)="$event ? masterToggle() : null"
+                       [checked]="isAllSelected()" />
+                <label class="custom-control-label"
+                       for="selectAllAutomations"></label>
+              </div>
+            </th>
+            <td mat-cell
+                *matCellDef="let element"
+                class="pl-0 checkbox-col">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox"
+                       class="custom-control-input"
+                       id="b-automation-{{element._id}}"
+                       (change)="toggleElement(element)"
+                       [checked]="isSelected(element)" />
+                <label class="custom-control-label"
+                       for="b-automation-{{element._id}}"></label>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="title">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell
+                  *ngIf="!selection.length; else toolHeader" class="title">Title</th>
+              <ng-template #toolHeader>
+                <th mat-header-cell colspan="8">
+                  <div class="v-center">
+                    <span class="c-dark f-3 text-lowercase font-weight-bold">{{selection.length}} selected</span>
+                    <div class="px-3 border-left ml-3">
+                      <a class="c-blue c-pointer" (click)="clearSelection()">Clear selection</a>
+                    </div>
+                  </div>
+                </th>
+              </ng-template>
+            </ng-container>
+            <td mat-cell *matCellDef="let automation" class="title">
+              <a [routerLink]="['/autoflow/edit/' + automation._id]" class="td-none"  target="_blank">
+                <span class="f-3 font-weight-bold">{{automation.title}}</span>
+              </a>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="action-count">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell class="action-count" *ngIf="!selection.length">Actions</th>
+            </ng-container>
+            <td mat-cell *matCellDef="let automation" class="action-count">
+              <div class="f-3">{{automation.automations && automation.automations.length}}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="contacts">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell class="contacts" *ngIf="!selection.length">Contacts</th>
+            </ng-container>
+            <td mat-cell *matCellDef="let automation" class="contacts">
+              <div class="f-3">{{automation.contacts}}</div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row
+              *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+          <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS"></tr>
+          <tr mat-row *matRowDef="let element; columns: DISPLAY_COLUMNS;"></tr>
+        </table>
+      </div>
+      <ng-container *ngIf="!(automationService.automations$ | async).length; else showingStatusTemplate">
+        <ng-container [ngSwitch]="(automationService.loading$ | async)">
+          <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+            <div class="object-icon v-center">
+              <i class="i-icon i-automation d-block bgc-dark"></i>
+            </div>
+            <h4 class="font-weight-bold mt-4 mb-3">
+              There is no automations.
+            </h4>
+          </div>
+          <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+            <div class="loader mt-5 lg"></div>
+            <h4 class="fw-600 mt-2">Loading automations...</h4>
+          </div>
+        </ng-container>
+      </ng-container>
+      <ng-template #showingStatusTemplate>
+        <ng-container *ngIf="!filteredResult?.length && (automationService.automations$ | async).length">
+          <div class="empty-list py-5">
+            <div class="object-icon v-center">
+              <i class="i-icon i-automation d-block bgc-dark"></i>
+            </div>
+            <h4 class="font-weight-bold text-center mt-4 mb-3">
+              There is no automations to match your filter conditions.
+            </h4>
+          </div>
+        </ng-container>
+      </ng-template>
+    </div>
+    <div class="selected-templates-wrapper" *ngIf="selection.length > 0">
+      <table class="table mt-2">
+        <thead>
+        <th class="selected-template op-full pb-1">
+          Selected Automation
+        </th>
+        <th class="actions op-full pb-1">Actions</th>
+        <th class="contacts op-full pb-1">Contacts</th>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let selected of selection">
+          <tr *ngIf="getAutomationById(selected)">
+            <td class="selected-automation">
+              <div class="c-blue f-2 font-weight-bold">{{getAutomationById(selected).title}}</div>
+            </td>
+            <td class="actions">
+              {{getAutomationById(selected).automations && getAutomationById(selected).automations.length}}
+            </td>
+            <td class="contacts">
+              {{getAutomationById(selected).contacts}}
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button class="btn c-blue" mat-dialog-close>Cancel</button>
+  <button class="btn btn-primary" (click)="share()" [class.loading]="sharing">Share</button>
+</mat-dialog-actions>

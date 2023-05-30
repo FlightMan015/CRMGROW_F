@@ -1,0 +1,162 @@
+<div class="v-center justify-content-between">
+    <h1 class="m-0" mat-dialog-title *ngIf="type == 'create'; else editCustomField">
+        Add field
+    </h1>
+    <ng-template #editCustomField>
+        <h1 class="m-0" mat-dialog-title>
+            Edit field
+        </h1>
+    </ng-template>
+    <i class="d-block i-icon i-close bgc-dark" mat-dialog-close></i>
+</div>
+<form
+    #actionForm="ngForm"
+    (ngSubmit)="submitted = true; actionForm.form.valid ? addField() : false"
+    [class.was-validated]="submitted"
+>
+    <mat-dialog-content>
+        <div class="form-group">
+            <label for="field-name">name</label>
+            <input
+                class="form-control"
+                type="text"
+                placeholder="Type in name of your custom field"
+                name="field_name"
+                #field_name="ngModel"
+                id="name"
+                [(ngModel)]="fieldName"
+                (ngModelChange)="confirmDuplicated()"
+                required
+            />
+            <span
+                class="invalid-feedback"
+                *ngIf="field_name.errors && (field_name.touched || field_name.dirty || submitted) && submitted"
+            >
+                Field name is required
+            </span>
+            <span class="f-3 mt-1 error" *ngIf="duplicated && type == 'lead capture'">
+                Already field exist!
+            </span>
+        </div>
+        <div class="action-form">
+            <label class="f-1 c-dark text-uppercase type-label" for="type">type</label>
+            <div class="row">
+                <div class="col-12 form-group m-0">
+                    <select class="form-control c-blue f-5"
+                        [(ngModel)]="fieldType"
+                        name="field" id="field"
+                        #field="ngModel"
+                    >
+                        <option *ngFor="let field of FIELD_TYPES" value="{{field.value}}">
+                        {{field.label}}
+                        </option>
+                    </select>
+                    <!-- <app-tab-option [options]="FIELD_TYPES" [(value)]="fieldType"></app-tab-option> -->
+                </div>
+                <div class="col-12 mt-3" *ngIf="fieldType === 'dropdown'; else textFieldType">
+                    <div class="form-group">
+                        <div class="v-center">
+                            <label for="option" class="mb-0">options</label>
+                            <span class="f-1 invalid-option ml-auto" *ngIf="isSame">
+                                Duplicated options is existing.
+                            </span>
+                            <span class="f-1 invalid-option ml-auto" *ngIf="fieldType == 'dropdown' && !options.length && submitted">
+                                Option doesn't exist!
+                            </span>
+                        </div>
+                        <div class="v-center mt-2 dropdown-options" *ngFor="let option of options; let index=index">
+                            <div class="dropdown-option w-100">
+                                <input
+                                    class="form-control"
+                                    type="text"
+                                    name="option-{{option.value}}"
+                                    [(ngModel)]="option.label"
+                                    (ngModelChange)="optionNameChange($event)"
+                                    (change)="optionValueChange(option)"
+                                    required
+                                />
+                            </div>
+                            <span class="f-1 font-weightb-bold c-blue ml-3 c-pointer" (click)="deleteOption(index)">
+                                <i class="d-block i-icon i-trash bgc-red"></i>
+                            </span>
+                        </div>
+                        <button class="v-center justify-content-center btn btn-white-blue w-100 py-2 mt-3" type="button" (click)="addOption()" [disabled]="isSame">
+                            <i class="d-block i-icon i-plus sm bgc-blue"></i>
+                        </button> 
+                    </div>
+                </div>
+                <ng-template #textFieldType>
+                    <div class="col-12 mt-3">
+                        <div class="form-group">
+                            <label for="placeholder">placeholder</label>
+                            <input
+                                class="form-control"
+                                type="text"
+                                placeholder="Input suggestion text"
+                                name="placeholder_text"
+                                id="placeholder"
+                                #placeholder_text="ngModel"
+                                [(ngModel)]="placeholder"
+                            />
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+        <div class="form-group match-field">
+            <label class="f-1 mb-2">
+                match field
+            </label>
+            <select class="form-control c-blue f-5"
+                [(ngModel)]="match_field"
+                name="match" id="match"
+                #match="ngModel"
+            >
+                <option *ngFor="let field of fields" value="{{field.name}}">
+                  {{field.label}}
+                </option>
+            </select>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <a class="btn btn-white f-6 font-weight-bold c-blue mr-2" mat-dialog-close>Cancel</a>
+        <button *ngIf="type == 'create'; else updateButton" class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving" [disabled]="isSame">Add</button>
+        <ng-template #updateButton>
+            <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving" [disabled]="isSame">Update</button>
+        </ng-template>
+    </mat-dialog-actions>
+</form>
+<!-- <mat-dialog-content>
+    <div class="form-group mt-2">
+        <div class="v-center mb-1" *ngFor="let field of contact_fields">
+            <div class="custom-control custom-checkbox">
+                <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="{{field.id}}"
+                    [checked]="checkField(field.name)"
+                    (change)="selectField($event, field)"
+                />
+                <label class="custom-control-label" for="{{field.id}}"></label>
+            </div>
+            <div class="f-3 field-name ml-2">{{field.name}}</div>
+        </div>
+        <div class="v-center mb-1" *ngFor="let field of garbage.additional_fields">
+            <div class="custom-control custom-checkbox">
+                <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="{{field.id}}"
+                    [checked]="checkField(field.name)"
+                    (change)="selectField($event, field)"
+                />
+                <label class="custom-control-label" for="{{field.id}}"></label>
+            </div>
+            <div class="f-3 field-name ml-2">{{field.name}}</div>
+        </div>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <a class="btn btn-white f-6 font-weight-bold c-blue mr-2" mat-dialog-close>Cancel</a>
+    <button class="btn btn-primary f-6 font-weight-bold" (click)="addFields()">Add</button>
+</mat-dialog-actions> -->

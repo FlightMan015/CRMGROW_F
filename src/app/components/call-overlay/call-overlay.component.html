@@ -1,0 +1,201 @@
+<div class="bg-white call-detail-container rounded shadow h-100 position-relative overflow-hidden">
+  
+  <div class="header">
+    <h4 class="font-weight-bold mr-auto mb-0">Group Call</h4>
+  </div>
+
+  <div class="content">
+    <h6 class="font-weight-bold">{{call.subject}}</h6>
+    <div class="description mb-1 f-2" [innerHTML]="call.description"></div>
+
+    <div class="mt-3" *ngIf="call.status === 'pending'; else selectedTime">
+      <label>select suiting date</label>
+      <div>
+        <div class="date-container" *ngFor="let time of call.proposed_at; let i = index;">
+          <div class="v-center mb-2">
+            <div class="custom-radio-container mr-1" (click)="selectTime(time)">
+              <input class="custom-radio" type="radio" [id]="'proposed-at-' + i" [name]="'proposed-at-' + i" [checked]="isSelectedTime(time)">
+              <label class="f-6 font-weight-bold" [htmlFor]="'proposed-at-' + i"></label>
+            </div>
+            <div type="button" class="v-center border-0 bgc-trans ml-2" (click)="selectTime(time)">
+              <i class="i-icon i-calendar bgc-dark" aria-hidden="true"></i>
+              <span class="ml-2 f-4 c-dark fw-600">{{time | date : 'MMM dd, yyyy h:mm a'}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="date-container" *ngIf="!isOrganizer">
+          <div class="v-center mb-2">
+            <div class="custom-radio-container mr-1" (click)="selectTime('custom')">
+              <input class="custom-radio" type="radio" id="proposed-at-custom" name="proposed-at-custom" [checked]="isSelectedTime('custom')">
+              <label class="f-6 font-weight-bold" for="proposed-at-custom"></label>
+            </div>
+            <div type="button" class="v-center border-0 bgc-trans ml-2" (click)="selectTime('custom')">
+              <i class="i-icon i-calendar bgc-dark" aria-hidden="true"></i>
+              <span class="ml-2 f-4 c-dark fw-600">Set new date and time</span>
+            </div>
+          </div>
+          <div class="custom-date" [class.d-none]="!isSelectedTime('custom')">
+            <ng-container *ngFor="let dateTime of customDateTimes; let row = index">
+              <div class="v-center my-1">
+                <label class="mb-0">Starts</label>
+                <div class="v-center ml-2">
+                  <div class="form-group mb-0">
+                    <app-date-input [(value)]="dateTime.date" [minDate]="MIN_DATE"></app-date-input>
+                  </div>
+                  <div class="form-group mb-0 v-center flex-grow-1 ml-2">
+                    <select class="form-control" [(ngModel)]="dateTime.time" [name]="dateTime.id + row + '-time'">
+                      <option *ngFor="let time of TIMES" value="{{time.id}}">{{time.text}}</option>
+                    </select>
+                    <button type="button" class="v-center border-0 bgc-white ml-auto py-2" (click)="removeCustomDateTime(dateTime)" *ngIf="customDateTimes.length > 1">
+                      <i class="i-icon i-close bgc-dark" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+  <!--          <div class="d-flex justify-content-end mt-2 mr-4">-->
+  <!--            <button type="button" class="v-center border-0 bgc-trans" (click)="addCustomDateTime()">-->
+  <!--              <i class="i-icon i-plus bgc-blue sm" aria-hidden="true"></i>-->
+  <!--              <span class="ml-2 f-3 c-blue font-weight-bold">Add another suiting date & time</span>-->
+  <!--            </button>-->
+  <!--          </div>-->
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #selectedTime>
+      <label>date & time</label>
+      <div class="f-3 fw-600">
+        {{call.confirmed_at | date: 'MMM dd yyyy, hh:mm a'}}
+      </div>
+    </ng-template>
+
+    <div class="mt-3">
+      <label>duration</label>
+      <div class="font-weight-bold">
+        {{call.duration}} minutes
+      </div>
+    </div>
+
+    <div class="mt-3" *ngIf="call.status === 'pending' && !isOrganizer">
+      <label>your calendly link</label>
+      <div class="border-0 f-3 c-blue bgc-trans font-weight-bold c-pointer" (click)="calendarLink()" *ngIf="!calendaryLink">
+        Add Calendly link
+      </div>
+      <div class="f-3 font-weight-bold c-pointer c-blue" (click)="goToCalendly()">{{calendaryLink}}</div>
+    </div>
+
+    <div class="mt-3" *ngIf="!isOrganizer">
+      <label>organizer</label>
+      <div class="v-center c-pointer" (click)="showProfile(call.user)">
+        <div class="member-avatar">
+          <ng-container *ngIf="call.user.picture_profile; else userProfilePlaceholder">
+            <img [src]="call.user.picture_profile" class="avatar" />
+          </ng-container>
+          <ng-template #userProfilePlaceholder>
+            <div class="name-avatar">
+              {{call.user.avatarName}}
+            </div>
+          </ng-template>
+        </div>
+        <div class="f-3 c-blue ml-2 member-name">{{call.user.user_name}}</div>
+      </div>
+    </div>
+    <div class="mt-3" *ngIf="isOrganizer">
+      <label>leader</label>
+      <div class="v-center c-pointer" (click)="showProfile(call.leader)">
+        <div class="member-avatar">
+          <ng-container *ngIf="call.leader.picture_profile; else userProfilePlaceholder">
+            <img [src]="call.leader.picture_profile" class="avatar" />
+          </ng-container>
+          <ng-template #userProfilePlaceholder>
+            <div class="name-avatar">
+              {{call.leader.avatarName}}
+            </div>
+          </ng-template>
+        </div>
+        <div class="f-3 c-blue ml-2 member-name">{{call.leader.user_name}}</div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <label>guests</label>
+      <div>
+        <div class="v-center mb-2 c-pointer" *ngFor="let contact of call.contacts" (click)="contactDetail(contact)">
+          <div class="name-avatar">{{contact.avatarName}}</div>
+          <div class="f-3 c-blue ml-2">
+            {{contact.fullName}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <ng-container [ngSwitch]="call.status">
+      <ng-container *ngSwitchCase="'pending'">
+        <div class="v-center w-100" *ngIf="isOrganizer">
+          <button class="btn btn-primary" mat-dialog-close>Back</button>
+          <div class="v-center ml-auto">
+            <button type="button" class="btn btn-white-blue font-weight-bold" *ngIf="isOrganizer" (click)="messageLeader()">Message Leader</button>
+            <button class="btn p-1 c-red delete-btn v-center ml-2" (click)="delete()">
+              <i class="i-icon i-trash bgc-red d-block mr-2" aria-hidden="true"></i>
+              <span class="font-weight-bold f-3">Remove</span>
+            </button>
+          </div>
+        </div>
+        <div class="v-center w-100" *ngIf="!isOrganizer">
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="!isOrganizer" (click)="messageOrganizer()">Message organizer</button>
+          <button class="btn danger-btn ml-2" [class.loading]="declining" [class.disabled]="accepting" (click)="decline()">Decline</button>
+          <button class="btn bgc-accept text-white ml-2" [class.loading]="accepting"  [class.disabled]="declining" (click)="accept()">Accept</button>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'planned'">
+        <div class="v-center w-100">
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="!isOrganizer" (click)="messageOrganizer()">Message organizer</button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="isOrganizer" (click)="messageLeader()">Message Leader</button>
+          <button class="btn bgc-accept text-white v-center ml-2" [class.loading]="completing" (click)="complete()">
+            <i class="i-icon i-check bgc-white sm d-block mr-2"></i>
+            <span>Complete</span>
+          </button>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'finished'">
+        <div class="v-center w-100">
+          <button class="btn p-1 c-red delete-btn v-center" (click)="delete()" *ngIf="isOrganizer">
+            <i class="i-icon i-trash bgc-red d-block mr-2" aria-hidden="true"></i>
+            <span class="font-weight-bold f-3">Delete</span>
+          </button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="!isOrganizer" (click)="messageOrganizer()">Message organizer</button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="isOrganizer" (click)="messageLeader()">Message Leader</button>
+          <button class="btn bgc-trans ml-2 v-center op-56">
+            <i class="i-icon i-check bgc-dark sm d-block mr-2"></i>
+            <span>Completed</span>
+          </button>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'canceled'">
+        <div class="v-center w-100">
+          <button class="btn p-1 c-red delete-btn v-center" (click)="delete()" *ngIf="isOrganizer">
+            <i class="i-icon i-trash bgc-red d-block mr-2" aria-hidden="true"></i>
+            <span class="font-weight-bold f-3">Delete</span>
+          </button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="!isOrganizer" (click)="messageOrganizer()">Message organizer</button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="isOrganizer" (click)="messageLeader()">Message Leader</button>
+          <button class="btn bgc-trans ml-2 v-center op-56">
+            <span>Canceled</span>
+          </button>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'declined'">
+        <div class="v-center w-100">
+          <button class="btn p-1 c-red delete-btn v-center" (click)="delete()" *ngIf="isOrganizer">
+            <i class="i-icon i-trash bgc-red d-block mr-2" aria-hidden="true"></i>
+            <span class="font-weight-bold f-3">Delete</span>
+          </button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="!isOrganizer" (click)="messageOrganizer()">Message organizer</button>
+          <button type="button" class="btn btn-white-blue font-weight-bold ml-auto" *ngIf="isOrganizer" (click)="messageLeader()">Message Leader</button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

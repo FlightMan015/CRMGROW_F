@@ -1,0 +1,22 @@
+@import 'src/variables';
+
+textarea {
+  background-color: $color-wheat;
+  resize: none;
+  &.form-control {
+    &:focus {
+      background-color: $color-wheat;
+      color: $color-dark;
+    }
+  }
+}
+
+::ng-deep {
+  .cdk-overlay-pane {
+    // margin: 25px 0px !important;
+  }
+}
+
+.automation-wrapper {
+  min-height: 60px;
+}

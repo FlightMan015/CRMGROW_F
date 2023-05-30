@@ -1,0 +1,76 @@
+.form-append-icon {
+    position: absolute;
+    right: 16px;
+    bottom: 20px;
+    transform: translateY(50%);
+
+    .i-triangle-down.sm {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+.additional-fields{
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+}
+.form-checking-result {
+    position: absolute;
+    z-index: 113;
+    box-shadow: 0px 0px 2px #aaa;
+    max-height: 150px;
+    overflow-y: scroll;
+    bottom: 0px;
+    transform: translateY(100%);
+    right: 10px;
+    background: #ffffff;
+    border-radius: 4px;
+    width: calc(100% - 18px);
+    right: 9px;
+}
+.title .error {
+    font-size: 12px;
+    color: red;
+    display: block;
+    line-height: 1;
+    font-weight: 600;
+}
+.title h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+.secondary-contact {
+    i {
+        width: 12px;
+        height: 12px;
+        min-width: 12px;
+    }
+}
+
+
+:host ::ng-deep {
+    .mat-dialog-content {
+        max-height: calc(65vh - 50px);
+        .contact-alert {
+            background: #FFFBE6;
+            border: 1px solid #FFE58F;
+            border-radius: 2px;
+        }
+    }
+}
+
+.form-group.has-invalid .error {
+    display: block!important;
+}
+.form-group.has-invalid.phone-form {
+    .error {
+        display: none!important;
+    }
+    &.invalid-phone {
+        .error {
+            display: block!important;
+        }
+    }
+}
+

@@ -1,0 +1,50 @@
+<div class="task-types btn-group btn-group-toggle rounded">
+  <div class="btn btn-type px-2 rounded no-shadow"
+         placement="bottom"
+         ngbTooltip="General"
+         (click)="updateValue('task')"
+         [class.active]="value == 'task'"
+  >
+    <i class="i-icon i-task d-block bgc-dark"></i>
+  </div>
+  <div class="btn btn-type px-2 rounded no-shadow"
+       placement="bottom"
+       ngbTooltip="Call"
+       (click)="updateValue('call')"
+       [class.active]="value == 'call'"
+  >
+    <i class="i-icon i-phone d-block bgc-dark"></i>
+  </div>
+  <div class="btn btn-type px-2 rounded no-shadow"
+       placement="bottom"
+       ngbTooltip="Meeting"
+       (click)="updateValue('meeting')"
+       [class.active]="value == 'meeting'"
+  >
+    <i class="i-icon i-lunch d-block bgc-dark"></i>
+  </div>
+  <div class="btn btn-type px-2 rounded no-shadow"
+       placement="bottom"
+       ngbTooltip="Email"
+       (click)="updateValue('email')"
+       [class.active]="value == 'email'"
+  >
+    <i class="i-icon i-message d-block bgc-dark"></i>
+  </div>
+  <!-- <div class="btn btn-type px-2 rounded no-shadow"
+       placement="bottom"
+       ngbTooltip="Media"
+       (click)="updateValue('material')"
+       [class.active]="value == 'material'"
+  >
+    <i class="i-icon i-video d-block bgc-dark"></i>
+  </div> -->
+  <div class="btn btn-type px-2 rounded no-shadow"
+      placement="bottom"
+      ngbTooltip="Text"
+      (click)="updateValue('text')"
+      [class.active]="value == 'text'"
+  >
+    <i class="i-icon i-sms-sent d-block bgc-dark"></i>
+  </div>
+</div>

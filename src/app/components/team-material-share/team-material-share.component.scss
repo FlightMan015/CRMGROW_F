@@ -1,0 +1,10 @@
+.form-group {
+  .error {
+    display: flex;
+  }
+}
+
+.selected-teams {
+  max-height: 400px;
+  overflow: auto;
+}

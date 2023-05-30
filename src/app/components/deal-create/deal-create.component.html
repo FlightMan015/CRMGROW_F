@@ -1,0 +1,98 @@
+<div class="v-center justify-content-between">
+    <h1 mat-dialog-title class="m-0">
+        Create Deal
+    </h1>
+    <button class="v-center border-0 bgc-trans" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<form #dealForm="ngForm" (ngSubmit)="submitted = true; dealForm.form.valid ? createDeals() : false">
+    <mat-dialog-content>
+        <div class="form-group mt-2">
+            <div class="v-center">
+                <label class="mb-0">Deal Name</label>
+                <span
+                    class="invalid-error f-3 c-red ml-auto"
+                    *ngIf="title == '' && submitted"
+                >
+                    Required!
+                </span>
+            </div>
+            <input
+                class="form-control"
+                type="text"
+                name="dealTitle"
+                #dealTitle="ngModel"
+                [(ngModel)]="title"
+                required
+            >
+        </div>
+        <div class="form-group">
+            <label class="d-block mb-0">stage</label>
+            <select
+                class="form-control"
+                [(ngModel)]="selectedStage"
+                name="select_stage"
+                #select_stage="ngModel"
+            >
+                <option
+                    *ngFor="let stage of stages"
+                    value="{{stage._id}}"
+                >
+                    {{stage.title}}
+                </option>
+            </select>
+        </div>
+        <div class="f-6 font-weight-bold mb-3">
+            Associate deal with
+        </div>
+        <div class="form-group">
+            <div class="v-center">
+                <label class="mb-0">Contacts</label>
+                <span
+                    class="invalid-error f-3 c-red ml-auto"
+                    *ngIf="contacts.length == 0 && dealForm.submitted"
+                >
+                    Required!
+                </span>
+            </div>
+
+            <!-- <app-input-contacts
+                [selectedContacts]="contacts"
+                [keepContacts]="keepContacts"
+                [onlyFromSearch]="true"
+                [display]="''"
+                [maxLimit]="10"
+            >
+            </app-input-contacts> -->
+
+            <app-input-contacts
+                [selectedContacts]="contacts"
+                [keepContacts]="keepContacts"
+                [onlyFromSearch]="true"
+                [display]="''"
+            >
+            </app-input-contacts>
+        </div>
+      <div class="form-group">
+        <div class="v-center">
+          <label class="mb-0">Primary Contact</label>
+          <span
+            class="invalid-error f-3 c-red ml-auto"
+            *ngIf="!primaryContact && dealForm.submitted"
+          >
+                Required!
+          </span>
+        </div>
+        <app-select-contact-list
+          (onSelect)="selectPrimary($event)"
+          [contacts]="contacts"
+          [defaultContact]="contacts[0]"
+        ></app-select-contact-list>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button class="btn btn-white f-6 font-weight-bold mr-2" type="button" mat-dialog-close>Cancel</button>
+        <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving">Add</button>
+    </mat-dialog-actions>
+</form>

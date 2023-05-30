@@ -1,0 +1,75 @@
+<form #form="ngForm" (ngSubmit)="(form.form.valid && isValidCode) ? submit() : false">
+  <h1 mat-dialog-title>
+    <span *ngIf="isNew;else editTitle">Add Smart Code</span>
+    <ng-template #editTitle>Edit Smart Code</ng-template>
+  </h1>
+  <mat-dialog-content>
+    <div class="row">
+      <div class="col-12 form-group" [ngClass]="{invalid: form.submitted && (code.invalid || !isValidCode) && (code.dirty || code.touched || form.submitted)}">
+        <div class="d-flex">
+          <label for="code" class="mr-auto">Custom Code</label>
+          <span class="error" *ngIf="code.errors || !isValidCode">
+            <ng-container *ngIf="code.errors && code.errors.required">Required!</ng-container>
+            <ng-container *ngIf="!isValidCode">{{codeErrorMsg}}</ng-container>
+          </span>
+        </div>
+        <input type="text" class="form-control text-lowercase" [(ngModel)]="smartCode.code" name="code" id="code" required #code="ngModel" (ngModelChange)="validateCode($event)"/>
+      </div>
+      <div class="col-12 form-group">
+        <label>tags</label>
+        <app-input-tag [selectedTags]="tags"></app-input-tag>
+      </div>
+    </div>
+    <div class="form-group" [ngClass]="{invalid: form.submitted && message.invalid && (message.dirty || message.touched || form.submitted)}">
+      <div class="d-flex">
+        <label for="message" class="mr-auto">Message</label>
+        <span class="error" *ngIf="message.errors">
+          <ng-container *ngIf="message.errors.required">Required!</ng-container>
+          <ng-container *ngIf="message.errors.minlength">At least 6 characters!</ng-container>
+        </span>
+      </div>
+      <textarea class="form-control" [(ngModel)]="smartCode.message" name="message" rows="6" #message="ngModel" #messageText required></textarea>
+    </div>
+    <div class="form-group" *ngIf="isNew;else editAutomation">
+      <label>automation</label>
+      <app-input-automation [type]="'contact'" (automationChange)="selectAutomation($event)"></app-input-automation>
+    </div>
+    <ng-template #editAutomation>
+      <div class="form-group">
+        <label>automation</label>
+        <div class="v-center">
+          <app-input-automation class="w-100" [type]="'contact'" [automation]="selectedAutomation" (automationChange)="selectAutomation($event)"></app-input-automation>
+        </div>
+      </div>
+    </ng-template>
+  </mat-dialog-content>
+  <mat-dialog-actions class="dlg-actions">
+    <div class="text-setting">
+      <div class="v-center">
+        <button type="button" class="v-center btn border-primary f-3 font-weight-bold c-blue p-2 mr-2 material-button"
+          (click)="openMaterialsDlg()">
+          <i class="d-block i-icon i-material bgc-blue"></i>
+          <span class="f-3 font-weight-bold c-blue mx-2">Material</span>
+          <i class="d-block i-icon i-plus bgc-blue"></i>
+        </button>
+      </div>
+      <div ngbDropdown class="insert-token">
+        <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Emoji" style="width: fit-content;">
+          <img class="emoji-icon" src="../../../assets/img/emoji.png">
+        </div>
+        <div ngbDropdownMenu class="light templates">
+          <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertTextContentValue($event.emoji.native)"
+            title="Pick your emoji…">
+          </emoji-mart>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="btn c-blue" mat-dialog-close>Cancel</button>
+      <button type="submit" class="btn btn-primary" [class.loading]="creating">
+        <span *ngIf="isNew;else saveButton">Add</span>
+        <ng-template #saveButton>Save</ng-template>
+      </button>
+    </div>
+  </mat-dialog-actions>
+</form>

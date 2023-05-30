@@ -1,0 +1,189 @@
+<div class="card border-0 rounded-lg px-2 py-5 px-sm-5">
+  <ng-container [ngSwitch]="step">
+    <!-- Basic Profile Information Step -->
+    <div class="mx-3 my-2" *ngSwitchCase="1">
+      <img class="logo" src="../../../assets/img/crmgrow-logo.svg">
+      <h4 class="text-center f-6 font-weight-bold mb-4">The crmgrow free trial uses the Pro plan.</h4>
+      <p class="f-3 text-center">Select which method you’d like to sign up with!</p>
+      <button type="button" class="v-center social-btn btn border-primary w-100 mt-4 font-weight-bold"
+        (click)="connectService('gmail')">
+        <img class="social-icon" src="../../../assets/img/google.svg" alt="">
+        <div class="social-text">Sign Up with Google</div>
+      </button>
+      <button type="button" class="v-center social-btn btn border-primary w-100 mt-2 font-weight-bold"
+        (click)="connectService('outlook')">
+        <img class="social-icon" src="../../../assets/img/microsoft.svg" alt="">
+        <div class="social-text">Sign Up with Microsoft 365</div>
+      </button>
+      <div class="v-center my-3">
+        <hr class="flex-grow-1" />
+        <span class="mx-3">or</span>
+        <hr class="flex-grow-1" />
+      </div>
+      <form #registerForm="ngForm" (ngSubmit)="registerForm.form.valid ? gotoBasic() : false">
+        <button type="submit" class="btn btn-primary d-block w-100 font-weight-bold mt-4">Sign up with email</button>
+      </form>
+    </div>
+    <!-- End Basic Profile Information Step -->
+
+    <!-- Main Profile Information Step -->
+    <div class="mx-3 my-2" *ngSwitchCase="2">
+      <img class="logo" src="../../../assets/img/crmgrow-logo.svg">
+      <h4 class="text-center font-weight-bold mb-4">Create your account</h4>
+      <p class="f-3 text-center">Please complete basic information for your account.</p>
+      <form #basicForm="ngForm" (ngSubmit)="basicForm.form.valid ? fillBasic() : false">
+        <div class="form-group"
+          [ngClass]="{invalid: basicForm.submitted && username.invalid && (username.dirty || username.touched || basicForm.submitted)}">
+          <div class="d-flex">
+            <label for="username" class="mr-auto">Full Name</label>
+            <span class="error" *ngIf="username.errors">
+              <ng-container *ngIf="username.errors.required">Required!</ng-container>
+            </span>
+          </div>
+          <input type="text" placeholder="John Doe" class="form-control" [(ngModel)]="user.user_name" name="username"
+            id="username" required #username="ngModel" />
+        </div>
+        <div class="form-group email-form"
+          [ngClass]="{invalid: basicForm.submitted && email.invalid && (email.dirty || email.touched || basicForm.submitted)}">
+          <div class="d-flex">
+            <label for="email" class="mr-auto">E-mail</label>
+            <span class="error" *ngIf="email.errors">
+              <ng-container *ngIf="email.errors.required">Required!</ng-container>
+              <ng-container *ngIf="email.errors.pattern">Wrong email format!</ng-container>
+            </span>
+            <span class="error d-inline-block" *ngIf="!checkingUser && existing">Email is already taken</span>
+          </div>
+          <input type="email" placeholder="Enter your email" class="form-control" [(ngModel)]="user.email" name="email"
+            id="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,4}$" #email="ngModel"
+            (ngModelChange)="confirmEmail()" />
+          <img class="check-spinner" src="../../../assets/img/spinner.gif" alt="" *ngIf="checkingUser">
+        </div>
+        <div class="position-relative form-group"
+          [ngClass]="{invalid: basicForm.submitted && password.invalid && (password.dirty || password.touched || basicForm.submitted)}"
+          *ngIf="!isSocialUser">
+          <div class="d-flex">
+            <label for="password" class="mr-auto">Password</label>
+            <span class="error" *ngIf="password.errors">
+              <ng-container *ngIf="password.errors.required">Required!</ng-container>
+              <ng-container *ngIf="password.errors.minlength">At least 6 characters!</ng-container>
+            </span>
+          </div>
+          <input [type]="password_type ? 'text' : 'password'" placeholder="At least 6 characters" class="form-control"
+            [(ngModel)]="user.password" name="password" id="password" required minlength="6" #password="ngModel" />
+          <span class="f-3 c-blue password-type c-pointer" *ngIf="!password_type"
+            (click)="password_type = !password_type">Show</span>
+          <span class="f-3 c-blue password-type c-pointer" *ngIf="password_type"
+            (click)="password_type = !password_type">Hide</span>
+        </div>
+        <button type="submit" class="btn btn-primary d-block w-100 font-weight-bold mt-4">Continue</button>
+      </form>
+    </div>
+    <div class="mx-3 my-2" *ngSwitchCase="3">
+      <img class="logo" src="../../../assets/img/crmgrow-logo.svg">
+      <h4 class="text-center font-weight-bold mb-4">Create your account</h4>
+      <p class="f-3 text-center">Please complete basic information for your account.</p>
+      <form #profileForm="ngForm" (ngSubmit)="submitted = true; profileForm.form.valid ? fillProfile() : false"
+        class="mt-4">
+        <div class="form-group phone-form">
+          <div class="d-flex">
+            <label for="phone" class="mr-auto">cell number</label>
+            <span class="error" [class.d-block]="submitted">
+              <ng-container *ngIf="checkPhoneRequired(); else wrongTemplate;">Required!</ng-container>
+              <ng-template #wrongTemplate>
+                <ng-container *ngIf="!checkPhoneValid()">
+                  Wrong cell-phone!
+                </ng-container>
+              </ng-template>
+            </span>
+            <span class="error d-inline-block" *ngIf="!checkingPhone && phoneExisting">Phone is already taken</span>
+          </div>
+          <app-phone-input [cssClass]="'form-control phone-form'" [onlyCountries]="countries"
+            [selectedCountryISO]="CountryISO.UnitedStates" [(ngModel)]="user.phone"
+            (ngModelChange)="confirmPhone($event)" name="phone" #phoneControl>
+          </app-phone-input>
+          <img class="check-spinner" src="../../../assets/img/spinner.gif" alt="" *ngIf="checkingPhone">
+        </div>
+        <div class="form-group"
+          [ngClass]="{invalid: submitted && timezone.invalid && (timezone.dirty || timezone.touched || submitted)}">
+          <div class="d-flex">
+            <label for="timezone" class="mr-auto">time zone</label>
+            <span class="error" *ngIf="timezone.errors">
+              <ng-container *ngIf="timezone.errors.required">Required!</ng-container>
+            </span>
+          </div>
+          <mat-form-field class="timezone-select">
+            <mat-select class="form-control" [(ngModel)]="user.time_zone_info" name="timezone" id="timezone" required
+              #timezone="ngModel">
+              <ng-container *ngIf="defaultTimeZone; else otherTimeZone">
+                <ng-container *ngFor="let timezone_group of timezones">
+                  <mat-optgroup *ngIf="timezone_group.country == 'US & Canada'" label="{{timezone_group.country}}">
+                    <mat-option class="timezone w-fit" *ngFor="let timezone of timezone_group.timezones"
+                      value="{{setOptionValue(timezone)}}">
+                      {{timezone.name}}
+                    </mat-option>
+                  </mat-optgroup>
+                </ng-container>
+                <mat-option class="p-0 w-fit">
+                  <div class="v-center justify-content-center other-timezone c-pointer" (click)="defaultTimeZone = !defaultTimeZone">
+                    <span class="f-3 font-weight-bold c-blue text-uppercase mr-2">
+                      other timezones
+                    </span>
+                    <i class="d-block i-icon i-plus bgc-blue"></i>
+                  </div>
+                </mat-option>
+              </ng-container>
+              <ng-template #otherTimeZone>
+                <mat-optgroup *ngFor="let timezone_group of timezones" label="{{timezone_group.country}}">
+                  <mat-option class="timezone w-fit" *ngFor="let timezone of timezone_group.timezones" value="{{setOptionValue(timezone)}}">
+                    {{timezone.name}}
+                  </mat-option>
+                </mat-optgroup>
+                <mat-option class="p-0 w-fit">
+                  <div class="v-center justify-content-center other-timezone c-pointer" (click)="defaultTimeZone = !defaultTimeZone">
+                    <span class="f-3 font-weight-bold c-blue text-uppercase mr-2">
+                      other timezones
+                    </span>
+                    <i class="d-block i-icon i-minus bgc-blue"></i>
+                  </div>
+                </mat-option>
+              </ng-template>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-group mt-4" [ngClass]="{invalid: submitted && invalidError != ''}">
+          <div class="d-flex justify-content-between">
+            <div class="v-center">
+              <label for="card_number">card</label>
+              <span class="f-3 card-detail">You won't be charged until after your trial</span>
+            </div>
+            <span class="error" *ngIf="submitted && invalidError != ''">
+              <ng-container *ngIf="submitted && invalidError == 'require'">Required!</ng-container>
+              <ng-container *ngIf="submitted && invalidError == 'invalid'">Invalid!</ng-container>
+            </span>
+          </div>
+          <stripe-card #stripeCard [options]="stripeOptions" (invalidChange)="cardInvalid($event)"
+            (completeChange)="cardComplete($event)"></stripe-card>
+          <div class="form-group mt-4 promo-wrapper" *ngIf="package_level.indexOf('EVO') !== -1">
+            <div class="d-flex">
+              <label for="username" class="mr-auto mb-1">Promo Code</label>
+              <span class="error" *ngIf="promocode.errors">
+                <ng-container *ngIf="promocode.errors.required">Required!</ng-container>
+              </span>
+            </div>
+            <input type="text" placeholder="Promo" class="form-control" [(ngModel)]="promo" name="promocode"
+              id="promocode" required #promocode="ngModel" />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary d-block w-100 font-weight-bold mt-4" [class.loading]="saving">Sign
+          up</button>
+        <p class="f-3 text-center mt-4">By clicking "Sign up" I agree to the <a target="_blank"
+            href="https://crmgrow.com/terms_of_service.html" class="c-blue td-none font-weight-bold c-pointer">Terms</a>
+          and <a target="_blank" href="https://crmgrow.com/privacy.html"
+            class="c-blue td-none font-weight-bold c-pointer">Privacy</a></p>
+      </form>
+    </div>
+    <!-- End main Profile Information Step -->
+  </ng-container>
+</div>
+<p class="f-3 text-center mt-4">Already have an account? <a class="font-weight-bold td-underline c-pointer"
+    [routerLink]="['/login' + (package_level ? '?level=' + package_level : '')]">Sign In</a></p>

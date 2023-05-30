@@ -1,0 +1,46 @@
+<div class="v-center justify-content-between">
+    <h1 mat-dialog-title class="m-0">
+        {{ title ? title : 'Schedule setting' }}
+    </h1>
+    <button class="v-center border-0 bgc-trans" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<mat-dialog-content>
+    <ng-container *ngIf="timeChange">
+        <div class="d-flex mt-3 form-group">
+            <ngb-datepicker name="select_date" class="border-0" #dp [(ngModel)]="date" [minDate]="minDate" [firstDayOfWeek]="7"
+                [class.mark-today]="markToday" (ngModelChange)="clearError()"></ngb-datepicker>
+            <select class="form-control ml-4" name="due_time" #due_time="ngModel" [(ngModel)]="time" (ngModelChange)="clearError()">
+                <option *ngFor="let t of TIMES" [value]="t.id">
+                    {{t.text}}
+                </option>
+            </select>
+        </div>
+        <ng-container *ngIf="error">
+            <span class="error">
+                {{error}}
+            </span>
+        </ng-container>
+    </ng-container>
+    <ng-container *ngIf="recurrenceChange">
+        <div class='v-center mt-3'>
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input overlay" id="repeat_tc" [checked]='set_recurrence'
+                (change)="toggleRepeatSetting()" />
+              <label class="custom-control-label f-3 fw-600 pt-1" for="repeat_tc">Set as recurring event</label>
+            </div>
+            <div class="form-group ml-auto mb-0">
+                <select class="form-control c-blue font-weight-bold" *ngIf='set_recurrence' name="duration"
+                  [disabled]='!set_recurrence' [(ngModel)]="recurrence_mode">
+                  <option *ngFor="let type of REPEAT_DURATIONS" [value]="type.value" [selected]="type.value=='DAILY'">
+                    {{type.label}}
+                  </option>
+                </select>
+            </div>
+        </div>
+    </ng-container>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button class="btn btn-primary" (click)="save()">Change</button>
+</mat-dialog-actions>

@@ -1,0 +1,11 @@
+.contact-list {
+  max-height: calc(65vh - 150px);
+  overflow: auto;
+}
+
+.form-avatar {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+}

@@ -1,0 +1,384 @@
+<div class="custom-mat-table">
+  <div class="custom-header v-center">
+    <div class="form-group mb-0 search-form">
+      <div class="input-group-prepend">
+        <i class="i-icon i-search d-block bgc-dark"></i>
+      </div>
+      <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+        [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()"
+        [class.disabled]="(automationService.loading$ | async) === STATUS.REQUEST || !isPackageAutomation">
+      <ng-container *ngIf="searchStr">
+        <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+          <i class="i-icon i-close d-block bgc-dark"></i>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="my-3 position-relative">
+    <div class="mat-table-wrapper" [class.empty]="!filteredResult.length">
+      <div class="updating-status"
+        *ngIf="automations.length && (automationService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div>
+      <table mat-table class="table automation-table page-table" multiTemplateDataRows
+        [dataSource]="filteredResult | paginate: {itemsPerPage: pageSize.id, currentPage: page, id: 'automationTable', total: filteredResult.length}">
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="pl-0 checkbox-col">
+            <div class="custom-control custom-checkbox"
+              [class.indeterminate]="(selectedFiles.length + selectedFolders.length) && !isAllSelected()">
+              <input type="checkbox" class="custom-control-input" id="selectAllMaterials"
+                (change)="$event ? pageMasterToggle() : null" [checked]="isPageSelected()" />
+              <label class="custom-control-label" for="selectAllMaterials"></label>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let automation" class="pl-0 checkbox-col">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="automation-{{automation._id}}"
+                (change)="toggleElement(automation)" [checked]="isSelected(automation)" />
+              <label class="custom-control-label" for="automation-{{automation._id}}"></label>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="title">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!(selectedFiles.length + selectedFolders.length); else toolHeader" class="title">
+              <div class="v-center c-pointer head-sort" (click)="sort('title')">
+                <span [class]="selectedSort == 'title' ? 'font-weight-bold c-dark' : ''">Title</span>
+                <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.title ? 'i-sort-down' : 'i-sort-up'"
+                  *ngIf="selectedSort == 'title'"></i>
+              </div>
+            </th>
+            <ng-template #toolHeader>
+              <th mat-header-cell colspan="12">
+                <div class="v-center">
+                  <ng-container *ngIf="selectedFiles.length; else folderSelectedStatus">
+                    <span class="c-dark f-3 text-lowercase font-weight-bold">
+                      {{selectedFiles.length}} selected
+                    </span>
+                    <app-actions-header [actions]="ACTIONS" (doCommand)="doAction($event)"></app-actions-header>
+                  </ng-container>
+                  <ng-template #folderSelectedStatus>
+                    <span class="c-dark f-3 text-lowercase font-weight-bold">
+                      {{selectedFolders.length}} selected
+                    </span>
+                    <app-actions-header [actions]="FOLDER_ACTIONS" (doCommand)="doFolderAction($event)">
+                    </app-actions-header>
+                  </ng-template>
+                </div>
+              </th>
+            </ng-template>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="title">
+            <a [routerLink]="['/autoflow/edit/' + automation._id]" class="td-none"
+              *ngIf="!automation.isFolder; else folderTitle">
+              <span class="f-3 font-weight-bold">{{automation.title}}</span>
+            </a>
+            <ng-template #folderTitle>
+              <a [routerLink]="['/automations/own/' + automation._id]" class="td-none">
+                <div class="v-center c-pointer">
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-3 font-weight-bold">{{automation.title}}</span>
+                </div>
+              </a>
+            </ng-template>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="owner">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="auth" *ngIf='!(selectedFiles.length + selectedFolders.length)'>
+              <div class="v-center c-pointer head-sort" (click)="sort('role')">
+                <span [class]="selectedSort == 'role' ? 'font-weight-bold c-dark' : ''">Owner</span>
+                <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.role ? 'i-sort-down' : 'i-sort-up'"
+                  *ngIf="selectedSort == 'role'"></i>
+              </div>
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="auth">
+            <div class="role" [class.admin]="automation.role == 'admin'"
+              [class.team]="automation.role === 'team' && automation.user === userId"
+              [class.shared]="automation.role === 'team' && automation.user !== userId"></div>
+          </td>
+        </ng-container>
+        <!-- Share Column -->
+        <ng-container matColumnDef="share">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!(selectedFiles.length + selectedFolders.length)" class="share-col">shared with</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="share-col">
+            <ng-container *ngIf="element.shared_with&& element.shared_with.length;else noSharedTeamTemplate">
+              <span class="tag rounded mr-2">{{element.shared_with[0].name}}</span>
+              <span class="f-2 op-56" *ngIf="element.shared_with.length > 1">+{{element.shared_with.length-1}} more</span>
+            </ng-container>
+            <ng-template #noSharedTeamTemplate>
+              <span>---</span>
+            </ng-template>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="type">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="type" *ngIf='!(selectedFiles.length + selectedFolders.length)'>
+              <div class="v-center c-pointer head-sort" (click)="sort('type')">
+                <span [class]="selectedSort == 'type' ? 'font-weight-bold c-dark' : ''">TYPE</span>
+                <i class="i-icon d-block bgc-black ml-2"
+                  [class]="searchCondition.created_at ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'type'"></i>
+              </div>
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="type">
+            <ng-container *ngIf="!automation.isFolder">
+              <ng-container *ngIf="automation.type == 'deal'; else contactType">
+                <div class="v-center">
+                  <i class="i-icon i-deals d-block bgc-black"></i>
+                  <div class="f-2 font-weight-bold ml-1">Deal</div>
+                </div>
+              </ng-container>
+              <ng-template #contactType>
+                <div class="v-center">
+                  <i class="i-icon i-contact d-block bgc-black"></i>
+                  <div class="f-2 font-weight-bold ml-1">Contact</div>
+                </div>
+              </ng-template>
+            </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="label">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="label" *ngIf='!(selectedFiles.length + selectedFolders.length)'>
+              <div class="v-center c-pointer head-sort" (click)="sort('label')">
+                <span [class]="selectedSort == 'label' ? 'font-weight-bold c-dark' : ''">LABEL</span>
+                <i class="i-icon d-block bgc-black ml-2"
+                  [class]="searchCondition.created_at ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'label'"></i>
+              </div>
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="label">
+            <ng-container *ngIf="!automation.isFolder">
+                <div class="v-center">
+                  <div class="f-2 font-weight-bold ml-1">{{automation.label}}</div>
+                </div>
+              </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="action-count">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="action-count" *ngIf='!(selectedFiles.length + selectedFolders.length)'>Actions
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="action-count">
+            <div class="f-3" *ngIf="!automation.isFolder">{{automation.automations && automation.automations.length}}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="contacts">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="contacts" *ngIf='!(selectedFiles.length + selectedFolders.length)'>Contacts, Deals</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="contacts">
+            <div class="f-3" *ngIf="!automation.isFolder">{{automation?.count || 0}}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="created">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="created" *ngIf='!(selectedFiles.length + selectedFolders.length)'>
+              <div class="v-center justify-content-end c-pointer head-sort" (click)="sort('created_at')">
+                <span [class]="selectedSort == 'created_at' ? 'font-weight-bold c-dark' : ''">Added</span>
+                <i class="i-icon d-block bgc-black ml-2"
+                  [class]="searchCondition.created_at ? 'i-sort-down' : 'i-sort-up'"
+                  *ngIf="selectedSort == 'created_at'"></i>
+              </div>
+            </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="created">
+            <div class="f-3">{{automation.created_at | date: 'MM/dd/yyyy'}}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="assign-action" *ngIf='!(selectedFiles.length + selectedFolders.length)'></th>
+          </ng-container>
+          <td mat-cell *matCellDef="let automation" class="assign-action">
+            <div class="v-center justify-content-around" *ngIf="!automation.isFolder; else folderActions">
+              <button class="v-center btn p-1 c-dark" (click)="assignAutomation($event, automation)" placement="bottom"
+                ngbTooltip="Assign contact">
+                <i class="i-icon i-next d-block bgc-dark" aria-hidden="true"></i>
+              </button>
+              <button class="v-center btn p-1 c-dark" (click)="openAutomation($event, automation)" placement="bottom"
+                ngbTooltip="Edit">
+                <i class="i-icon i-edit d-block bgc-dark" aria-hidden="true"></i>
+              </button>
+
+              <div ngbDropdown #mainDrop="ngbDropdown" placement="bottom-right" class="ml-auto additional-action">
+                <a ngbDropdownToggle class="v-center justify-content-end btn bgc-white c-dark f-3 no-carot px-0">
+                  <i class="d-block i-icon i-menu-more bgc-dark mr-2"></i>
+                </a>
+                <div ngbDropdownMenu class="light">
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="duplicate($event, automation)">
+                    <i class="i-icon i-duplicate d-block bgc-dark" aria-hidden="true"></i>
+                    <span class="f-3 ml-3 font-weight-bold">Clone</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item"
+                    (click)="shareAutomation($event, automation)">
+                    <i class="i-icon i-share-team d-block bgc-dark" aria-hidden="true"></i>
+                    <span class="f-3 ml-3 font-weight-bold">Share Team</span>
+                  </button>
+                  <ng-container *ngIf="folder?.role === 'team' || automation.role === 'team'">
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="unshareAutomation(automation)">
+                      <i class="i-icon i-share-off bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Stop Share</span>
+                    </button>
+                  </ng-container>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="moveToFolder(automation)">
+                    <i class="i-icon i-folder bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Move to</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item"
+                    (click)="deleteAutomation($event, automation)">
+                    <i class="i-icon i-trash bgc-dark" aria-hidden="true"></i>
+                    <span class="f-3 ml-3 font-weight-bold">Delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <ng-template #folderActions>
+              <div class="v-center justify-content-around actions-btn">
+                <div class="icon-button v-center justify-content-center" (click)="editFolder(automation)"
+                  placement="bottom" ngbTooltip="Edit Folder">
+                  <i class="i-icon bgc-dark i-edit"></i>
+                </div>
+                <div class="icon-button v-center justify-content-center" (click)="deleteFolder(automation)"
+                  placement="bottom" ngbTooltip="Delete Folder">
+                  <i class="i-icon bgc-dark i-trash ml-2"></i>
+                </div>
+                <div class="icon-button v-center justify-content-center" (click)="shareFolder(automation)"
+                  placement="bottom" ngbTooltip="Share Team">
+                  <i class="i-icon bgc-dark i-share-team ml-2"></i>
+                </div>
+                <ng-container *ngIf="automation.role === 'team'">
+                  <div class="icon-button v-center justify-content-center" (click)="unshareFolder(automation)"
+                    placement="bottom" ngbTooltip="Stop Share">
+                    <i class="i-icon bgc-dark i-share-off ml-2"></i>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="DISPLAY_COLUMNS.length">
+            <div class="automation-detail"
+              [@detailExpand]="element._id == selectedAutomation ? 'expanded' : 'collapsed'">
+              <ng-container *ngIf="detailLoading; else contactsList">
+                <div class="loader"></div>
+                <div class="text-center f-8 font-weight-bold">
+                  Loading the assigned contacts
+                </div>
+              </ng-container>
+              <ng-template #contactsList>
+                <h5 class="font-weight-bold border-bottom pb-2">Assigned Contacts</h5>
+                <div class="chip d-flex p-1 contact-chip c-pointer" *ngFor="let contact of contacts">
+                  <div class="form-avatar rounded-circle bg-dark mr-1">{{contact.avatarName}}</div>
+                  <div class="info">
+                    <div class="f-5 font-weight-bold">{{contact.fullName}}</div>
+                    <div class="f-2">{{contact.email}}</div>
+                    <div class="f-2">{{contact.cell_phone}}</div>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="root-folder">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="root-folder">
+            <a [routerLink]="['/automations/own/root']">
+              <div class="v-center c-pointer">
+                <i class="i-icon bgc-dark i-folder mr-1"></i>
+                <span>.. to root</span>
+              </div>
+            </a>
+          </th>
+        </ng-container>
+        <ng-container matColumnDef="selection_info">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="text-center">
+            <span *ngIf="!isAllSelected(); else deselectTemplate">
+              {{selectedFiles.length}} materials are selected.
+              <span class="c-blue font-weight-bold c-pointer" (click)="masterToggle()">
+                Select all {{filteredFiles.length}} materials
+              </span>
+            </span>
+            <ng-template #deselectTemplate>
+              All {{filteredFiles.length}} materials are selected. <span class="c-blue c-pointer font-weight-bold"
+                (click)="masterToggle()">Clear selection</span>
+            </ng-template>
+          </th>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS"
+          [class.selected]="selectedFiles.length + selectedFolders.length" class="table-header"></tr>
+        <tr mat-header-row *matHeaderRowDef="['selection_info']" [class.d-none]="!(selectedFiles.length)"
+          class='selection-info'></tr>
+        <tr mat-header-row *matHeaderRowDef="folder ? ['root-folder'] : []" class="{{!folder ? 'is_root' : ''}}"></tr>
+        <tr mat-row *matRowDef="let element; let index=index;  columns: DISPLAY_COLUMNS;" class="example-element-row"
+          [class.example-expanded-row]="selectedAutomation === element._id" (mouseleave)="rowHover(index)">
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="automation-detail-row"></tr>
+      </table>
+      <ng-container *ngIf="filteredResult.length">
+        <div class="my-2 table-control mode-1" [class.disable]="!isPackageAutomation">
+          <div class="pagination-wrapper m-auto">
+            <pagination-controls (pageChange)="page = $event" (pageBoundsCorrection)="page = $event"
+              id="automationTable" maxSize="5" previousLabel="" nextLabel="">
+            </pagination-controls>
+          </div>
+          <div class="shadow-dropdown ml-auto page-size-control" ngbDropdown placement="top-right">
+            <div class="v-center c-pointer f-3 p-3 font-weight-bold" ngbDropdownToggle>
+              <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+            </div>
+            <div ngbDropdownMenu aria-labelledby="contactPageSize">
+              <div class="py-2" ngbDropdownItem *ngFor="let type of PAGE_COUNTS" (click)="changePageSize(type)">
+                <span class="f-3 v-center" [class.font-weight-bold]="type.id === pageSize.id">
+                  Show {{type.label}} rows per page
+                  <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === pageSize.id"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <ng-container *ngIf="!(automationService.automations$ | async).length; else showingStatusTemplate">
+      <ng-container [ngSwitch]="(automationService.loading$ | async)">
+        <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-automation d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            There is no automations.
+          </h4>
+          <p class="mb-4">Please create automation to recruite automatically.</p>
+          <a class="btn btn-primary" [routerLink]="['/autoflow/new']">
+            <span class="font-weight-bold f-3">Create Automation</span>
+          </a>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading automations for auto-recruiting...</h4>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #showingStatusTemplate>
+      <ng-container *ngIf="!filteredResult.length">
+        <div class="empty-list py-5">
+          <div class="object-icon v-center">
+            <i class="i-icon i-automation d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold text-center mt-4 mb-3">
+            There is no automations to match your filter conditions.
+          </h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>

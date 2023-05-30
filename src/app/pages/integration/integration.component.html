@@ -1,0 +1,306 @@
+<div style="max-width: 680px;">
+  <div class="email-wrapper">
+    <span class="f-6 font-weight-bold">Email apps</span>
+    <div class="d-flex email-alert p-2 my-3" *ngIf="!isLoading && !user.primary_connected">
+      <i class="d-block i-icon i-alert"></i>
+      <div class="f-4 ml-2">
+        <div><strong>Free</strong> Gmail and Outlook accounts can only send <strong>200</strong> emails per day.</div>
+        <div><strong>Paid</strong> Gmail and Outlook accounts allow users to send <strong>2000</strong> emails per day.</div>
+      </div>
+    </div>
+    <div class="integration-account">
+      <div class="icon">
+        <img src="../../../assets/img/google_email.png">
+      </div>
+      <div class="content">
+        <div class="title f-3 font-weight-bold mb-1">Google Mail</div>
+        <div class="desc f-2 op-75">
+          Connect to deliver emails through your Gmail or Workspace solution.  This will increase the deliverability rate.
+        </div>
+      </div>
+      <ng-container *ngIf="(user.connected_email_type=='gmail' || user.connected_email_type=='gsuit') && user.primary_connected; else disconnectGoogle">
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="disconnectMail('gmail')">Disconnect</button>
+      </ng-container>
+      <ng-template #disconnectGoogle>
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectMail('gmail')">Connect Account</button>
+      </ng-template>
+      <div class="accounts">
+        <ng-container *ngIf="(user.connected_email_type=='gmail' || user.connected_email_type=='gsuit') && user.primary_connected">
+          <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+          <div class="f-1">
+            <span class="font-weight-bold mr-2">{{user.connected_email}}</span>
+            connected
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="integration-account">
+      <div class="icon">
+        <img src="../../../assets/img/365_mail.png">
+      </div>
+      <div class="content">
+        <div class="title f-3 font-weight-bold mb-1">Microsoft 365 Mail</div>
+        <div class="desc f-2 op-75">
+          Connect to deliver emails through your 365 solution.  This will increase the deliverability rate.
+        </div>
+      </div>
+      <ng-container *ngIf="(user.connected_email_type=='outlook' || user.connected_email_type=='microsoft') && user.primary_connected; else disconnectOutlook">
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="disconnectMail('outlook')">Disconnect</button>
+      </ng-container>
+      <ng-template #disconnectOutlook>
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectMail('outlook')">Connect Account</button>
+      </ng-template>
+      <div class="accounts">
+        <ng-container *ngIf="(user.connected_email_type=='outlook' || user.connected_email_type=='microsoft') && user.primary_connected">
+          <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+          <div class="f-1">
+            <span class="font-weight-bold mr-2">{{user.connected_email}}</span>
+            connected
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  
+    <div class="integration-account">
+      <div class="icon">
+        <img src="../../../assets/img/smtp.png">
+      </div>
+      <div class="content">
+        <div class="title f-3 font-weight-bold mb-1">SMTP Mail</div>
+        <div class="desc f-2 op-75">
+          Connect to deliver emails through your SMTP solution.  This will increase the deliverability rate.
+        </div>
+      </div>
+      <ng-container *ngIf="user.connected_email_type=='smtp' && user.primary_connected; else disconnectSmtp">
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="disconnectMail('smtp')">Disconnect</button>
+      </ng-container>
+      <ng-template #disconnectSmtp>
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectMail('smtp')">Connect Account</button>
+      </ng-template>
+      <div class="accounts">
+        <ng-container *ngIf="user.connected_email_type=='smtp' && user.primary_connected">
+          <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+          <div class="f-1">
+            <span class="font-weight-bold mr-2">{{user.connected_email}}</span>
+            connected
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-wrapper" id="calendars">
+    <ng-container *ngIf="isPackageCalendar">
+      <span class="f-6 font-weight-bold">Calendar apps</span>
+      <div class="integration-account">
+        <div class="icon">
+          <img src="../../../assets/img/google_calendar.png">
+        </div>
+        <div class="content">
+          <div class="title f-3 font-weight-bold mb-1">Google Calendar</div>
+          <div class="desc f-2 op-75">
+            Connect one or more calendars to your account, so you can schedule and manage your meetings
+          </div>
+        </div>
+        <ng-container *ngIf="googleCalendars.length; else connectGoogleCalendar">
+          <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectCalendar('gmail')">
+            Add Calendar
+          </button>
+        </ng-container>
+        <ng-template #connectGoogleCalendar>
+          <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectCalendar('gmail')">
+            Connect Calendar
+          </button>
+        </ng-template>
+        <div class="accounts">
+          <ng-container *ngIf="googleCalendars.length">
+            <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+            <ng-container *ngFor="let calendar of googleCalendars">
+              <div class="v-center mb-1">
+                <div class="f-1 font-weight-bold mr-1">{{calendar.connected_email}}</div>
+                <span class="f-1">connected</span>
+                <button type="button" class="cal-disconnect btn border-dark w-100 font-weight-bold sm px-1 py-1 ml-auto" (click)="disconnectCalendar(calendar.connected_email, 'gmail')">
+                  <div class="f-2">Disconnect</div>
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+  
+      <div class="integration-account">
+        <div class="icon">
+          <img src="../../../assets/img/outlook_calendar.png">
+        </div>
+        <div class="content">
+          <div class="title f-3 font-weight-bold mb-1">Outlook Calendar</div>
+          <div class="desc f-2 op-75">
+            Connect one or more calendars to your account, so you can schedule and manage your meetings
+          </div>
+        </div>
+        <ng-container *ngIf="outlookCalendars.length; else connectOutlookCalendar">
+          <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectCalendar('outlook')">
+            Add Calendar
+          </button>
+        </ng-container>
+        <ng-template #connectOutlookCalendar>
+          <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectCalendar('outlook')">
+            Connect Calendar
+          </button>
+        </ng-template>
+        <div class="accounts">
+          <ng-container *ngIf="outlookCalendars.length">
+            <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+            <ng-container *ngFor="let calendar of outlookCalendars">
+              <div class="v-center mb-1">
+                <div class="f-1 font-weight-bold mr-1">{{calendar.connected_email}}</div>
+                <span class="f-1">connected</span>
+                <button type="button" class="cal-disconnect btn border-dark w-100 font-weight-bold sm px-1 py-1 ml-auto" (click)="disconnectCalendar(calendar.connected_email, 'outlook')">
+                  <div class="f-2">Disconnect</div>
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="other-wrapper" id="others">
+    <h6 class="font-weight-bold">Other apps</h6>
+    <ng-container>
+      <div class="integration-account">
+        <div class="icon">
+          <i class="i-icon i-phone_logs d-block bgc-blue" style="width: 48px; height: 60px;"></i>
+        </div>
+        <div class="content">
+          <div class="title f-3 font-weight-bold mb-1">Dialer</div>
+          <div class="desc f-2 op-75">
+            Call your contacts from within crmgrow.
+          </div>
+        </div>
+        <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="buyDial()" [class.loading]="callingBuy">
+          Free Trial
+        </button>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="integration-account zapier">
+    <div class="integration-header">
+      <div class="v-center key-container">
+        <p class="f-3 font-weight-bold m-0 key-label">Your API Key</p>
+        <input class="form-control f-3 w-100 p-1 ml-2" type="text" [ngModel]="garbage?.access_token" readonly>
+      </div>
+      <div class="header-button">
+        <ng-container *ngIf="isCopied; else copyButton">
+          <button class="v-center bg-white border-0 my-auto f-3 font-weight-bold key-copy">
+            <i class="i-icon i-check d-block bgc-blue mr-2"></i>
+            <span>Copied</span>
+          </button>
+        </ng-container>
+        <ng-template #copyButton>
+          <button class="v-center bg-white border-0 my-auto f-3 font-weight-bold key-copy" (click)="copyKey()">
+            <i class="i-icon i-link sm d-block"></i>
+            <span class="ml-2">Copy Key</span>
+          </button>
+        </ng-template>
+        <button class="v-center bg-white border-0 my-auto f-3 font-weight-bold key-regenerate" (click)="getToken()">
+          <i class="i-icon i-reload s-14 d-block" [class.spinner]="isRegenerated"></i>
+          <span class="ml-2">Regenerate Key</span>
+        </button>
+      </div>
+    </div>
+    <div class="integration-body mt-3">
+      <div class="icon">
+        <img src="../../../assets/img/zapier.svg">
+      </div>
+      <div class="content">
+        <div class="title f-3 font-weight-bold mb-1">Zapier</div>
+        <div class="desc f-2 op-75">
+          These templates can help you start saving time right away.
+        </div>
+      </div>
+      <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectZapier()">See Templates</button>
+    </div>
+  </div>
+
+  <div class="integration-account">
+    <div class="icon">
+      <img src="../../../assets/img/calendly.svg">
+    </div>
+    <div class="content">
+      <div class="title f-3 font-weight-bold mb-1">Calendly</div>
+      <div class="desc f-2 op-75">
+        Connect calandly to seamlessly create and schedule meetings.
+      </div>
+    </div>
+    <ng-container *ngIf="garbage?.calendly && garbage.calendly?.email != '' && garbage.calendly?.token != ''; else connectEvent">
+      <button class="v-center btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="selectCalendly()">
+        <i class="i-icon i-warning-yellow d-block" *ngIf="calendlyLength > 1 && (!garbage.calendly?.link || !garbage.calendly?.id)"></i>
+        <span class="w-100" *ngIf="!garbage.calendly?.link || !garbage.calendly?.id">Select Event</span>
+        <span class="w-100" *ngIf="garbage.calendly?.link && garbage.calendly?.id">Change Event</span>
+      </button>
+    </ng-container>
+    <ng-template #connectEvent>
+      <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectCalendly()">
+        Connect Account
+      </button>
+    </ng-template>
+    <div class="accounts">
+      <ng-container *ngIf="garbage?.calendly && garbage.calendly?.email != '' && garbage.calendly?.token != ''">
+        <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+        <div class="v-center mb-1">
+          <div class="f-1 font-weight-bold mr-1">{{garbage.calendly?.email}}</div>
+          <span class="f-1">connected</span>
+          <button type="button" class="cal-disconnect btn border-dark w-100 font-weight-bold sm px-1 py-1 ml-auto" (click)="disconnectCalendly()">
+            <div class="f-2">Disconnect</div>
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="integration-account" *ngIf="zoomEnableAccount.indexOf(user.email) !== -1">
+    <div class="icon">
+      <img src="../../../assets/img/zoom.svg">
+    </div>
+    <div class="content">
+      <div class="title f-3 font-weight-bold mb-1">Zoom</div>
+      <div class="desc f-2 op-75">
+        Connect your Zoom account so your prospects can schedule a meeting with you.
+      </div>
+    </div>
+    <ng-container *ngIf="garbage?.zoom && garbage.zoom?.email != '' && garbage.zoom?.refresh_token != ''; else connect">
+      <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="disconnectZoom()">
+        Disconnect
+      </button>
+      <div class="accounts">
+        <div class="f-2 font-weight-bold mt-3 mb-2">Authorized account</div>
+          <div class="v-center mb-1">
+            <div class="f-1 font-weight-bold mr-1">{{garbage.zoom?.email}}</div>
+            <span class="f-1">connected</span>
+          </div>
+      </div>
+    </ng-container>
+    <ng-template #connect>
+      <button class="btn bg-white c-blue border-primary f-3 font-weight-bold connect" (click)="connectZoom()">
+        Connect Account
+      </button>
+    </ng-template>
+  </div>
+
+  <div class="integration-account">
+    <div class="icon">
+      <img src="../../../assets/img/google.svg">
+    </div>
+    <div class="content">
+      <div class="title f-3 font-weight-bold mb-1">Chrome Extension</div>
+      <div class="desc f-2 op-75">
+        Create video, use email templates, access powerful email and video analytics directly from crmgrow in Gmail.
+      </div>
+    </div>
+    <a class="v-center justify-content-center btn bg-white c-blue border-primary f-3 font-weight-bold connect" href="https://chrome.google.com/webstore/detail/crmgrow-video-webcam-scre/bcbcnnookeieadihaekplblbfmjaodbb?hl=en-US" target="_blank">
+      Install extension
+    </a>
+  </div>
+</div>

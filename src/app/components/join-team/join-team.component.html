@@ -1,0 +1,151 @@
+<h1 mat-dialog-title>Request to join the team</h1>
+<mat-dialog-content>
+  <div class="form-group" [ngClass]="{invalid: (error$ | async)}">
+    <label for="search-to-join">SEARCH</label>
+    <div class="custom-mat-field">
+      <mat-form-field appearance="outline" floatLabel="never" class="d-block">
+        <mat-chip-list aria-label="Team Selection" #teamList>
+          <input
+            [placeholder]="placeholder"
+            #inputField
+            [formControl]="inputControl"
+            [matChipInputFor]="teamList"
+            [matAutocomplete]="auto"
+            [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
+            id="search-to-join"
+          >
+        </mat-chip-list>
+        <mat-autocomplete
+          #auto="matAutocomplete"
+          (optionSelected)="onSelectOption($event)"
+          [autoActiveFirstOption]="true"
+        >
+<!--          <ng-container *ngIf="!searching && (teams.length > 0 || users.length > 0)">-->
+<!--            <div class="v-center justify-content-end py-1 px-3">-->
+<!--              <div class="f-3 font-weight-bold c-dark">Teams</div>-->
+<!--              <label class="custom-toggle sm mb-0 mx-2" placement="top">-->
+<!--                <input type="checkbox" [checked]="isToggleTeam" (change)="toggleTeam()" name="includeLabel">-->
+<!--                <span class="custom-toggle-slider rounded-circle"></span>-->
+<!--              </label>-->
+<!--              <div class="f-3 font-weight-bold c-dark">Contacts</div>-->
+<!--            </div>-->
+<!--          </ng-container>-->
+          <ng-container *ngIf="!isToggleTeam; else showContacts">
+            <mat-option *ngIf="teams.length < 1 && users.length > 0" [value]="null"></mat-option>
+            <mat-option *ngFor="let item of filteredTeams | async" [value]="item">
+              <div class="v-center chip py-3">
+                <img class="team-avatar md rounded mr-2" [src]="item.picture" onerror="(this.src = './assets/img/team_placeholder.png')" />
+                <div class="font-weight-bold f-5">{{item.name}}</div>
+                <div class="bgc-azure c-badge rect f-1 ml-auto">Team</div>
+              </div>
+            </mat-option>
+          </ng-container>
+          <ng-template #showContacts>
+            <mat-option *ngIf="teams.length > 1 && users.length < 0" [value]="null"></mat-option>
+            <mat-option *ngFor="let item of filteredUsers | async" [value]="item">
+              <div class="d-flex chip py-2">
+                <img *ngIf="item.picture_profile; else avatarNameTemplate" [src]="item.picture_profile" onerror="(this.src = './assets/img/user_avatar.svg');" class="form-avatar rounded-circle mr-1" />
+                <ng-template #avatarNameTemplate>
+                  <div class="form-avatar rounded-circle bg-dark mr-1">{{item.avatarName}}</div>
+                </ng-template>
+                <div class="info">
+                  <div class="f-5 font-weight-bold">{{item.user_name}}</div>
+                  <div class="f-2">{{item['email'] || 'Undefined'}}</div>
+                  <div class="f-2">{{item['cell_phone'] || 'Undefined'}}</div>
+                </div>
+              </div>
+            </mat-option>
+          </ng-template>
+          <div class="v-center justify-content-center more-button-container p-2"
+             (click)="loadMore()"
+             [class.c-pointer]="!loadingMore"
+             *ngIf="showMore()"
+          >
+            <div class="v-center">
+              <i class="small-spinner" *ngIf="loadingMore"></i>
+              <i class="d-block i-icon sm i-plus bgc-blue" *ngIf="!loadingMore"></i>
+              <span class="f-2 font-weight-bold c-blue">&nbsp;</span>
+              <span class="f-2 font-weight-bold c-blue ml-2">Load more</span>
+            </div>
+          </div>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+    <span class="error pl-1" *ngIf="error$ | async">
+      Please select team.
+    </span>
+  </div>
+  <div class="searched-results">
+    <ng-container *ngIf="(selectedUser && selectedUser.length) || selectedTeam">
+      <ng-container *ngIf="teamSearching; else searchedTemplate">
+        <div class="loader"></div>
+        <p class="text-center f-4 status-description mx-auto">Searching teams that includs the selected user</p>
+      </ng-container>
+      <ng-template #searchedTemplate>
+        <div *ngIf="!searchedTeams.length; else teamListTemplate" >
+          <p class="text-center f-4 status-description mx-auto">There are no teams that includs the following user</p>
+        </div>
+      </ng-template>
+      <ng-template #teamListTemplate>
+        <div class="team v-center justify-content-between position-relative p-2 rounded c-pointer" *ngFor="let team of searchedTeams" [ngClass]="{selected: team._id === selectedTeam?._id}" (click)="selectTeam($event, team)">
+          <div class="v-center w-50">
+            <img class="team-avatar rounded" [src]="team.picture" onerror="(this.src = './assets/img/team_placeholder.png')"/>
+            <div class="team-info ml-2">
+              <div class="f-4 font-weight-bold">{{team.name}}</div>
+              <div class="d-flex">
+                <div class="f-1 mr-2">{{team.memberCount}} Members</div>
+                <div class="f-1">{{team.materialCount}} materials</div>
+              </div>
+            </div>
+          </div>
+          <div class="v-center justify-content-end w-50">
+<!--            <label class="f-1 mb-0">OWNER</label>-->
+<!--            <div class="v-center ml-2">-->
+<!--              <img *ngIf="team.owner[0].picture_profile; else ownerAvatarNameTemplate" [src]="team.owner[0].picture_profile" onerror="( this.src = './assets/img/user_avatar.svg');" class="form-avatar rounded-circle mr-2" />-->
+<!--              <ng-template #ownerAvatarNameTemplate>-->
+<!--                <div class="f-3 form-avatar rounded-circle bg-dark mr-1">{{"UN"}}</div>-->
+<!--              </ng-template>-->
+<!--              <div class="f-3 fw-600">{{team.owner[0].user_name}}</div>-->
+<!--            </div>-->
+            <i class="i-icon i-close bg-dark ml-3 deselect" (click)="deselectTeam()"></i>
+          </div>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+  <div class="request-list" *ngIf="requestedTeams.length">
+    <label class="f-1">REQUEST IN PROGRESS</label>
+    <hr class="my-0">
+    <div class="list-content py-1">
+      <div class="status-description text-center f-2 mx-auto mt-sm-3" *ngIf="!requestedTeams.length; else requestedTeamList">
+        There are no requests in progress.
+      </div>
+      <ng-template #requestedTeamList>
+        <div class="v-center py-1" *ngFor="let team of requestedTeams">
+          <div class="v-center chip py-3">
+            <img class="team-avatar md rounded mr-2" [src]="team.picture" onerror="(this.src = './assets/img/team_placeholder.png')" />
+            <div class="font-weight-bold f-5">{{team.name}}</div>
+          </div>
+          <div class="info v-center flex-grow-1">
+            <button class="btn btn-sm f-1 c-blue font-weight-bold ml-auto rounded border border-primary"
+              (click)="resendRequest(team)"
+              [class.loading]="resending && resendTeamId == team._id"
+            >
+              Resend Request
+            </button>
+            <button class="btn btn-sm f-1 btn-decline ml-2"
+              (click)="cancelRequest(team)"
+              [class.loading]="canceling && cancelTeamId == team._id"
+            >
+              Cancel Request
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="mt-2">
+  <button class="btn c-blue" mat-dialog-close>Cancel</button>
+  <button class="btn btn-primary" [class.loading]="requesting" (click)="requestJoin()">Request</button>
+</mat-dialog-actions>

@@ -1,0 +1,26 @@
+<div class="page-content">
+  <div class="v-center justify-content-between mb-3">
+    <h1 class="page-title">Templates</h1>
+    <ng-container *ngIf="selectedTab.id === 'own'">
+      <button type="button" class="btn btn-primary shadow ml-auto bg-white c-blue"
+          (click)="createFolder()"
+      >
+        <span class="f-6 font-weight-bold">New Folder</span>
+      </button>
+      <a class="btn btn-primary shadow v-center mb-0 border-0 ml-2"
+        [routerLink]="['/templates/new']"
+        [queryParams]="folderId ? { folder: folderId } : null"
+      >
+        <span class="f-6 font-weight-bold">New Template</span>
+      </a>
+    </ng-container>
+  </div>
+  <div class="page-header mb-2">
+    <app-slide-tab [tabs]="tabs" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain" class="border-bottom pl-0 rounded-0">
+    </app-slide-tab>
+  </div>
+  <div>
+    <app-templates-list #templatesList [class.d-none]="selectedTab.id !== 'own'"></app-templates-list>
+    <app-templates-lib [class.d-none]="selectedTab.id === 'own'"></app-templates-lib>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+<mat-select [(ngModel)]="calendar" name="calendar" placeholder="Select Calendar" (ngModelChange)="changeCalendar()" [formControl]="calendarControl">
+  <mat-select-trigger>
+    <div class="template-item selected v-center" *ngIf="calendar">
+      <div [ngStyle]="{'background-color': calendar.color || 'blue'}" class="color"></div>
+      <div class="name">{{calendar.title}}</div>
+    </div>
+  </mat-select-trigger>
+  <mat-optgroup *ngFor="let account of accounts" [label]="account.email">
+    <mat-option *ngFor="let calendar of account.calendars" [value]="calendar">
+      <div class="v-center">
+        <div [ngStyle]="{'background-color': calendar.color || 'blue'}" class="color"></div>
+        <span>{{calendar.title}}</span>
+      </div>
+    </mat-option>
+  </mat-optgroup>
+</mat-select>

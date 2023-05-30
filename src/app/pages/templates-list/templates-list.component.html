@@ -1,0 +1,360 @@
+<div class="custom-mat-table">
+  <div class="my-3 v-center">
+    <div class="form-group mb-0 search-form">
+      <div class="input-group-prepend">
+        <i class="i-icon i-search d-block bgc-dark"></i>
+      </div>
+      <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+             [(ngModel)]="searchStr"
+             (ngModelChange)="changeSearchStr()"
+             [class.disabled]="(templatesService.loading$ | async) === STATUS.REQUEST"
+      >
+      <ng-container *ngIf="searchStr">
+        <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+          <i class="i-icon i-close d-block bgc-dark"></i>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="my-3 position-relative">
+    <ng-container *ngIf="templates.length">
+      <div class="updating-status" *ngIf="templates.length && (templatesService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div>
+      <table class="w-100 template-table page-table"
+         mat-table
+         multiTemplateDataRows
+         [dataSource]="filteredResult | paginate: {itemsPerPage: pageSize.id, currentPage: page, id: 'templateTable', total: filteredResult.length}"
+      >
+      <ng-container matColumnDef="select">
+        <th mat-header-cell
+          *matHeaderCellDef
+          class="pl-0 checkbox-col">
+          <div class="custom-control custom-checkbox"
+            [class.indeterminate]="(selectedFiles.length + selectedFolders.length) && !isAllSelected()">
+            <input type="checkbox"
+              class="custom-control-input"
+              id="selectAllMaterials"
+              (change)="$event ? pageMasterToggle() : null"
+              [checked]="isPageSelected()" />
+            <label class="custom-control-label"
+              for="selectAllMaterials"></label>
+          </div>
+        </th>
+        <td mat-cell
+          *matCellDef="let template"
+          class="pl-0 checkbox-col">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox"
+              class="custom-control-input"
+              id="template-{{template._id}}"
+              (change)="toggleElement(template)"
+              [checked]="isSelected(template)" />
+            <label class="custom-control-label"
+              for="template-{{template._id}}"></label>
+          </div>
+        </td>
+      </ng-container>
+        <ng-container matColumnDef="title">
+          <ng-container *matHeaderCellDef >
+          <th mat-header-cell class="title" *ngIf="!(selectedFiles.length + selectedFolders.length); else toolHeader">
+            <div class="v-center c-pointer head-sort" (click)="sort('title')">
+              <span [class]="selectedSort == 'title' ? 'fw-600 c-dark' : ''">Title</span>
+              <i class="i-icon d-block bgc-black ml-2"
+                [class]="searchCondition.title ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'title'"></i>
+            </div>
+          </th>
+          <ng-template #toolHeader>
+            <th mat-header-cell colspan="12">
+              <div class="v-center">
+                <ng-container *ngIf="selectedFiles.length; else folderSelectedStatus">
+                  <span class="c-dark f-3 text-lowercase font-weight-bold">
+                    {{selectedFiles.length}} selected
+                  </span>
+                  <app-actions-header [actions]="ACTIONS" (doCommand)="doAction($event)"></app-actions-header>
+                </ng-container>
+                <ng-template #folderSelectedStatus>
+                  <span class="c-dark f-3 text-lowercase font-weight-bold">
+                    {{selectedFolders.length}} selected
+                  </span>
+                     <app-actions-header [actions]="FOLDER_ACTIONS" (doCommand)="doFolderAction($event)"></app-actions-header>
+                </ng-template>
+              </div>
+            </th>
+          </ng-template>
+        </ng-container>
+          <td mat-cell *matCellDef="let template" class="title">
+            <a [routerLink]="['/templates/edit/' + template._id]" class="td-none" *ngIf="!template.isFolder; else folderTitle">
+              <span class="f-3 font-weight-bold">{{template.title}}</span>
+            </a>
+            <ng-template #folderTitle>
+              <a [routerLink]="['/templates-list/own/' + template._id]" class="td-none">
+                <div class="v-center c-pointer">
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-3 font-weight-bold">{{template.title}}</span>
+                </div>
+              </a>
+            </ng-template>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="owner">
+          <ng-container *matHeaderCellDef >
+          <th mat-header-cell class="auth" *ngIf="!(selectedFiles.length + selectedFolders.length)">
+            <div class="v-center c-pointer head-sort" (click)="sort('role')">
+              <span [class]="selectedSort == 'role' ? 'fw-600 c-dark' : ''">Owner</span>
+              <i class="i-icon d-block bgc-black ml-2"
+                [class]="searchCondition.role ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'role'"></i>
+            </div>
+          </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let template" class="auth">
+            <div class="role" [class.admin]="template.role == 'admin'" [class.team]="template.role === 'team' && template.user === userId" [class.shared]="template.role === 'team' && template.user !== userId"></div>
+          </td>
+        </ng-container>
+        
+        <!-- Share Column -->
+        <ng-container matColumnDef="share">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!(selectedFiles.length + selectedFolders.length)" class="share-col">shared with</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="share-col">
+            <ng-container *ngIf="element.shared_with&& element.shared_with.length;else noSharedTeamTemplate">
+              <span class="tag rounded mr-2">{{element.shared_with[0].name}}</span>
+              <span class="f-2 op-56" *ngIf="element.shared_with.length > 1">+{{element.shared_with.length-1}} more</span>
+            </ng-container>
+            <ng-template #noSharedTeamTemplate>
+              <span>---</span>
+            </ng-template>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="template-content">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="template-content" *ngIf="!(selectedFiles.length + selectedFolders.length)">Template</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let template" class="template-content">
+            <ng-container *ngIf="!template.isFolder">
+              <h5 class="font-weight-bold f-5 c-black mb-1">{{template.subject | stripTags | shorten: 40: '...'}}</h5>
+              <span [innerHTML]="template.content | stripTags | shorten: 80: '...'"></span>
+            </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="template-type">
+          <ng-container *matHeaderCellDef>
+           <th mat-header-cell class="template-type" *ngIf="!(selectedFiles.length + selectedFolders.length)">
+            <div class="v-center c-pointer head-sort" (click)="sort('type')">
+              <span [class]="selectedSort == 'type' ? 'fw-600 c-dark' : ''">Type</span>
+              <i class="i-icon d-block bgc-black ml-2"
+                [class]="searchCondition.type ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'type'"></i>
+            </div>
+           </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let template" class="template-type">
+            <div class="v-center">
+              <ng-container *ngIf="template.type=='text'; else otherType">
+                <i class="i-icon bgc-dark i-sms-sent mr-1"></i>
+                <span class="f-4 menu-label font-weight-bold ml-1">Text</span>
+              </ng-container>
+              <ng-template #otherType>
+                <ng-container *ngIf="template.type === 'email'; else folderType">
+                  <i class="i-icon bgc-dark i-message mr-1"></i>
+                  <span class="f-4 menu-label font-weight-bold ml-1">Email</span>
+                </ng-container>
+                <ng-template #folderType>
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-4 menu-label font-weight-bold ml-1">Folder</span>
+                </ng-template>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="template-action">
+          <ng-container *matHeaderCellDef>
+          <th mat-header-cell class="template-action" *ngIf="!(selectedFiles.length + selectedFolders.length)">
+            Default
+          </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let template" class="template-action">
+            <div class="v-center" *ngIf="!template.isFolder">
+              <label class="custom-toggle mb-0" placement="top" ngbTooltip="Set as {{template.type == 'email' ? 'Default Email' : 'Default Text'}}">
+                <input type="checkbox" [checked]="template._id == emailDefault || template._id == smsDefault" (change)="setDefault(template)">
+                <span class="custom-toggle-slider rounded-circle"></span>
+              </label>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="template-sub-action">
+          <ng-container *matHeaderCellDef>
+          <th mat-header-cell class="template-sub-action" *ngIf="!(selectedFiles.length + selectedFolders.length)">
+          </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let template" class="template-sub-action">
+            <div class="v-center justify-content-around sub-item-action mr-1">
+              <ng-container *ngIf="template.role == 'admin'">
+                <div class="icon-button v-center justify-content-center" (click)="duplicateTemplate(template)" placement="bottom" ngbTooltip="Duplicate">
+                  <i class="i-icon bgc-dark i-duplicate"></i>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="template.role != 'admin' && template.user == userId">
+                <ng-container *ngIf="template.isFolder; else templateActions">
+                  <div class="icon-button v-center justify-content-center" (click)="editFolder(template)" placement="bottom" ngbTooltip="Edit Folder">
+                    <i class="i-icon bgc-dark i-edit"></i>
+                  </div>
+                  <div class="icon-button v-center justify-content-center" (click)="deleteFolder(template)" placement="bottom" ngbTooltip="Delete Folder">
+                    <i class="i-icon bgc-dark i-trash ml-2"></i>
+                  </div>
+                  <div class="icon-button v-center justify-content-center" (click)="shareFolder(template)" placement="bottom" ngbTooltip="Share Team">
+                    <i class="i-icon bgc-dark i-share-team ml-2"></i>
+                  </div>
+                  <ng-container *ngIf="template.role === 'team'">
+                    <div class="icon-button v-center justify-content-center" (click)="unshareFolder(template)" placement="bottom" ngbTooltip="Stop Share">
+                      <i class="i-icon bgc-dark i-share-off ml-2"></i>
+                    </div>
+                  </ng-container>
+                </ng-container>
+                <ng-template #templateActions>
+                  <div class="icon-button v-center justify-content-center" (click)="openTemplate(template)" placement="bottom" ngbTooltip="Edit">
+                    <i class="i-icon bgc-dark i-edit"></i>
+                  </div>
+                  <div class="icon-button v-center justify-content-center" (click)="deleteTemplate(template)" placement="bottom" ngbTooltip="Delete">
+                    <i class="i-icon bgc-dark i-trash ml-2"></i>
+                  </div>
+                  <div ngbDropdown #mainDrop="ngbDropdown" placement="bottom-right" class="">
+                    <a ngbDropdownToggle class="v-center btn bgc-white c-dark f-3 no-carot px-0">
+                      <i class="d-block i-icon i-menu-more bgc-dark mx-auto"></i>
+                    </a>
+                    <div ngbDropdownMenu class="light">
+                      <ng-container>
+                        <button class="v-center border-0 py-2 c-dark dropdown-item"  (click)="duplicateTemplate(template)">
+                          <i class="i-icon i-duplicate bgc-dark ml-1" aria-hidden="true"></i>
+                          <span class="ml-3 f-3 font-weight-bold">Duplicate</span>
+                        </button>
+                        <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="shareTemplate(template)">
+                          <i class="i-icon i-share-team bgc-dark ml-1" aria-hidden="true"></i>
+                          <span class="ml-3 f-3 font-weight-bold">Share Team</span>
+                        </button>
+                        <ng-container *ngIf="folder?.role === 'team' || template.role === 'team'">
+                          <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="unshareTemplate(template)">
+                            <i class="i-icon i-share-off bgc-dark ml-1" aria-hidden="true"></i>
+                            <span class="ml-3 f-3 font-weight-bold">Stop Share</span>
+                          </button>
+                        </ng-container>
+                        <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="moveToFolder(template)">
+                          <i class="i-icon i-folder bgc-dark ml-1" aria-hidden="true"></i>
+                          <span class="ml-3 f-3 font-weight-bold">Move to</span>
+                        </button>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-template>
+              </ng-container>
+              <ng-container *ngIf="template.role == 'team' && template.user != userId">
+                <div class="icon-button v-center justify-content-center" (click)="duplicateTemplate(template)" placement="bottom" ngbTooltip="Duplicate">
+                  <i class="i-icon bgc-dark i-duplicate"></i>
+                </div>
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="root-folder">
+          <ng-container *matHeaderCellDef>
+          <th mat-header-cell  colspan="12" class="root-folder" *ngIf="!(selectedFiles.length + selectedFolders.length)">
+            <a [routerLink]="['/templates-list/own/root']">
+              <div class="v-center c-pointer">
+                <i class="i-icon bgc-dark i-folder mr-1"></i>
+                <span>.. to root</span>
+              </div>
+            </a>
+          </th>
+          </ng-container>
+        </ng-container>
+        <ng-container matColumnDef="selection_info">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="text-center">
+            <span *ngIf="!isAllSelected(); else deselectTemplate">
+              {{selectedFiles.length}} materials are selected.
+              <span class="c-blue font-weight-bold c-pointer" (click)="masterToggle()">
+                Select all {{filteredFiles.length}} materials
+              </span>
+            </span>
+            <ng-template #deselectTemplate>
+              All {{filteredFiles.length}} materials are selected. <span class="c-blue c-pointer font-weight-bold" (click)="masterToggle()">Clear selection</span>
+            </ng-template>
+          </th>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS"></tr>
+        <tr mat-header-row *matHeaderRowDef="['selection_info']" [class.d-none]="!(selectedFiles.length)" class='selection-info'></tr>
+        <tr mat-header-row *matHeaderRowDef="folder ? ['root-folder'] : []" class="{{!folder ? 'is_root' : ''}}"></tr>
+        <tr mat-row *matRowDef="let element; columns: DISPLAY_COLUMNS;"></tr>
+      </table>
+      <ng-container *ngIf="filteredResult.length">
+        <div class="my-2 table-control mode-1">
+          <div class="pagination-wrapper m-auto">
+            <pagination-controls
+              (pageChange)="page = $event"
+              (pageBoundsCorrection)="page = $event"
+              id="templateTable"
+              maxSize="5"
+              previousLabel=""
+              nextLabel="">
+            </pagination-controls>
+          </div>
+          <div class="shadow-dropdown ml-auto page-size-control"
+            ngbDropdown
+            placement="top-right">
+            <div class="v-center c-pointer f-3 p-3 font-weight-bold"
+              ngbDropdownToggle>
+              <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+            </div>
+            <div ngbDropdownMenu
+              aria-labelledby="contactPageSize">
+              <div class="py-2"
+                ngbDropdownItem
+                *ngFor="let type of PAGE_COUNTS"
+                (click)="changePageSize(type)">
+                <span class="f-3 v-center"
+                  [class.font-weight-bold]="type.id === pageSize.id">
+                  Show {{type.label}} rows per page
+                  <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1"
+                    *ngIf="type.id === pageSize.id"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="!(templatesService.templates$ | async).length; else showingStatusTemplate">
+      <ng-container [ngSwitch]="(templatesService.loading$ | async)">
+        <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-template d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            There is no templates for emailing and texting yet.
+          </h4>
+          <p class="mb-4">Please create templates to use for emailing and texting easily.</p>
+          <a class="btn btn-primary" [routerLink]="['/templates/new']">
+            <span class="font-weight-bold f-3">Create Template</span>
+          </a>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading templates for emailing and texting...</h4>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #showingStatusTemplate>
+      <ng-container *ngIf="!filteredResult?.length">
+        <div class="empty-list py-5">
+          <div class="object-icon v-center">
+            <i class="i-icon i-template d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold text-center mt-4 mb-3">
+            There is no templates to match your filter conditions.
+          </h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>
+

@@ -1,0 +1,20 @@
+<div class="v-center justify-content-between">
+    <h1 class="m-0" mat-dialog-title>
+        Delete tag
+    </h1>
+    <i class="d-block i-icon i-close bgc-dark" mat-dialog-close></i>
+</div>
+<mat-dialog-content>
+    <div class="text-center f-3 c-dark mt-3">
+        <ng-container *ngIf="data.type == 'all'; else tagContact">
+            Do you want to delete <span class="c-blue font-weight-bold">{{tagName}}</span> tag?
+        </ng-container>
+        <ng-template #tagContact>
+            Do you want to delete <span class="c-blue font-weight-bold">{{tagName}}</span> tag from this contact?
+        </ng-template>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button class="btn btn-white f-6 font-weight-bold c-blue mr-2" mat-dialog-close>Cancel</button>
+    <button class="btn btn-red f-6 font-weight-bold" (click)="deleteField()" [class.loading]="saving">Delete</button>
+</mat-dialog-actions>

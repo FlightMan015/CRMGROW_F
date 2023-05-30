@@ -1,0 +1,40 @@
+@import '../../../variables';
+
+td .c-dark {
+  color: $color-dark!important;
+}
+
+td .c-blue {
+  color: $color-blue!important;
+}
+
+.pagination-wrapper.disabled {
+  pointer-events: none;
+  .i-icon {
+    background-color: #cacaca;
+  }
+}
+
+.pagination-wrapper .i-icon{
+  background-color: black;
+  width: 20px;
+  height: 20px;
+}
+
+.pagination-wrapper a {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.pagination-wrapper .disabled {
+  pointer-events: none;
+}
+.pagination-wrapper .disabled .i-icon{
+  background-color: #cacaca;
+}
+
+.address-col a{
+  max-width: 75px;
+  width: 75px;
+  font-size: 12px;
+}

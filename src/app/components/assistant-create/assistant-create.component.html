@@ -1,0 +1,53 @@
+<form #form="ngForm" (ngSubmit)="form.form.valid ? submit() : false">
+  <h1 mat-dialog-title>Create Assistant</h1>
+  <mat-dialog-content>
+    <div class="form-group" [ngClass]="{invalid: form.submitted && username.invalid && (username.dirty || username.touched || form.submitted)}">
+      <div class="d-flex">
+        <label for="username" class="mr-auto">Full Name</label>
+        <span class="error" *ngIf="username.errors">
+          <ng-container *ngIf="username.errors.required">Required!</ng-container>
+        </span>
+      </div>
+      <input type="text" class="form-control" [(ngModel)]="assistant.name" name="username" id="username" required #username="ngModel"/>
+    </div>
+    <div class="form-group" [ngClass]="{invalid: form.submitted && email.invalid && (email.dirty || email.touched || form.submitted)}">
+      <div class="d-flex">
+        <label for="email" class="mr-auto">Email</label>
+        <span class="error" *ngIf="email.errors">
+          <ng-container *ngIf="email.errors.required">Required!</ng-container>
+          <ng-container *ngIf="email.errors.pattern">Wrong email format!</ng-container>
+        </span>
+      </div>
+      <input type="email" class="form-control" [(ngModel)]="assistant.email" name="email" id="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,4}$" #email="ngModel"/>
+    </div>
+    <div class="form-group" [ngClass]="{invalid: form.submitted && password.invalid && (password.dirty || password.touched || form.submitted)}">
+      <div class="d-flex">
+        <label for="password" class="mr-auto">Password</label>
+        <span class="error" *ngIf="password.errors">
+          <ng-container *ngIf="password.errors.required">Required!</ng-container>
+          <ng-container *ngIf="password.errors.minlength">At least 6 characters!</ng-container>
+        </span>
+      </div>
+      <input type="password" class="form-control" [(ngModel)]="assistant.password" name="password" id="password" required minlength="6" #password="ngModel"/>
+    </div>
+    <div class="form-group" [ngClass]="{invalid: form.submitted && ((confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched || form.submitted)) || confirm_password != assistant.password)}">
+      <div class="d-flex">
+        <label for="confirmPassword" class="mr-auto">Confirm Password</label>
+        <span class="error" *ngIf="confirmPassword.errors; else misMatch">
+          <ng-container *ngIf="confirmPassword.errors.required">Confirm!</ng-container>
+          <ng-container *ngIf="confirmPassword.errors.minlength">At least 6 characters!</ng-container>
+        </span>
+        <ng-template #misMatch>
+          <span class="error" *ngIf="confirm_password != assistant.password">
+            No match!
+          </span>
+        </ng-template>
+      </div>
+      <input type="password" class="form-control" [(ngModel)]="confirm_password" name="confirmPassword" id="confirmPassword" required minlength="6" #confirmPassword="ngModel"/>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button type="button" class="btn c-blue" mat-dialog-close>Cancel</button>
+    <button type="submit" class="btn btn-primary" [class.loading]="creating">Create</button>
+  </mat-dialog-actions>
+</form>

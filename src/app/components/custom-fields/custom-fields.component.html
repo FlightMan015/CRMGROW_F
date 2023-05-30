@@ -1,0 +1,212 @@
+<div class="page-content d-flex">
+  <div class="custom-field-panel p-0">
+    <button class="v-center btn btn-blue f-3 font-weight-bold text-white mt-3 add-button" (click)="addField()">
+      New Custom Field
+    </button>
+    <div class="form-group"
+      *ngIf="(contactService.garbage$ | async).additional_fields && (contactService.garbage$ | async).additional_fields.length > 0; else loadingTemplate;">
+      <ng-container>
+        <div class="fields-header required-field v-center pt-0 mb-2 px-3">
+          <div class="f-3 field-name op-75">NAME</div>
+          <div class="f-3 field-type op-75 text-center">TYPE</div>
+          <div class="f-3 field-info op-75">CONTACTS</div>
+          <div class="f-3 op-75 field-action"></div>
+        </div>
+        <div class="load-status"
+          *ngIf="(contactService.garbage$ | async).additional_fields && (contactService.customLoadingStatus$ | async) === STATUS.REQUEST">
+          LOADING
+        </div>
+        <div class="v-center required-field mb-2 field-item py-2 c-pointer px-3"
+          *ngFor="let field of (contactService.garbage$ | async).additional_fields">
+          <div class="f-3 field-name">{{field.name}}</div>
+          <div class="f-3 field-type c-blue text-center ml-5" style='margin-left:60px;'>{{field.type}}</div>
+          <div class="f-3 field-info c-blue ml-5" (click)="openContacts(field)">{{field.count}}</div>
+          <div class="f-3 field-action">
+            <div ngbDropdown placement="bottom-right" class="ml-auto my-auto action-col">
+              <a ngbDropdownToggle class="v-center justify-content-end btn c-dark f-3 no-carot py-0 pl-0 pr-2">
+                <i class="d-block i-icon i-menu-more bgc-dark"></i>
+              </a>
+              <div ngbDropdownMenu class="light">
+                <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editField(field)">
+                  <i class="d-block i-icon i-edit bgc-dark mr-2" aria-hidden="true"></i>
+                  <span class="f-3 font-weight-bold">Edit</span>
+                </button>
+                <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="deleteField(field)">
+                  <i class="d-block i-icon i-trash bgc-red mr-2" aria-hidden="true"></i>
+                  <span class="f-3 font-weight-bold">Delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <ng-template #loadingTemplate>
+      <div class='flex-column d-flex mt-5'>
+        <ng-container *ngIf="(contactService.customLoadingStatus$ | async) === STATUS.REQUEST">
+          <div class="empty-list py-5">
+            <div class="loader mt-2"></div>
+            <h6 class="fw-600 mt-2">Loading...</h6>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="(contactService.customLoadingStatus$ | async) !== STATUS.REQUEST">
+          <div class="empty-list py-5">
+            <div class="object-icon v-center">
+              <i class="i-icon i-lunch d-block bgc-dark"></i>
+            </div>
+            <h4 class="fw-600 mt-3 mb-3" style='font-size:12px'>
+              There is no custom contact field.
+            </h4>
+          </div>
+        </ng-container>
+      </div>
+    </ng-template>
+  </div>
+  <mat-drawer-container [hasBackdrop]="true">
+    <mat-drawer #cdrawer position="end" (openedStart)="toggleBody(true)" (closedStart)="toggleBody(false)">
+      <div class='contacts-list-panel flex-column h-100 d-flex' style='overflow-x:hidden'>
+        <div class="contacts-list-panel ml-3 mt-3">
+          <h6 class="fw-600 mt-2">{{contactService.total$ | async}} Contacts for custom field"{{customField}}"</h6>
+        </div>
+        <div class="v-center contact-list-controls">
+          <div class="form-group mb-0 search-form ml-3">
+            <div class="input-group-prepend">
+              <i class="i-icon i-search d-block bgc-dark"></i>
+            </div>
+            <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+              [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()">
+            <ng-container *ngIf="searchStr">
+              <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+                <i class="i-icon i-close d-block bgc-dark"></i>
+              </div>
+            </ng-container>
+          </div>
+          <div *ngIf="selectedField.type=='dropdown'">
+            <div class="ml-auto" ngbDropdown placement="bottom-right">
+              <div class="v-center c-pointer f-3 p-3 mr-2 font-weight-bold" ngbDropdownToggle>
+                <span class="pr-2">Sort by</span>
+              </div>
+              <div ngbDropdownMenu aria-labelledby="taskSortTypes">
+                <div class="py-2" ngbDropdownItem *ngFor="let option of selectedField.options" (click)="changeOption(option)">
+                  <span class="f-3 v-center" [class.font-weight-bold]="option.label === sortType.label">
+                    {{option.label}}
+                    <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="option.label === sortType.label"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="custom-mat-table d-flex flex-column h-100" *ngIf='(storeService.pageContacts$ | async).length'>
+          <div class="mat-table-body-wrapper h-100 overflow-auto" [class.empty]="!(storeService.pageContacts$ | async).length">
+            <table class="w-100 page-table" mat-table
+              [dataSource]="storeService.pageContacts$ | async | paginate: {id: 'contactPages', itemsPerPage: pageSize.id, currentPage: page, totalItems: contactService.total$ | async}">
+              <ng-container matColumnDef="loader-cell">
+                <th mat-header-cell *matHeaderCellDef colspan="12" class="loader-cell">
+                  <div class="updating-status"
+                    *ngIf="(storeService.pageContacts$ | async).length && (contactService.loading$ | async) === STATUS.REQUEST">
+                    LOADING
+                  </div>
+                </th>
+              </ng-container>
+              <ng-container matColumnDef="contact_name">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> contact name </th>
+                </ng-container>
+                <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+                  <div class="v-center c-pointer">
+                    <div class="contact-avatar f-3 mr-2">
+                      {{element.avatarName}}
+                      <ng-container *ngIf="element.shared_members && element.shared_members.length;else item">
+                        <ng-container *ngIf="userId && userId !== element.user && userId !== element.user[0]; else sharedBy">
+                          <span class="shared-with">
+                            <i class="i-icon i-shared-with d-block bgc-green"></i>
+                          </span>
+                        </ng-container>
+                        <ng-template #sharedBy>
+                          <span class="shared-by">
+                            <i class="i-icon i-shared-by d-block bgc-red"></i>
+                          </span>
+                        </ng-template>
+                      </ng-container>
+                    </div>
+                    <div class="f-3 text-primary name">
+                      {{element.fullName}}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="custom_field">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> {{customField}} </th>
+                </ng-container>
+                <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+                  <span class="c-blue font-weight-bold">{{element.additional_field && element.additional_field[customField]}}</span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+              <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS;sticky: true" class=""></tr>
+              <tr mat-row *matRowDef="let row; columns: DISPLAY_COLUMNS"></tr>
+            </table>
+          </div>
+          <ng-container *ngIf="(storeService.pageContacts$ | async).length; else emptyListTemplate">
+            <div class="v-center my-2 mode-1">
+              <div class="pagination-wrapper p-2">
+                <pagination-controls (pageChange)="changePage($event)" (pageBoundsCorrection)="pageChanged($event)" id="contactPages"
+                  maxSize="5" previousLabel="" nextLabel="">
+                </pagination-controls>
+              </div>
+              <div class="shadow-dropdown ml-auto page-size-control" ngbDropdown placement="top-right">
+                <div class="v-center c-pointer f-3 p-1 font-weight-bold" ngbDropdownToggle>
+                  <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+                </div>
+                <div ngbDropdownMenu aria-labelledby="contactPageSize">
+                  <div class="py-2" ngbDropdownItem *ngFor="let type of PAGE_COUNTS" (click)="changePageSize(type)">
+                    <span class="f-3 v-center" [class.font-weight-bold]="type.id === pageSize.id">
+                      Show {{type.label}} rows per page
+                      <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === pageSize.id"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #emptyListTemplate>
+            <ng-container [ngSwitch]="(contactService.loading$ | async)">
+              <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+                <div class="object-icon v-center">
+                  <i class="i-icon i-lunch d-block bgc-dark"></i>
+                </div>
+                <h4 class="fw-600 mt-3 mb-3" style='font-size:12px'>
+                  There is no contact in your account.
+                </h4>
+                <a class="btn btn-primary" (click)="createContact()">
+                  <span class="font-weight-bold f-3">Create contact</span>
+                </a>
+              </div>
+              <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+                <div class="loader mt-2"></div>
+                <h6 class="fw-600 mt-2">Loading contacts...</h6>
+              </div>
+            </ng-container>
+          </ng-template>
+        </div>
+        <div class="custom-mat-table d-flex flex-column" *ngIf='!(storeService.pageContacts$ | async).length'>
+          <ng-container [ngSwitch]="(contactService.loading$ | async)">
+            <div class="empty-list mt-5" *ngSwitchCase="STATUS.SUCCESS">
+              <div class="object-icon v-center">
+                <i class="i-icon i-lunch d-block bgc-dark"></i>
+              </div>
+              <h4 class="fw-600 mt-3 mb-3" style='font-size:12px'>
+                There is no contact with this custom field.
+              </h4>
+            </div>
+            <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+              <div class="loader mt-2"></div>
+              <h6 class="fw-600 mt-2">Loading contacts...</h6>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </mat-drawer>
+  </mat-drawer-container>

@@ -1,0 +1,31 @@
+<h1 mat-dialog-title>Profile permission</h1>
+<mat-dialog-content class="mt-3">
+    <div class="v-center">
+        <div class="custom-control custom-checkbox">
+            <input
+                type="checkbox"
+                class="custom-control-input"
+                id="setting1"
+                name="loginSetting"
+                [(ngModel)]="setting1"
+            />
+            <label class="custom-control-label f-6 field-name" for="setting1">Disable sub account login</label>
+        </div>
+    </div>
+    <div class="v-center mt-3">
+        <div class="custom-control custom-checkbox">
+            <input
+                type="checkbox"
+                class="custom-control-input"
+                id="setting2" 
+                name="accountSetting"
+                [(ngModel)]="setting2"
+            />
+            <label class="custom-control-label f-6 field-name" for="setting2">Disable go to Master/Root account</label>
+        </div>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions class="mt-3" align="end">
+    <button type="button" mat-dialog-close class="btn c-blue">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="settingAccount()" [class.loading]="saving">Save</button>
+</mat-dialog-actions>

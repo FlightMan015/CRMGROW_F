@@ -1,0 +1,67 @@
+<div class="page-content p-0">
+  <div class="form-group mt-3">
+    <div class="f-3 font-weight-bold">Landing page default theme</div>
+    <div class="f-1 op-64 mt-2">
+      The theme you select below will be your default theme for all materials and content, including any live video created with crmgrow.
+    </div>
+    <div class="v-center mt-3">
+        <button class="btn border border-primary f-6 font-weight-bold c-blue btn-sm py-2" *ngIf="!selectedTheme" (click)="editDefaultTheme()">
+            Set the theme
+        </button>
+    </div>
+    <div class="v-center" *ngIf="selectedTheme">
+        <div class="theme-wrapper mt-1 mb-2">
+            <img src="{{selectedTheme.thumbnail}}" class="w-100 theme-thumb" />
+            <div class="f-1 text-center text-c-dark pt-3 theme-name">{{selectedTheme.name}}</div>
+        </div>
+        <button class="btn btn-primary f-3 ml-3" (click)="editDefaultTheme()">Change theme</button>
+    </div>
+  </div>
+
+  <div class="asset-item mt-3">
+    <div class="f-3 font-weight-bold">Highlights (Used in Highlight Landing Page)</div>
+    <div class="f-1 op-64 mt-2 mb-2">
+      Add highlight images to support your content selected when using the Highlight Landing Page.
+    </div>
+    <div cdkDropList class="highlights"
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="highlightMoved($event)"
+      >
+      <div class="highlight img-comp"
+        [cdkDragData]="highlight"
+        cdkDrag
+        *ngFor="let highlight of garbage.highlights; let i = index;">
+        <img src="{{highlight}}" />
+        <div class="remove-link" (click)="removeHighlight(i)"></div>
+        <img *cdkDragPreview [src]="highlight">
+      </div>
+      <div class="highlight placeholder img-comp" (click)="pickHighlights()">
+        <div class="plus">+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="asset-item mt-3" *ngIf="isExpUser">
+    <div class="f-3 font-weight-bold">Related Brands</div>
+    <div class="f-1 op-64 mt-2 mb-2">
+      Select the related brand images from your assets.<br>
+      These brand images will be displayed in the landing page Theme 1 (eXp Realty Theme 1).
+    </div>
+    <div cdkDropList class="brands"
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="brandMoved($event)"
+      >
+      <div class="brand img-comp"
+        [cdkDragData]="brand"
+        cdkDrag
+        *ngFor="let brand of garbage.brands; let i = index;">
+        <img src="{{brand}}" />
+        <div class="remove-link" (click)="removeBrand(i)"></div>
+        <img *cdkDragPreview [src]="brand">
+      </div>
+      <div class="brand placeholder img-comp" (click)="pickBrands()">
+        <div class="plus">+</div>
+      </div>
+    </div>
+  </div> -->
+</div>

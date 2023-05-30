@@ -1,0 +1,77 @@
+<div mat-dialog-title class="mb-0">
+    <div class="alert-header">
+        <div class="v-center justify-content-between release-dialog-modal">
+            <div class="v-center">
+                <h4 class="font-weight-bold pb-1 mb-0">Welcome, {{user.user_name}}!</h4>
+            </div>
+            <div class="v-center" *ngIf="type !== 'signup'">
+                <button class="v-center border-0 bgc-trans" (click)="close()">
+                    <i class="d-block i-icon i-close bgc-white na-close"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<mat-dialog-content class="pt-4">
+    <div class="company-card border-0">
+        <div class="company-card-header">
+            <div class="v-center justify-content-end user-info">
+                <div class="v-center justify-content-between step-group">
+                    <div class="step" [class.active]="step === 1"></div>
+                    <div class="step" [class.active]="step === 2"></div>
+                </div>
+            </div>
+            <div class="f-3 fw-600">
+                Answering these questions will help us personalize your experience.
+            </div>
+        </div>
+        <div class="company-card-body p-3">
+            <ng-container *ngIf="step === 1">
+                <div class="f-3 fw-600 c-blue">
+                    What's your job title?
+                </div>
+                <div class="company-list mt-3">
+                    <span class="f-3 font-weigth-bold text-center text-white c-pointer company" (click)="setJob('realtor')">
+                        Realtor
+                    </span>
+                    <span class="f-3 font-weigth-bold text-center text-white c-pointer company" (click)="focus('job')" *ngIf="!is_focus">
+                        Other
+                    </span>
+                    <div class="form-group position-relative c-pointer" *ngIf="is_focus">
+                        <input type="text" class="form-control" [(ngModel)]="otherCompany" #jobField>
+                        <span class="v-center return-btn c-grey" (click)="blur('job')">
+                            done <i class="d-block i-icon i-return bgc-grey ml-1"></i>
+                        </span>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="step === 2">
+                <div class="f-3 fw-600 c-blue">
+                    What company do you practice real estate with?
+                </div>
+                <div class="company-list mt-3">
+                    <ng-container *ngFor="let company of companies">
+                        <span class="f-3 font-weigth-bold text-center text-white c-pointer company"
+                            *ngIf="company.type !== 'other'; else other" (click)="setCompany(company.label)">
+                            {{company.label}}
+                        </span>
+                        <ng-template #other>
+                            <span class="f-3 font-weigth-bold text-center text-white c-pointer company" (click)="focus('company')" *ngIf="!is_focus">
+                                {{company.label}}
+                            </span>
+                            <div class="form-group position-relative c-pointer" *ngIf="is_focus">
+                                <input type="text" class="form-control" [(ngModel)]="otherCompany" #companyField>
+                                <span class="v-center return-btn c-grey" (click)="blur('company')">
+                                    done <i class="d-block i-icon i-return bgc-grey ml-1"></i>
+                                </span>
+                            </div>
+                        </ng-template>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</mat-dialog-content>
+<!-- <mat-dialog-actions>
+    <button class="btn btn-primary f-6 px-5 mx-auto font-weight-normal" (click)="save()" [class.loading]="closing">Got it!</button>
+</mat-dialog-actions> -->

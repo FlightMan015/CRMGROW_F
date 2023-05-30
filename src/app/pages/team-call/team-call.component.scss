@@ -1,0 +1,291 @@
+@import "src/variables";
+
+.sub-page-header {
+  z-index: 3;
+}
+
+.table {
+  th, td {
+    padding: 10px 0px;
+  }
+
+  tbody tr {
+    height: 50px;
+  }
+}
+
+th {
+  height: 45px;
+  color: rgba(0, 0, 0, .54);
+  padding-left: 10px;
+
+  .head-sort {
+    span {
+      line-height: 1;
+    }
+
+    i {
+      width: 8px;
+      height: 12px;
+      min-width: 8px;
+    }
+  }
+}
+
+.group-call-container {
+  .table {
+
+    tbody tr {
+      height: 90px;
+      border-bottom-width: 1px;
+      border-bottom-color: $color-trans08;
+      border-bottom-style: solid;
+    }
+  }
+}
+
+.team-actions {
+  text-align: right;
+  width: 100px;
+  opacity: 0;
+
+  .button-more {
+    a {
+      &::after {
+        content: none;
+      }
+    }
+  }
+}
+
+tr:hover {
+  .team-actions {
+    opacity: 1;
+  }
+}
+
+.group-call-container {
+  .call-request-table {
+    .guests {
+      text-align: right;
+      padding-right: 30px;
+    }
+    td {
+      cursor: pointer;
+    }
+
+    &.loading {
+      filter: blur(1px);
+    }
+  }
+
+  @media screen and (max-width: 576px) {
+    .call-request-table {
+      .subject {
+        max-width: 120px;
+        overflow: hidden;
+      }
+      .avatar {
+        display: none;
+      }
+
+      .name-avatar {
+        display: none;
+      }
+
+      .guests {
+        display: none;
+      }
+
+      .organizer {
+        display: none;
+      }
+    }
+
+    .scheduled-call-table {
+      .leader {
+        display: none;
+      }
+    }
+
+    .completed-call-table {
+      .leader {
+        display: none;
+      }
+    }
+  }
+
+  .subscribe-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+
+    &.like {
+      background-color: #04b800;
+    }
+
+    &.unlike {
+      background-color: #d92121;
+      transform: rotate(180deg);
+    }
+  }
+
+  .status {
+    color: #FFFFFF;
+    width: 64px;
+    text-align: center;
+    font-size: 10px;
+    cursor: pointer;
+    padding: 0;
+
+    .pending {
+      background-color: #0000FF;
+      border-radius: 5px;
+      padding: 3px 5px;
+    }
+
+    .canceled {
+      background-color: #d92121;
+      border-radius: 5px;
+      padding: 3px 5px;
+    }
+
+    .planned {
+      background-color: #f28422;
+      border-radius: 5px;
+      padding: 3px 5px;
+    }
+
+    .finished {
+      background-color: #04b800;
+      border-radius: 5px;
+      padding: 3px 5px;
+    }
+  }
+  .pagination-wrapper {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    bottom: 8px;
+  }
+
+  // :host ::ng-deep {
+  //   .pagination-wrapper {
+  //     pagination-controls {
+  //       background: #f8f8f8;
+  //       padding: 3px 5px;
+  //       border: 1px solid gainsboro;
+  //       border-radius: 5px;
+  //     }
+  //   }
+  // }
+}
+
+:host ::ng-deep {
+  mat-expansion-panel {
+    overflow: visible;
+
+    mat-expansion-panel-header,
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+  }
+
+  .dropdown-menu {
+    border-radius: 8px;
+  }
+}
+
+
+.sub-sidebar {
+  .selected {
+    color: $color-blue;
+    font-weight: 700!important;
+    .c-dark {
+      color: $color-blue!important;
+    }
+  }
+}
+
+.search-form {
+  margin-left: 36px;
+
+  input.disabled {
+    pointer-events: none;
+    background-color: #f8f8f8;
+  }
+}
+
+.btn-decline.loading {
+  background-color: #E02020;
+}
+
+.btn-accept-outline.loading {
+  background-color: #04B800;
+}
+
+.sub-sidebar-mobile {
+  display: none;
+  .sidebar-menu {
+      border: 2px solid #c6c7cf;
+      border-radius: 3px;
+      .dropdown-toggle {
+          &::after {
+              margin-left: 0.5rem;
+              color: $color-blue;
+          }
+      }
+      .dropdown-menu.show {
+          top: 8px !important;
+          left: -8px !important;
+          width: 100%;
+      }
+  }
+  @media screen and (max-width: 576px) {
+      display: block;
+  }
+}
+.sub-sidebar.desktop {
+  @media screen and (max-width: 576px) {
+    display: none;
+  }
+}
+
+.sub-container {
+  flex-grow: 1;
+  padding-left: 36px;
+
+  .updating-status {
+    top: 20px;
+    z-index: 4;
+  }
+
+  @media screen and (max-width: 576px) {
+    padding-left: 0px;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .organizer .member-name {
+    display: none;
+  }
+  .leader .member-name {
+    display: none;
+  }
+  .call-status {
+    display: none;
+  }
+}
+
+.has-sticky-header {
+  thead tr:first-child th {
+    top: 112px;
+    height: 45px;
+  }
+}
+
+.sub-sidebar.desktop ul {
+  position: sticky;
+  top: 120px;
+}

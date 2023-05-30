@@ -1,0 +1,22 @@
+<div class="watch-tracker">
+  <div class="from-to">
+    <ng-container *ngIf="type == 'video_trackers' || type == 'videos'; else pdfTrack">
+      From {{start * 1000 | timeDuration}} to {{end * 1000 | timeDuration}}
+    </ng-container>
+    <ng-template #pdfTrack>
+      {{read_pages}}
+      <ng-container *ngIf="total_pages !== 0">
+        of {{total_pages+1}}
+      </ng-container>
+      pages
+    </ng-template>
+  </div>
+  <div class="tracker-timeline" *ngIf="type == 'video_trackers' || type == 'videos'">
+    <canvas width="300" height="4" #canvas></canvas>
+    <div class="start d-none" #startBar></div>
+    <div class="end d-none" #endBar></div>
+  </div>
+  <div class="completion" *ngIf="type == 'video_trackers' || type == 'videos'">
+    {{completion}}% completion
+  </div>
+</div>

@@ -1,0 +1,385 @@
+<div class="page-content">
+  <!-- <div class="v-center" *ngIf="!loading && !user.onboard.created_contact">
+    <img src="../../../assets/img/onboarding/contact.svg">
+    <div class="ml-3">
+      <div class="f-6 font-weight-bold">Create your first contact</div>
+      <div class="f-4 font-weight-bold mt-2">Add a test contact with your own email and phone number to understand how crmgrow works</div>
+    </div>
+  </div> -->
+  <div class="status-header v-center mt-3">
+    <h1 class="page-title">
+      Contacts
+      <!-- <span *ngIf="searchStr || !searchOption.isEmpty()" class="op-56"> / Found {{(storeService.pageContacts$ | async).length}} contacts</span>
+      <span *ngIf="selection.length" class="op-56"> / Selected {{selection.length}} contacts</span> -->
+    </h1>
+    <div class="f-6 font-weight-bold op-64 contact-count mobile">
+      {{contactService.total$ | async}} contacts
+    </div>
+    <div class="ml-auto v-center create-actions">
+      <button class="v-center btn btn-blue f-6 font-weight-bold text-white rounded shadow mr-2 px-3" (click)="createContact()">
+        <span class="normal">New Contact</span>
+        <span class="mobile">New Contact</span>
+      </button>
+      <button class="btn btn-white border border-primary f-6 font-weight-bold rounded px-3" (click)="importContacts()">
+        Import
+      </button>
+    </div>
+  </div>
+  <div class="f-6 font-weight-bold op-64 mb-2 contact-count desktop">
+    {{contactService.total$ | async}} contacts
+  </div>
+  <div class="v-center contact-list-controls">
+    <div class="form-group mb-0 search-form">
+      <div class="input-group-prepend">
+        <i class="i-icon i-search d-block bgc-dark"></i>
+      </div>
+      <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+        [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()">
+      <ng-container *ngIf="searchStr">
+        <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+          <i class="i-icon i-close d-block bgc-dark"></i>
+        </div>
+      </ng-container>
+    </div>
+    <div class="ml-auto" ngbDropdown placement="bottom-right">
+      <div class="v-center c-pointer f-3 p-3 mr-2 font-weight-bold" ngbDropdownToggle>
+        <span class="pr-2">{{sortType.label == 'Alphabetical A-Z' ? 'Sort by' : sortType.label}}</span>
+      </div>
+      <div ngbDropdownMenu aria-labelledby="taskSortTypes">
+        <div class="py-2" ngbDropdownItem *ngFor="let type of SORT_TYPES" (click)="changeSort(type)">
+          <span class="f-3 v-center" [class.font-weight-bold]="type.id === sortType.id">
+            {{type.label}}
+            <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === sortType.id"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="border-left pl-3 pr-0 py-1 text-center ml-3 mr-2">
+      <a class="ml-3 f-3 font-weight-bold c-dark td-none c-pointer v-center" (click)="drawer.toggle()">
+        <span>Filter</span>
+        <img class="ml-1" src="../../../assets/img/filter.svg" alt="filter-icon" style="width: 23px;" />
+        <span *ngIf="!searchOption.isEmpty()" class="badge badge-primary ml-2 f-1">{{searchOption.getActiveOptions()}}</span>
+      </a>
+    </div>
+  </div>
+  <!-- <ng-container *ngIf="!isPurchasedDialer">
+    <div class="dialer-discover v-center ng-star-inserted border rounded px-4 py-3 mt-2 mb-2">
+      <div class="mr-4">
+        <i class="i-icon i-phone_logs bgc-blue d-block" style="width: 36px; height: 36px;"></i>
+      </div>
+      <div class="">
+        <div class="c-blue f-2 font-weight-bold">NEW</div>
+        <div class="f-4 font-weight-bold">Power Dialer</div>
+        <span class="f-1 d-block mt-1 op-75">Connect with more people in less time <br/>Call up to 3 numbers at the same time.</span>
+      </div>
+      <button class="btn border border-primary rounded font-weight-bold c-blue ml-auto" (click)="purchaseDialer()">
+        Learn More
+      </button>
+    </div>
+  </ng-container> -->
+  <div class="custom-mat-table position-relative">
+    <div class="mat-table-wrapper" [class.empty]="!(storeService.pageContacts$ | async).length">
+      <table class="w-100 page-table" mat-table
+        [dataSource]="storeService.pageContacts$ | async | paginate: {id: 'contactPages', itemsPerPage: pageSize.id, currentPage: page, totalItems: contactService.total$ | async}">
+
+        <ng-container matColumnDef="loader-cell">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="loader-cell">
+            <div class="updating-status"
+              *ngIf="(storeService.pageContacts$ | async).length && (contactService.loading$ | async) === STATUS.REQUEST">
+              LOADING
+            </div>
+          </th>
+        </ng-container>
+
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="pl-2">
+            <div class="custom-control custom-checkbox" [class.indeterminate]="pageSelection.length && !isAllSelected()">
+              <input type="checkbox" class="custom-control-input" id="selectAllContacts" (change)="$event ? masterToggle() : null"
+                [checked]="(storeService.pageContacts$ | async).length && isAllSelected()" />
+              <label class="custom-control-label" for="selectAllContacts"></label>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="pl-2">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="contact-{{element._id}}" (change)="toggle(element)"
+                [checked]="isSelected(element)" />
+              <label class="custom-control-label" for="contact-{{element._id}}"></label>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="contact_name">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length; else toolHeader"> contact name </th>
+            <ng-template #toolHeader>
+              <th mat-header-cell [colSpan]="9">
+                <div class="v-center">
+                  <span class="c-dark f-3 text-lowercase font-weight-bold">{{selection.length}} selected</span>
+                  <app-actions-header [actions]="ACTIONS" (doCommand)="doAction($event)" [disableActions]="disableActions">
+                  </app-actions-header>
+                </div>
+              </th>
+            </ng-template>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <div class="v-center c-pointer">
+              <div class="contact-avatar f-3 mr-2">
+                {{element.avatarName}}
+                <ng-container *ngIf="element.shared_members && element.shared_members.length">
+                  <ng-container *ngIf="userId && userId !== element.user && userId !== element.user[0]; else sharedBy">
+                    <span class="shared-with">
+                      <i class="i-icon i-shared-with d-block bgc-green"></i>
+                    </span>
+                  </ng-container>
+                  <ng-template #sharedBy>
+                    <span class="shared-by">
+                      <i class="i-icon i-shared-by d-block bgc-red"></i>
+                    </span>
+                  </ng-template>
+                </ng-container>
+              </div>
+              <span class="fw-600">{{element.fullName}}</span>
+            </div>
+          </td>
+        </ng-container>
+
+
+        <!-- Shared With Column -->
+        <ng-container matColumnDef="shared_with">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="shared-col" *ngIf="!selection.length">Shared with</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="shared-col">
+
+            <div class="shared-member-contact d-flex c-pointer" ngbDropdown *ngIf="getSharedMembers(element).length > 0">
+              <div class="contacts v-center" ngbDropdownToggle>
+                <div class="v-center">
+                  <div class="form-avatar sm rounded-circle">
+                    <img *ngIf="getSharedMembers(element)[0].picture_profile" [src]="getSharedMembers(element)[0].picture_profile" />
+                    <div *ngIf="!getSharedMembers(element)[0].picture_profile" class="bg-dark">
+                      {{userAvatarName(getSharedMembers(element)[0].user_name)}}</div>
+                  </div>
+                  <div class="info ml-2">
+                    <div class="f-2 font-weight-bold">{{getSharedMembers(element)[0].user_name}}</div>
+                  </div>
+                </div>
+                <div class="v-center ml-2">
+                  <span class="f-4" *ngIf="getSharedMembers(element).length > 1">+{{getSharedMembers(element).length - 1}}</span>
+                </div>
+              </div>
+              <div ngbDropdownMenu class="contact-list light px-2">
+                <ng-container *ngFor="let sharedContact of getSharedMembers(element)">
+                  <div class="v-center py-1 c-dark c-default">
+                    <div class="form-avatar sm rounded-circle">
+                      <img *ngIf="sharedContact.picture_profile" [src]="sharedContact.picture_profile" />
+                      <div *ngIf="!sharedContact.picture_profile" class="bg-dark">
+                        {{userAvatarName(sharedContact.user_name)}}</div>
+                    </div>
+                    <div class="info ml-2">
+                      <div class="f-2 font-weight-bold">{{sharedContact.user_name}}</div>
+                      <div class="f-2">{{sharedContact.email}}</div>
+                      <div class="f-2">{{sharedContact.cell_phone}}</div>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Country Column -->
+        <ng-container matColumnDef="contact_address">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="address-col" *ngIf="!selection.length">address</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" class="address-col">
+            <a class="c-pointer undecoration c-dark d-block" [routerLink]="['/contacts/' + element._id]">
+              <span class="c-dark">{{element.shortAddress}}</span>
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Label Column -->
+        <ng-container matColumnDef="contact_label">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length">label</th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <ng-container *ngIf="element.shared_members && element.shared_members.length; else mineContacts">
+              <ng-container *ngIf="userId && userId !== element.user && userId !== element.user[0]; else sharedByContacts">
+                <app-label-select [value]="element.label" (valueChange)="updateLabel($event, element._id)" [user]="element.user[0]">
+                </app-label-select>
+              </ng-container>
+              <ng-template #sharedByContacts>
+                <app-label-select [value]="element.label" (valueChange)="updateLabel($event, element._id)"></app-label-select>
+              </ng-template>
+            </ng-container>
+            <ng-template #mineContacts>
+              <app-label-select [value]="element.label" (valueChange)="updateLabel($event, element._id)"></app-label-select>
+            </ng-template>
+
+          </td>
+        </ng-container>
+
+
+
+        <!-- Activity Column -->
+        <ng-container matColumnDef="activity">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> last activity </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <div class="v-center">
+              <i class="act-icon normal {{'act-'+element.last_activity?.type}} d-block mr-2"></i>
+              <span>{{element.last_activity?.content}}</span>
+            </div>
+            <!-- <span>{{element.last_activity?.created_at}}</span> -->
+          </td>
+        </ng-container>
+
+        <!-- Activity Added Column -->
+        <ng-container matColumnDef="activity_added">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> contact added </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <div class="v-center">
+              <span>{{element.last_activity?.created_at | date : 'hh:mm a, dd MMM'}}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Stage Column -->
+        <ng-container matColumnDef="contact_stages">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> stages </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <span class="tag rounded mr-1" *ngIf="stageContacts[element._id] && stageContacts[element._id].length">
+              {{stageContacts[element._id][0]}}
+            </span>
+            <span class="f-2 op-56"
+              *ngIf="stageContacts[element._id] && stageContacts[element._id].length > 1">+{{stageContacts[element._id].length - 1}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Tags Column -->
+        <ng-container matColumnDef="contact_tags">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="px-md-3 px-sm-2" *ngIf="!selection.length"> tags </th>
+          </ng-container>
+          <td mat-cell class="px-md-3 px-sm-2" *matCellDef="let element" (click)="openContact(element)">
+            <span class="tag rounded mr-2" *ngIf="element.tags.length">{{element.tags[0]}}</span>
+            <span class="f-2 op-56">{{element.moreTag}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Email Column -->
+        <ng-container matColumnDef="contact_email">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> email address </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <span class="">{{element.email}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Phone Column -->
+        <ng-container matColumnDef="contact_phone">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell *ngIf="!selection.length"> phone number </th>
+          </ng-container>
+          <td mat-cell *matCellDef="let element" (click)="openContact(element)">
+            <span class="c-blue font-weight-bold">{{element.cell_phone | phone_format}}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="selection_info">
+          <th mat-header-cell *matHeaderCellDef colspan="9" class="text-center">
+            <span *ngIf="selection.length !== (contactService.total$ | async); else deselectTemplate">
+              {{selection.length}} contacts are selected.
+              <span class="c-blue font-weight-bold" *ngIf="selecting && selectSource === 'page'">
+                <i class="small-spinner"></i>
+                <span class="ml-1">Selecting all. . .</span>
+              </span>
+              <span class="c-blue font-weight-bold c-pointer" *ngIf="!selecting" (click)="selectAll()">
+                Select all {{contactService.total$ | async}} contacts
+              </span>
+            </span>
+            <ng-template #deselectTemplate>
+              All {{contactService.total$ | async}} contacts are selected. <span class="c-blue c-pointer font-weight-bold"
+                (click)="deselectAll()">Clear selection</span>
+            </ng-template>
+          </th>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS" [class.selected]="selection.length" class="table-header"></tr>
+        <tr mat-header-row *matHeaderRowDef="['selection_info']" [class.d-none]="!selection.length" class='selection-info'></tr>
+        <tr mat-row *matRowDef="let row; columns: DISPLAY_COLUMNS;"></tr>
+
+      </table>
+    </div>
+    <ng-container *ngIf="(storeService.pageContacts$ | async).length; else emptyListTemplate">
+      <!-- <div class="updating-status"
+        *ngIf="(contactService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div> -->
+      <div class="my-2 table-control mode-1">
+        <div class="pagination-wrapper m-auto">
+          <pagination-controls (pageChange)="changePage($event)" (pageBoundsCorrection)="pageChanged($event)" id="contactPages" maxSize="5"
+            previousLabel="" nextLabel="">
+          </pagination-controls>
+        </div>
+        <div class="shadow-dropdown ml-auto page-size-control" ngbDropdown placement="top-right">
+          <div class="v-center c-pointer f-3 p-3 font-weight-bold" ngbDropdownToggle>
+            <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+          </div>
+          <div ngbDropdownMenu aria-labelledby="contactPageSize">
+            <div class="py-2" ngbDropdownItem *ngFor="let type of PAGE_COUNTS" (click)="changePageSize(type)">
+              <span class="f-3 v-center" [class.font-weight-bold]="type.id === pageSize.id">
+                Show {{type.label}} rows per page
+                <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === pageSize.id"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #emptyListTemplate>
+      <ng-container [ngSwitch]="(contactService.loading$ | async)">
+        <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-lunch d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-3 mb-3">
+            There is no contact
+            <ng-container *ngIf="searchOption.isEmpty(); else searchConditionTemplate">
+              <span> in your account.</span>
+            </ng-container>
+            <ng-template #searchConditionTemplate>
+              <span> to match your filter conditions.</span>
+            </ng-template>
+          </h4>
+          <a class="btn btn-primary" (click)="createContact()">
+            <span class="font-weight-bold f-3">Create contact</span>
+          </a>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading contacts...</h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>
+
+<!-- <app-actions-bar [actions]="ACTIONS" [isActive]="selection.length + pageSelection.length" (doCommand)="doAction($event)"></app-actions-bar> -->
+
+<mat-drawer-container [hasBackdrop]="true">
+  <mat-drawer #drawer position="end" (openedChange)="setPanelType($event)">
+    <app-advanced-filter [hidden]="panelType" (onClose)="drawer.close()" #filterPanel></app-advanced-filter>
+    <app-contact-bulk [hidden]="panelType !== 'editor'" (onClose)="drawer.close()" [contacts]="selection" #editPanel></app-contact-bulk>
+  </mat-drawer>
+</mat-drawer-container>

@@ -1,0 +1,53 @@
+<h1 mat-dialog-title>
+    Edit your video
+</h1>
+<form #materialForm="ngForm" (ngSubmit)="submitted = true; materialForm.form.valid ? save() : false;" [class.was-validateed]="submitted">
+    <mat-dialog-content>
+        <div class="row mx-0 mt-2">
+            <div class="col-12 mb-2 rounded bgc-pale px-0">
+                <div class="thumbnail-wrapper">
+                    <div class="loader lg" *ngIf="loading"></div>   
+                    <img class="thumbnail" src="{{video.thumbnail}}" />
+                    <div class="v-center justify-content-center bgc-blue c-pointer edit-thumbnail" (click)="openPreviewDialog()">
+                        <i class="d-block i-icon sm i-edit bgc-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mx-0">
+            <div class="col-12 px-0">
+                <div class="form-group mt-2">
+                <label>Title</label>
+                <input class="form-control"
+                    type="text"
+                    placeholder="Video Title"
+                    name="title"
+                    #title="ngModel"
+                    [(ngModel)]="video.title"
+                    required>
+                <span class="invalid-feedback" *ngIf="title.errors && ( title.touched || title.dirty || submitted ) && submitted">
+                    Video title is required
+                </span>
+                </div>
+            </div>
+        </div>
+        <div class="row mx-0">
+            <div class="col-12 px-0">
+                <div class="form-group">
+                    <label>Description</label>
+                    <app-html-editor
+                        [(value)]="video.description"
+                        placeholder="Video Description"
+                        [style]="{height: '150px'}"
+                        #emailEditor
+                    >
+                    </app-html-editor>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button class="btn btn-white f-6 font-weight-bold mr-2" mat-dialog-close>Cancel</button>
+        <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving" [disabled]="thumbnailLoading">Update</button>
+    </mat-dialog-actions>
+</form>

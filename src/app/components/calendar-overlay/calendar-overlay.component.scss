@@ -1,0 +1,59 @@
+.calendar-overlay {
+    height: 100%;
+}
+form {
+    width: 100%;
+    max-width: 550px;
+    overflow: hidden;
+    height: 100%;
+    background: white;
+    box-shadow: -8px 0 24px -5px rgba(16,19,54,0.24);
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    position: relative;
+    .header {
+        height: 32px;
+        background: #f1f3f4;
+        position: absolute;
+        top: 0px;
+        width: 100%;
+    }
+    .body {
+        padding: 1rem 2rem 0rem 2rem;
+        flex-grow: 1;
+        margin-top: 2rem;
+        margin-bottom: 3.5rem;
+        overflow: auto;
+    }
+    .overlay-footer {
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        background: white;
+        padding-right: 1.25rem;
+    }
+}
+.form-group {
+    .input-group-text {
+        border: none;
+    }
+}
+.date-time {
+    .input-group {
+        flex-wrap: nowrap;
+        .dropdown {
+            input {
+                border-top-left-radius: unset;
+                border-bottom-left-radius: unset;
+            }
+        }
+    }
+}
+.btn {
+    height: 40px;
+}
+.date-picker {
+    padding: 1rem;
+}

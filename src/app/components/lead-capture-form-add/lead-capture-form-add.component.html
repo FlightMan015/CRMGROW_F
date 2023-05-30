@@ -1,0 +1,152 @@
+<div class="v-center justify-content-between">
+    <h1 class="m-0" mat-dialog-title *ngIf="type == 'create'; else editCustomField">
+        Add form
+    </h1>
+    <ng-template #editCustomField>
+        <h1 class="m-0" mat-dialog-title>
+            Edit form
+        </h1>
+    </ng-template>
+    <i class="d-block i-icon i-close bgc-dark" mat-dialog-close></i>
+</div>
+<form
+    #actionForm="ngForm"
+    (ngSubmit)="submitted = true; actionForm.form.valid ? addForm() : false"
+    [class.was-validated]="submitted"
+>
+    <mat-dialog-content>
+        <div class="row">
+            <div class="col-12 col-sm-8 form-group">
+                <h6 class="f-3 font-weight-bold mb-1">Name</h6>
+                <input
+                    class="form-control"
+                    type="text"
+                    placeholder="Type in name of your form"
+                    name="field_name"
+                    #field_name="ngModel"
+                    id="name"
+                    [(ngModel)]="name"
+                    required
+                />
+                <span
+                    class="invalid-feedback"
+                    *ngIf="field_name.errors && (field_name.touched || field_name.dirty || submitted) && submitted"
+                >
+                    Field name is required
+                </span>
+            </div>
+            <div class="col-12 col-sm-4 form-group delay">
+                <h6 class="v-center f-3 font-weight-bold mb-1">
+                    Delay time
+                    <i class="i-icon bgc-dark i-claim sm d-block ml-1"
+                        ngbTooltip="How much time do you want to pass before lead capture pops up?"
+                        placement="bottom"
+                    >
+                    </i>
+                </h6>
+                <select class="form-control c-blue f-5"
+                        [(ngModel)]="capture_delay"
+                        name="delay" id="delay"
+                        required #delay="ngModel"
+                >
+                    <option *ngFor="let time of times" value="{{time.id}}">
+                      {{time.text}}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <h6 class="f-3 font-weight-bold mb-1">Required fields</h6>
+            <div class="v-center required-field mb-2">
+                <div class="f-3 field-name">Field Name</div>
+                <div class="f-3 field-match">Contact Field</div>
+                <div class="f-3 field-required ml-auto">Required</div>
+                <div class="f-3 field-action"></div>
+            </div>
+            <div class="v-center required-field mb-2" *ngFor="let field of fields">
+                <div class="f-3 field-name">{{field.name}}</div>
+                <div class="f-3 field-match">{{field.match_field ? field.match_field : ''}}</div>
+                <div class="custom-control custom-checkbox field-required ml-auto">
+                    <input
+                        type="checkbox"
+                        class="custom-control-input"
+                        id="{{field.name}}-required"
+                        [checked]="field.required"
+                        (change)="requiredStatusChange($event, field.name)"
+                    />
+                    <label class="custom-control-label" for="{{field.name}}-required"></label>
+                </div>
+                <div class="v-center field-action">
+                    <i class="d-block i-icon i-edit bgc-blue c-pointer ml-2"
+                        *ngIf="field.name !== 'Name' && field.name !== 'Email' && field.name !== 'Phone'"
+                        (click)="editField(field)">
+                    </i>
+                    <i class="d-block i-icon i-trash bgc-red c-pointer ml-2"
+                        *ngIf="field.name !== 'Name' && field.name !== 'Email' && field.name !== 'Phone'"
+                        (click)="deleteField(field)">
+                    </i>
+                </div>
+            </div>
+            <button class="v-center justify-content-center btn btn-white border border-primary f-3 font-weight-bold w-100 mt-3 add-button" (click)="addField()" type="button">
+                <i class="i-icon i-plus bgc-blue d-block mr-2"></i>
+                Add field
+            </button>
+        </div>
+        <div class="form-group">
+            <h6 class="f-3 font-weight-bold mb-1">Tags</h6>
+            <app-input-tag [selectedTags]="tags"></app-input-tag>
+        </div>
+        <div class="form-group" *ngIf="type == 'create'; else editAutomation">
+            <h6 class="f-3 font-weight-bold mb-1">Automation</h6>
+            <app-input-automation [type]="'contact'" (automationChange)="selectAutomation($event)"></app-input-automation>
+        </div>
+        <ng-template #editAutomation>
+            <div class="form-group">
+                <h6 class="f-3 font-weight-bold mb-1">Automation</h6>
+                <div class="v-center">
+                    <app-input-automation class="w-100" [type]="'contact'" [automation]="selectedAutomation" (automationChange)="selectAutomation($event)"></app-input-automation>
+                </div>
+            </div>
+        </ng-template>
+        <div class="form-group m-0">
+            <div class="f-3 font-weight-bold">Lead capture video</div>
+            <div class="f-1 op-64 mt-2">
+                Add a quick video to entice people to fill out their lead capture information.<br>
+                This will show above the lead capture fields.
+            </div>
+            <div class="v-center mt-3">
+                <button class="btn border border-primary f-6 font-weight-bold c-blue btn-sm py-2" type="button" *ngIf="!intro_video" (click)="browseVideo()" [class.loading]="videoUploader.isUploading">
+                    Upload Video
+                </button>
+            </div>
+            <div class="v-center" *ngIf="intro_video">
+                <div class="video-wrapper mt-1 mb-2">
+                    <video #introVideo>
+                        <source [src]="intro_video">
+                    </video>
+                    <div class="play-button" (click)="toggleVideo()"><mat-icon>{{introVideoPlaying ? 'pause' : 'play_arrow'}}</mat-icon></div>
+                </div>
+                <div class="video-action ml-3">
+                    <div class="f-3 font-weight-bold">
+                        Your uploaded video
+                    </div>
+                    <div class="f-3 mt-1" *ngIf="!videoUploader.isUploading; else uploadingTemplate;">
+                        <a class="font-weight-bold c-red c-pointer" (click)="removeVideo()">Remove</a>
+                            or
+                        <a class="font-weight-bold c-blue c-pointer" (click)="browseVideo()">reupload</a>
+                    </div>
+                    <ng-template #uploadingTemplate>
+                        <div class="loader video-uploading"></div>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <a class="btn btn-white f-6 font-weight-bold c-blue mr-2" (click)="close()">Cancel</a>
+        <button *ngIf="type == 'create'; else updateButton" class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving">Add</button>
+        <ng-template #updateButton>
+            <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving">Update</button>
+        </ng-template>
+    </mat-dialog-actions>
+</form>

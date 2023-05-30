@@ -1,0 +1,137 @@
+<div class="pipeline-setting-page">
+  <div class="mb-3">
+      <div class="page-header v-center">
+        <div class="page-title-wrapper">
+          <h1 class="page-title mb-0">
+            <!-- Pipeline -->
+            Pipeline Manager
+          </h1>
+        </div>
+        <div class="page-button-wrapper">
+          <a class="btn btn-primary font-weight-bold shadow" (click)="addStage()" *ngIf="(dealsService.selectedPipeline$ | async) && stages?.length > 0">New Stage</a>
+          <div class="shadow-dropdown ml-2" ngbDropdown>
+            <div class="dropdown-toggle font-weight-bold c-dark c-pointer px-2 rounded btn border border-primary justify-content-end" ngbDropdownToggle>
+              <span class="pr-2">
+                <ng-container *ngIf="(dealsService.pipelines$ | async).length == 0 && (dealsService.loadingStage$| async) != STATUS.REQUEST ; else pipelineTemplate">
+                  <span class="font-weight-bold ml-2">none</span>
+                </ng-container>
+                <ng-template #pipelineTemplate>
+                  <span class="font-weight-bold ml-2">{{ dealsService.selectedPipeline.getValue()?.title }}</span>
+                </ng-template>
+              </span>
+            </div>
+            <div ngbDropdownMenu aria-labelledby="taskSortTypes" class="dropdown-height">
+              <div class="py-2" ngbDropdownItem *ngFor="let pipeline of (dealsService.pipelines$ | async)" (click)="onSelectPipeLine(pipeline)">
+                <span class="ml-2">
+                  {{pipeline.title}}
+                </span>
+              </div>
+              <!-- <div class="py-2 top-border" ngbDropdownItem (click)="onClickCreatePipeLine()">
+                <a class="ml-2 hovor-none font-weight-bold">Create pipeline</a>
+              </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+  <ng-container *ngIf="(dealsService.pipelines$ | async).length != 0; else createPipelineView">
+    <div class="pipeline-setting-page">
+      <div
+          cdkDropList
+          [cdkDropListData]="stages"
+          (cdkDropListDropped)="drop($event)"
+          class="stages mt-2"
+      >
+
+      <div class="stage py-2 pr-2">
+        <div class="v-center" *ngIf="stages?.length > 0">
+          <div class="form-group mb-0 mr-2 flex-grow-1 stage-form left-margin">
+            Stage Name
+          </div>
+          <div class="ml-2 mr-2 mb-0 v-center decay-width">
+            Decay time
+          </div>
+          <div class="form-group mb-0 ml-2 flex-grow-1 stage-form">
+            Automation
+          </div>
+        </div>
+      </div>
+      <div class="updating-status" *ngIf="stages?.length && (dealsService.loadingStage$ | async) === STATUS.REQUEST">
+        LOADING
+      </div>
+      <div cdkDrag class="stage py-2 pr-2" *ngFor="let stage of stages">
+          <div class="v-center">
+              <i cdkDragHandle class="d-block i-icon i-list-circle bgc-dark c-pointer"></i>
+              <div class="form-group mb-0 ml-2 flex-grow-1 stage-form">
+                  <app-stage-input [stage]="stage"></app-stage-input>
+              </div>
+              <div class="ml-2 mr-2 mb-0 v-center">
+                <i class="i-icon s-14 i-timer bgc-dark ml-2"></i>
+                <label class="ml-2">Days:</label>
+                <input class="duration-input ml-2 form-control" type="number" [(ngModel)]="stage.duration" (blur)="saveStage(stage)" (keyup)="checkAndSave($event, stage)" min="0">
+              </div>
+              <div class="form-group mb-0 ml-2 flex-grow-1 stage-form">
+                <app-input-automation [id]="stage.automation?._id" (automationChange)="selectAutomation($event, stage)" [type]="'deal'"></app-input-automation>
+              </div>
+              <i class="d-block i-icon i-trash bgc-dark ml-2 c-pointer" (click)="moveDelete(stage._id)"></i>
+          </div>
+      </div>
+      <!-- <div class="v-center px-2 py-3 stage add">
+          <div class="f-3 font-weight-bold c-blue c-pointer" (click)="addStage()">
+              New stage
+          </div>
+      </div> -->
+      </div>
+    </div>
+    <ng-container  *ngIf="(dealsService.stages$ | async).length==0 && (dealsService.loadingStage$ | async) === STATUS.SUCCESS">
+      <div class="loading-style empty-list">
+        <div class="object-icon v-center">
+            <i class="i-icon i-deals d-block bgc-dark"></i>
+        </div>
+        <h5>Please add new stage.</h5>
+        <button class="v-center btn btn-blue text-white br-default py-2" (click)="addStage()">
+          <span class="f-6 font-weight-bold">New Stage</span>
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-template #createPipelineView>
+    <ng-container [ngSwitch]="(dealsService.loadingStage$ | async)">
+      <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+        <div class="loader mt-5 lg"></div>
+        <h4 class="fw-600 mt-2">Loading pipelines ...</h4>
+      </div>
+      <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+        <div class="object-icon v-center">
+          <i class="i-icon i-deals d-block bgc-dark"></i>
+        </div>
+        <h4 class="font-weight-bold mt-4 mb-3">
+            There are no pipelines yet.
+        </h4>
+        <p>Click the "Go to the pipeline page" button to create new pipeline.</p>
+        <button class="v-center btn btn-blue text-white br-default py-2" [routerLink]="['/deals']">
+            <!-- <i class="d-block i-icon i-plus bgc-white"></i> -->
+            <span class="f-6 font-weight-bold">Go to the pipeline page</span>
+        </button>
+      </div>
+      <div class="empty-list" *ngSwitchCase="STATUS.FAILURE">
+        <div class="object-icon v-center">
+          <i class="i-icon i-deals d-block bgc-dark"></i>
+        </div>
+        <h4 class="font-weight-bold mt-4 mb-3">
+            There are no pipelines yet.
+        </h4>
+        <p>Click the "Go to the pipeline page" button to create new pipeline.</p>
+        <button class="v-center btn btn-blue text-white br-default py-2" [routerLink]="['/deals']">
+            <!-- <i class="d-block i-icon i-plus bgc-white"></i> -->
+            <span class="f-6 font-weight-bold">Go to the pipeline page</span>
+        </button>
+      </div>
+    </ng-container>
+  </ng-template>
+
+</div>
+
+
+

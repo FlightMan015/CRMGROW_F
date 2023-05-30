@@ -1,0 +1,68 @@
+<!--  -->
+<app-navbar></app-navbar>
+<app-sidebar></app-sidebar>
+<app-record-setting-dialog *ngIf="visibleRecording"></app-record-setting-dialog>
+<!-- <div class="account-status-overlay" *ngIf="isOverlay">
+  <i class="d-block i-icon i-close bgc-dark c-pointer" (click)="closeOverlay()"></i>
+  <h1 class="overlay-title">Set up your Account</h1>
+  <span class="f-4 mt-2">Get started with crmgrow!</span>
+  <div class="status-progress mt-4">
+    <span class="f-4 font-weight-bold c-blue">11 %</span>
+    <div class="progress-bar mr-2">
+      <div class="progress" [ngStyle]="{width: progress + '%'}"></div>
+    </div>
+  </div>
+  <div class="account-info-list" *ngFor="let info of accountInfo">
+    <ng-container *ngIf="info.type !== 'tour'; else tour">
+      <div class="v-center mt-3">
+        <img src="../../../assets/img/onboarding/check.svg" class="mr-2" *ngIf="info.status">
+        <img src="../../../assets/img/onboarding/uncheck.svg" class="mr-2" *ngIf="!info.status">
+        <span class="f-3 font-weight-bold">{{info.label}}</span>
+        <span class="plan-type ml-2" *ngIf="info.type === 'another'">ELITE PLAN</span>
+      </div>
+    </ng-container>
+    <ng-template #tour>
+      <div class="divider mt-3">
+        <span class="f-3 mr-3">Try also</span>
+        <div class="line-bar mr-2"></div>
+      </div>
+      <div class="v-center mt-3">
+        <img src="../../../assets/img/onboarding/check.svg" class="mr-2" *ngIf="info.status">
+        <img src="../../../assets/img/onboarding/uncheck.svg" class="mr-2" *ngIf="!info.status">
+        <span class="f-3 font-weight-bold">{{info.label}}</span>
+      </div>
+    </ng-template>
+  </div>
+</div> -->
+<div class="d-flex align-items-end sidebar-bottom" *ngIf="user?.user_version >= 2.1">
+  <div class="v-center download-detail" [class.active]="isDownload">
+    <div class="app">
+      <img src="../../../assets/img/onboarding/desktop_app.svg">
+      <span class="d-block mt-2">Please download the crmgrow desktop app to start creating your own dynamic videos on your computer.</span>
+      <a [href]="downloadLink" target="_blank">Get it here</a>
+    </div>
+    <div class="extension">
+      <img src="../../../assets/img/onboarding/extension.svg">
+      <span class="d-block mt-2">Get the crmgrow Chrome extension</span>
+      <a href="https://chrome.google.com/webstore/detail/crmgrow-video-webcam-scre/bcbcnnookeieadihaekplblbfmjaodbb?hl=en-US" target="_blank">Get it here</a>
+    </div>
+  </div>
+  <div class="v-center justify-content-center c-pointer download-icon" (click)="showDownload()">
+    <i class="d-blcok i-icon i-download bgc-white"></i>
+  </div>
+</div>
+<div class="page" [class.dialog-mode]="showDialog">
+  <router-outlet></router-outlet>
+  <div class="footer">
+  </div>
+  <mat-drawer-container [hasBackdrop]="true" [class]="'label-container'">
+    <mat-drawer #drawer position="end">
+      <app-manage-label (onClose)="drawer.close();" (showDialog)="setShowDialog($event)"></app-manage-label>
+    </mat-drawer>
+  </mat-drawer-container>
+  <ng-container *ngIf="(handlerService.openSearch$ | async)">
+    <div class="search-page">
+      <app-global-search></app-global-search>
+    </div>
+  </ng-container>
+</div>

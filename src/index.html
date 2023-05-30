@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>crmgrow</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0 user-scalable=no">
+  <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0">
+  <meta http-equiv="expires" content="0">
+  <meta http-equiv="pragma" content="no-cache">
+
+  <meta name="description" content="Provides the contact management functionality and material tracking system.">
+  <meta name="author" content="Garrett Team">
+  <meta name="theme-color" content="#1976d2">
+
+  <meta property="og:title" , content="crmgrow">
+  <meta property="og:description" ,
+    content="Provides the contact management functionality and material tracking system.">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image" content="https://app.crmgrow.com/assets/img/site_placeholder.jpg">
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- Material Default Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpXFRqyNOnrfWwXVnEyJNxOSfhAPjEpv0&libraries=places&language=en"></script>
+  <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpXFRqyNOnrfWwXVnEyJNxOSfhAPjEpv0 AIzaSyCQSVnawfZJbkOQTVpcMnhfFsxdsud3fps&libraries=places&language=en"></script> -->
+  <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+  <script type="text/javascript" src="https://js.stripe.com/v3/"></script>
+  <script type="text/javascript">
+    Stripe.setPublishableKey('pk_live_p0mahSVHjPHiknXx0iEEta8400Gn8n3onx');
+    var global = global || window;
+  </script>
+  <!-- <script async src='https://r.wdfl.co/rw.js' data-rewardful='88e66d'></script> -->
+  <style>
+    .intercom-namespace iframe.intercom-launcher-frame {
+      bottom: 56px!important;
+      opacity: 0.45;
+      display: none;
+    }
+    .intercom-namespace iframe.intercom-launcher-frame:hover {
+      opacity: 0.75;
+    }
+    .intercom-lightweight-app-launcher {
+      bottom: 56px!important;
+      opacity: 0.45;
+      display: none;
+    }
+    .intercom-lightweight-app-launcher:hover {
+      opacity: 0.75;
+    }
+    @media screen and (min-width: 450px) {
+      .intercom-namespace .intercom-messenger-frame {
+        bottom: 16px!important;
+      }
+    }
+  </style>
+  <!-- <link rel="stylesheet" href="https://widget.meetvolley.com/static/css/widget.css">
+  <script type="text/javascript" data-widget="https://api.meetvolley.com/api/widgets/public/e7bf6dab-e00b-4f62-89a7-a3ed2b9db00f" src="https://widget.meetvolley.com/widget.js"></script> -->
+</head>
+
+<body class="">
+  <app-root></app-root>
+  <script>
+    // window.onUsersnapCXLoad = function (api) {
+    //   window.UserSnapAPI = api;
+    //   window.UserSnapLoaded = true;
+    // }
+    // var script = document.createElement("script");
+    // script.defer = 1;
+    // script.src = "https://widget.usersnap.com/global/load/d470f663-3eb3-466d-b179-a5afe57ac276?onload=onUsersnapCXLoad";
+    // document.getElementsByTagName("head")[0].appendChild(script);
+
+    (
+      function () {
+        var w = window;
+        var ic = w.Intercom;
+        if (typeof ic === "function") {
+          ic('reattach_activator');
+          ic('update', w.intercomSettings);
+        } else {
+          var d = document;
+          var i = function () {
+            i.c(arguments);
+          };
+          i.q = [];
+          i.c = function (args) {
+            i.q.push(args);
+          };
+          w.Intercom = i;
+          var l = function () {
+            var s = d.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = 'https://widget.intercom.io/widget/f5cp9mf4';
+            var x = d.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+          };
+          if (w.attachEvent) {
+            w.attachEvent('onload', l);
+          } else {
+            w.addEventListener('load', l, false);
+          }
+        }
+      }
+    )();
+
+
+    
+    function goToMaterial(e) {
+      e.preventDefault();
+      const linkDom = e.target.closest('a');
+      if (!linkDom) {
+        return;
+      }
+      const user = localStorage.getItem('u_id');
+      let id = linkDom.getAttribute('href');
+      const type = linkDom.getAttribute('data-type');
+      id = id.replace('{{', '');
+      id = id.replace('}}', '');
+      if (id && user && type) {
+        window.open(`https://ecsbe.crmgrow.com/${type}?${type}=${id}&user=${user}`, '_blank');
+      }
+    }
+  </script>
+
+  <script>
+    (function(w){w.fpr=w.fpr||function(){w.fpr.q = w.fpr.q||[];w.fpr.q[arguments[0]=='set'?'unshift':'push'](arguments);};})(window);
+    fpr("init", {cid:"q8wwcpij"}); 
+    fpr("click");
+  </script>
+
+  <script src="https://cdn.firstpromoter.com/fpr.js" async></script>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
+
+</body>
+
+</html>

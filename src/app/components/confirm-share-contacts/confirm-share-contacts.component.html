@@ -1,0 +1,37 @@
+<div class="v-center justify-content-between">
+  <h1 mat-dialog-title class="m-0">
+    {{data.title}}
+  </h1>
+  <button class="v-center border-0 bgc-trans" mat-dialog-close>
+    <i class="d-block i-icon i-close bgc-dark"></i>
+  </button>
+</div>
+<mat-dialog-content>
+  <div class="link-panel mt-2">
+    <div class="ml-2 c-dark">
+      {{data.message}}
+    </div>
+    <div class="additional f-3 fw-600 mt-3" *ngIf="permissionContacts.length">
+      <label>Contacts with invalid permission</label>
+      <ng-container *ngFor="let contact of permissionContacts;">
+        <a class="v-center c-pointer ml-3 mb-2 fw-600 undecoration" [routerLink]="['/contacts/' + contact._id]" mat-dialog-close>
+          <div class="contact-avatar f-3 mr-2">
+            {{contact.avatarName}}
+          </div>
+          <span class="f-4">{{contact.fullName}}</span>
+        </a>
+      </ng-container>
+    </div>
+    <div class="additional f-3 fw-600 mt-3" *ngIf="runningContacts.length">
+      <label>Contacts with the active running jobs</label>
+      <ng-container *ngFor="let contact of runningContacts;">
+        <a class="v-center c-pointer ml-3 mb-2 fw-600 undecoration" [routerLink]="['/contacts/' + contact._id]" mat-dialog-close>
+          <div class="contact-avatar f-3 mr-2">
+            {{contact.avatarName}}
+          </div>
+          <span class="f-4">{{contact.fullName}}</span>
+        </a>
+      </ng-container>
+    </div>
+  </div>
+</mat-dialog-content>

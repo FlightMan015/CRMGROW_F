@@ -1,0 +1,140 @@
+@import 'src/variables.scss';
+
+:host ::ng-deep {
+    mat-dialog-content {
+        max-height: 70vh;
+    }
+    mat-tab-group {
+        .mat-tab-labels {
+            display: flex;
+            justify-content: space-around;
+            .mat-tab-label {
+                opacity: 1;
+                .mat-tab-label-content {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: $color-blue;
+                }
+            }
+        }
+        .mat-ink-bar {
+            background-color: $color-blue !important;
+            height: 4px;
+        }
+        textarea {
+            resize: none;
+        }
+    }
+}
+.material-preivew {
+    position: relative;
+    margin-bottom: 4px;
+    img {
+        width: 160px;
+        height: 90px;
+    }
+    
+    @media screen and (max-width: 440px) {
+        flex-direction: column;
+        text-align: center;
+        img {
+            margin: auto;
+        }
+        & > div {
+            margin-left: 0px!important;
+        }
+    }
+}
+.material-more {
+    display: inline-flex;
+    background: white;
+    box-shadow: 0px 0px 10px #888;
+    font-size: 12px;
+    font-weight: bold;
+    flex-wrap: wrap;
+    border-radius: 12px;
+    
+    i {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+    }
+
+    @media screen and (max-width: 500px) {
+        span.more {
+            display: none;
+        }
+    }
+}
+.datetime{
+    min-width:70px;
+    font-size: 12px;
+    color: blue;
+  }
+.text-toolbar {
+    .insert-template {
+        .template-container {
+            background: white;
+            border: 1px solid gainsboro;
+            padding: 0px 0px;
+            border-radius: 4px;
+            box-shadow: 0px 0px 6px #bbb8;
+            width: 280px;
+            max-height: 250px;
+            overflow: auto;
+
+            .dropdown-item {
+                padding: 4px 6px;
+                border-top: 1px solid gainsboro;
+                cursor: pointer;
+                min-height: 48px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                i {
+                    width: 14px;
+                    height: 14px;
+                    min-width: 14px;
+                }
+            }
+        }
+        .emoji-icon {
+            width: 24px;
+        }
+    }
+
+    .insert-token {
+        cursor: pointer;
+        .dropdown-toggle {
+          .i-triangle-up {
+            display: none !important;
+          }
+          .i-icon {
+            width: 8px;
+            height: 8px;
+            min-width: 8px;
+          }
+        }
+        &.show {
+          .dropdown-toggle {
+            .i-triangle-down {
+              display: none !important;
+            }
+            .i-triangle-up {
+              display: block !important;
+            }
+          }
+        }
+        .menu-item:hover {
+            background-color: gainsboro;
+        }
+        .menu-item:active {
+            background-color: blue;
+            color: white;
+        }
+    }
+}
+
+textarea {
+    resize: none;
+}

@@ -1,0 +1,29 @@
+.invalid.invalid-feedback {
+  width: fit-content;
+}
+.form-group label {
+  opacity: 0.56;
+}
+.call-duration {
+  max-width: 200px;
+}
+
+.contacts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+
+  @media screen and (max-width: 540px) {
+    display: block;
+  }
+  .contact {
+    .avatar {
+      min-width: 32px;
+    }
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

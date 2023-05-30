@@ -1,0 +1,127 @@
+<div class="page_event_types">
+  <div class="mb-3">
+    <div ngbDropdown placement="bottom-right" class="v-center deals-header justify-content-end ml-auto">
+      <button class="btn btn-primary" id="dropdownBasic2" ngbDropdownToggle>New Event Type</button>
+      <div ngbDropdownMenu aria-labelledby="dropdownBasic2" class="dropdown-new-event-type py-3">
+        <div class="border-0 px-3 c-dark c-pointer" (click)="addNewEventType('one')">
+          <div class="v-center ">
+            <i class="i-icon i-one-on-one bgc-dark event-type-icon" aria-hidden="true"></i>
+            <div class="font-weight-bold ml-2">One-on-One</div>
+          </div>
+          <div class="f-6 ml-2 event-type-detail">
+            Let an invitee pick a time to meet with you.
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="border-0 px-3 c-dark c-pointer" (click)="addNewEventType('group')">
+          <div class="v-center ">
+            <i class="i-icon i-group bgc-dark event-type-icon" aria-hidden="true"></i>
+            <div class="font-weight-bold ml-2">Group</div>
+          </div>
+          <div class="f-6 ml-2 event-type-detail">
+            Let multiple invitees meet with you at one time.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="(scheduleService.eventTypes$ | async).length; else emptyEventTypes">
+    <div class="row event_types mt-3">
+      <div class="updating-status" *ngIf="(scheduleService.loadStatus$ | async) === STATUS.REQUEST">
+        LOADING
+      </div>
+      <div class="col-12 col-sm-12 col-md-4 col-xl-3 mt-3 px-3" *ngFor="let eventType of scheduleService.eventTypes$ | async;let i = index">
+        <div class="event-type p-3 d-flex flex-column justify-content-between h-100 c-pointer" (click)="editEventType(eventType)">
+          <div>
+            <div class="d-flex justify-content-between">
+              <div class="f-8 title font-weight-bold v-center justify-content-center content">
+                <!-- <div class='title-label' [ngClass]="labelColors[i%15]"></div> -->
+                {{ eventType.title }}
+              </div>
+              <div ngbDropdown #mainDrop="ngbDropdown" placement="bottom-right" class="mt-1 ml-1" (click)="$event.stopPropagation()">
+                <a ngbDropdownToggle class="v-center c-pointer bgc-white c-dark f-3 no-carot px-0">
+                  <i class="d-block i-icon i-menu-more bgc-dark"></i>
+                </a>
+                <div ngbDropdownMenu class="light">
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editEventType(eventType)">
+                    <i class="i-icon i-edit bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Edit</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="copyLink(eventType)">
+                    <i class="i-icon i-copy bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Copy Link</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="assignAutomation(eventType)">
+                    <i class="i-icon bgc-dark ml-1 i-automation" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Assign Automation</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="assignTags(eventType)">
+                    <i class="i-icon bgc-dark ml-1 i-tag-manager" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Assign Tags</span>
+                  </button>
+                  <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="deleteEventType(eventType)">
+                    <i class="i-icon i-trash bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="v-center">
+              <div class="f-4 type v-center justify-content-between w-100">
+                <span>{{ eventType.duration }} mins</span>
+                <span>{{ eventType.type === 1 ? 'One-on-One' : 'Group' }}</span>
+              </div>
+            </div>
+            <div class="v-center mt-1">
+              <div class="f-4 type">
+                {{ eventType.automation ? 'Subscribed automation ' : 'Unsubscribed automation' }}
+              </div>
+            </div>
+            <div class="mt-1 tags-wrapper">
+              <ng-container *ngIf="eventType.tags && eventType.tags.length;">
+                <span class="f-4 c-grey-light px-2 py-1 tag-label mx-1 mt-1" *ngFor="let tag of eventType.tags">
+                  {{tag}}
+                </span>
+              </ng-container>
+            </div>
+          </div>
+          <div class="v-center justify-content-between f-4  mt-2">
+            <div class="link font-weight-bold c-blue c-pointer" (click)="viewBookingPage(eventType.link);$event.stopPropagation()">View
+              Booking Page</div>
+            <div class="v-center c-blue c-pointer " (click)="copyLink(eventType);$event.stopPropagation()">
+              <i class="i-icon i-copy bgc-blue" aria-hidden="true"></i>
+              <span class="ml-1 font-weight-bold">Copy Link</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #emptyEventTypes>
+    <ng-container [ngSwitch]="scheduleService.loadStatus$ | async">
+      <div class="empty-list mt-5 pt-5" *ngSwitchCase="STATUS.SUCCESS">
+        <div class="object-icon v-center mt-5">
+          <i class="i-icon i-event-note d-block bgc-dark"></i>
+        </div>
+        <h4 class="font-weight-bold mt-3 mb-3">
+          There are no event types yet.
+        </h4>
+      </div>
+      <div class="empty-list mt-5 pt-5" *ngSwitchCase="STATUS.FAILURE">
+        <div class="object-icon v-center mt-5">
+          <i class="i-icon i-event-note d-block bgc-dark"></i>
+        </div>
+        <h4 class="font-weight-bold mt-3 mb-3">
+          There are no event types yet.
+        </h4>
+      </div>
+      <div class="list-loading text-center mt-5 pt-5" *ngSwitchCase="STATUS.REQUEST">
+        <div class="loader mt-5 pt-5 lg"></div>
+        <h4 class="fw-600 mt-2">Loading event types ...</h4>
+      </div>
+    </ng-container>
+  </ng-template>
+</div>

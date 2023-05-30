@@ -1,0 +1,62 @@
+<ng-container *ngIf="uiType==='selector'">
+    <div class="timezone-selector-wrapper">
+        <mat-form-field class="timezone-selector">
+            <mat-select id="time_zone_info" class="form-control c-blue f-5" [formControl]="formControl"
+                (selectionChange)="changeTimezone($event)" [disableOptionCentering]="true">
+                <ng-container *ngIf="defaultTimeZone; else otherTimeZone">
+                    <ng-container *ngFor="let timezone_group of timezones">
+                        <mat-optgroup *ngIf="timezone_group.country == 'US & Canada'" label="{{timezone_group.country}}">
+                            <mat-option class="timezone w-fit" *ngFor="let timezone of timezone_group.timezones"
+                                value="{{setOptionValue(timezone)}}">
+                                {{timezone.name}}
+                            </mat-option>
+                        </mat-optgroup>
+                    </ng-container>
+                    <mat-option class="p-0 w-fit">
+                        <div class="v-center justify-content-center other-timezone c-pointer" (click)="showAllTimezones()">
+                            <span class="f-3 font-weight-bold c-blue text-uppercase mr-2">
+                                other timezones
+                            </span>
+                            <i class="d-block i-icon i-plus bgc-blue"></i>
+                        </div>
+                    </mat-option>
+                </ng-container>
+                <ng-template #otherTimeZone>
+                    <mat-optgroup *ngFor="let timezone_group of timezones" label="{{timezone_group.country}}">
+                        <mat-option class="timezone w-fit" *ngFor="let timezone of timezone_group.timezones"
+                            value="{{setOptionValue(timezone)}}">
+                            {{timezone.name}}
+                        </mat-option>
+                    </mat-optgroup>
+                    <mat-option class="p-0 w-fit">
+                        <div class="v-center justify-content-center other-timezone c-pointer" (click)="showAllTimezones()">
+                            <span class="f-3 font-weight-bold c-blue text-uppercase mr-2">
+                                other timezones
+                            </span>
+                            <i class="d-block i-icon i-minus bgc-blue"></i>
+                        </div>
+                    </mat-option>
+                </ng-template>
+            </mat-select>
+        </mat-form-field>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="uiType==='dropdown'">
+    <div class="shadow-dropdown ml-auto" ngbDropdown container="body" placement="auto">
+        <div class="v-center c-pointer f-3" ngbDropdownToggle>
+            <span class="fw-400 c-grey">{{displayTimezone()}}</span>
+        </div>
+        <div ngbDropdownMenu aria-labelledby="timezoneList" class="py-2 dropdown-timezone">
+            <ng-container *ngFor="let timezone_group of timezones">
+                <label class="mb-1 px-2 f-3">{{timezone_group.country}}</label>
+                <div class="px-3" ngbDropdownItem *ngFor="let timezone of timezone_group.timezones" (click)="selectTimezone(timezone)">
+                    <span class="f-3 v-center" [class.font-weight-bold]="timezone.name === timezoneInfo?.name">
+                        {{timezone.name}}
+                        <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="timezone.name === timezoneInfo?.name"></i>
+                    </span>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</ng-container>

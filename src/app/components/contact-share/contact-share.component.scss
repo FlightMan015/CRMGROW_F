@@ -1,0 +1,17 @@
+::ng-deep {
+  .mat-radio-button.mat-primary.mat-radio-checked {
+    .mat-radio-inner-circle {
+      background-color: blue;
+    }
+    .mat-radio-outer-circle {
+      border-color: blue;
+    }
+  }
+  .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+    background-color: blue;
+  }
+  .mat-dialog-content {
+    min-height: 100px;
+
+  }
+}

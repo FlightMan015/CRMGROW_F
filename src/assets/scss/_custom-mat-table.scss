@@ -1,0 +1,19 @@
+body {
+  .mat-table {
+    font-family: "Nunito", sans-serif!important; color: $color-dark;
+  }
+  .mat-header-cell {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  tr.mat-header-row {
+    height: 47px;
+  }
+  tbody {
+    td.mat-cell {
+      border-bottom-width: 0px;
+      font-size: 13px;
+    }
+  }
+}

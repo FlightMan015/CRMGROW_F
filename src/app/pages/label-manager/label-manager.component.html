@@ -1,0 +1,222 @@
+<div class="page-content p-0">
+  <form #actionForm="ngForm" (ngSubmit)="actionForm.form.valid ? saveLabel(actionForm) : false"
+      [class.was-validated]="actionForm.submitted">
+    <div class="form-group mt-2">
+      <label>Create Custom Label</label>
+        <div class="d-flex justify-content-start w-100">
+          <div class="v-center">
+            <i class="i-icon i-label d-block mr-2 bgc-dark" [style.backgroundColor]="newLabel.color"></i>
+            <span class="f-3 fw-600 color-label">Select Color</span>
+            <button type="button" class="color-picker-button ml-2 p-0" (click)="editLabelColor()"><i class="i-icon i-edit bgc-dark d-block"></i></button>
+          </div>
+          <div>
+            <div class="v-center">
+              <input type="text" class="form-control label-name-input ml-2" [(ngModel)]="newLabel.name" placeholder="Name new label"
+                     name="edit_label_name" #edit_label_name="ngModel" required/>
+              <button type="submit" class="v-center btn btn-primary ml-2 px-2 save-btn" [class.loading]="loading">
+                <i class="i-icon i-plus i-small bgc-white" [class.d-none]="loading"></i>
+                <span class="f-3 font-weight-bold ml-2">Save</span>
+              </button>
+            </div>
+            <span class="error ml-2 pt-1" *ngIf="edit_label_name.errors" style="height: 0px;">
+              Label name is required.
+            </span>
+          </div>
+        </div>
+    </div>
+  </form>
+  <ng-container>
+    <div class="table">
+      <div class="v-center pt-3 pb-2 table-header">
+          <div class="f-1 label-col">
+              label name
+          </div>
+          <div class="f-1 contact-col mr-4">
+              contacts
+          </div>
+          <div class="f-1 action-col text-right px-1">
+          </div>
+      </div>
+      <div class="load-status"
+      *ngIf="(labelService.labels$ | async).length && (labelService.loadStatus$ | async) === STATUS.REQUEST">
+      LOADING
+      </div>
+      <div class="table-body" cdkDropList (cdkDropListDropped)="drop($event)">
+        <ng-container *ngFor="let item of labelService.labels$ | async">
+          <div class="label-item v-center justify-content-between px-2 py-2 bg-white" cdkDrag *ngIf="item.role !== 'admin'">
+            <div class="v-center c-pointer label-col" (click)="openContacts(item)">
+              <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="item.color === '#FFF' ? '#000' : item.color"></i>
+              <span class="f-3 fw-600">{{item?.name}}</span>
+            </div>
+            <div class="v-center contact-col">
+              <span class="f-3 ml-2 c-blue fw-600 contact-count c-pointer" (click)="openContacts(item)">
+                {{labelDetails[item?._id]?.count || 0}}
+              </span>
+            </div>
+            <div class='v-center action-col'>
+              <div ngbDropdown placement="bottom-right" class="ml-auto my-auto action-col">
+                <a (click)="checkToggle(tag._id)" ngbDropdownToggle class="v-center justify-content-end btn c-dark f-3 no-carot py-0 pl-0 pr-2">
+                    <i class="d-block i-icon i-menu-more bgc-dark"></i>
+                </a>
+                <div ngbDropdownMenu class="light">
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editLabel(item)">
+                        <i class="d-block i-icon i-edit bgc-dark mr-2" aria-hidden="true"></i>
+                        <span class="f-3 font-weight-bold">Edit</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="removeLabel(item)">
+                        <i class="d-block i-icon i-trash bgc-red mr-2" aria-hidden="true"></i>
+                        <span class="f-3 font-weight-bold">Delete</span>
+                    </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="table-body" cdkDropList (cdkDropListDropped)="drop($event)">
+        <ng-container *ngFor="let item of labelService.labels$ | async">
+          <div class="label-item v-center justify-content-between px-2 py-2 bg-white" cdkDrag *ngIf="item.role === 'admin'">
+            <div class="v-center c-pointer label-col" (click)="openContacts(item)">
+              <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="item.color === '#FFF' ? '#000' : item.color"></i>
+              <span class="f-3 fw-600">{{item.name}}</span>
+            </div>
+            <div class="v-center contact-col">
+              <span class="f-3 ml-2 c-blue fw-600 contact-count c-pointer" (click)="openContacts(item)">
+                {{labelDetails[item._id]?.count || 0}}
+              </span>
+            </div>
+            <div class='v-center action-col'>
+
+            </div>
+
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+
+<mat-drawer-container [hasBackdrop]="true">
+  <mat-drawer #drawer position="end" (openedStart)="toggleBody(true)" (closedStart)="toggleBody(false)">
+    <div class="contacts-list-panel flex-column h-100 d-flex overflow-hidden">
+      
+      <h6 class="fw-600 pt-4 px-3 panel-header pb-2">
+        {{labelService.total$ | async}} Contacts for label <span class="font-weight-bold">"{{label.name}}"</span>
+      </h6>
+      <div class="v-center contact-list-controls">
+        <div class="form-group mb-0 search-form ml-3">
+          <div class="input-group-prepend">
+            <i class="i-icon i-search d-block bgc-dark"></i>
+          </div>
+          <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon" [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()">
+          <ng-container *ngIf="searchStr">
+            <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+              <i class="i-icon i-close d-block bgc-dark"></i>
+            </div>
+          </ng-container>   
+        </div>
+      </div>
+      <div class='flex-column d-flex h-100' *ngIf='(labelService.filteredResult$ | async).length'>
+        <div class="contacts-list position-relative mt-1 h-100">
+          <table class="page-table w-100"
+              mat-table
+              [dataSource]="(labelService.filteredResult$ | async) | paginate: {id: 'contactPages', itemsPerPage: pageSize.id, currentPage: page, totalItems: (labelService.total$ | async)}">
+              <ng-container matColumnDef="loader-cell">
+                <th mat-header-cell
+                  *matHeaderCellDef colspan="12" class="loader-cell">
+                  <div class="updating-status"
+                  *ngIf="(labelService.filteredResult$ | async).length && (labelService.loadDetailStatus$ | async) === STATUS.REQUEST">
+                    LOADING
+                  </div>
+                </th>
+              </ng-container>
+              <!-- Name Column -->
+              <ng-container matColumnDef="contact_name">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> contact name </th>
+                </ng-container>
+                <td mat-cell
+                  *matCellDef="let contact">
+                  <a class="v-center py-2 avatar-wrapper" [routerLink]="['/contacts/' + contact._id]">
+                    <div class="v-center justify-content-center f-0 text-white avatar">
+                        {{contact.avatarName}}
+                    </div>
+                    <div class="f-3 text-primary name">
+                        {{contact.fullName}}
+                    </div>
+                </a>
+                </td>
+              </ng-container>
+              <!-- Label Column -->
+              <ng-container matColumnDef="label_name">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell colspan="12">label</th>
+                </ng-container>
+                <td mat-cell colspan="12"
+                  *matCellDef="let contact">
+                  <div class="v-center" style='width:150px'>
+                    <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="label?.color === '#FFF' ? '#000' : label?.color"></i>
+                    <span class="f-3 fw-600">{{label?.name}}</span>
+                  </div>
+                </td>
+              </ng-container>
+              <tr mat-header-row
+              *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+              <tr mat-header-row
+                  *matHeaderRowDef="DISPLAY_COLUMNS;sticky: true" class=""></tr>
+              <tr mat-row
+                  *matRowDef="let row; columns: DISPLAY_COLUMNS;"></tr>
+          </table>
+        </div>
+        <div class="pagination-wrapper m-auto d-flex justify-content-center w-100" *ngIf='(labelService.filteredResult$ | async).length' style='padding-left:5px;'>
+          <pagination-controls (pageChange)="changePage($event)"
+            (pageBoundsCorrection)="pageChanged($event)"
+            id="contactPages"
+            maxSize="5"
+            previousLabel=""
+            nextLabel="">
+          </pagination-controls>
+          <div class="shadow-dropdown ml-auto page-size-control"
+          ngbDropdown
+          placement="top-right">
+            <div class="v-center c-pointer f-3 p-1 font-weight-bold"
+              ngbDropdownToggle>
+              <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+            </div>
+            <div ngbDropdownMenu
+              aria-labelledby="contactPageSize">
+              <div class="py-2"
+                ngbDropdownItem
+                *ngFor="let type of PAGE_COUNTS"
+                (click)="changePageSize(type)">
+                <span class="f-3 v-center"
+                  [class.font-weight-bold]="type.id === pageSize.id">
+                  Show {{type.label}} rows per page
+                  <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1"
+                    *ngIf="type.id === pageSize.id"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf='!(labelService.filteredResult$ | async).length'>
+          <ng-container *ngIf="labelDetails[label?._id]?.loading">
+            <div class="empty-list py-5">
+              <div class="loader mt-2"></div>
+              <h6 class="fw-600 mt-2">Loading contacts...</h6>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!labelDetails[label?._id]?.loading">
+              <div class="empty-list py-5">
+                  <div class="object-icon v-center">
+                      <i class="i-icon i-lunch d-block bgc-dark"></i>
+                  </div>
+                  <h4 class="fw-600 mt-3 mb-3" style='font-size:12px'>
+                      There is no contact with this label.
+                  </h4>
+              </div>
+          </ng-container>
+      </div>
+    </div>
+  </mat-drawer>
+</mat-drawer-container>

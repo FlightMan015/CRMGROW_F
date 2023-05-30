@@ -1,0 +1,57 @@
+<div class="v-center justify-content-between">
+    <h1 mat-dialog-title class="m-0">Task Setting</h1>
+    <button class="v-center border-0 bgc-trans" mat-dialog-close>
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<form (ngSubmit)="submitted = true; save()">
+    <mat-dialog-content>
+        <div class="pt-4 pb-3 setting-panel">
+            <div class="v-center justify-content-between">
+                <div class="f-4">Meeting</div>
+                <label class="custom-toggle mb-0">
+                    <input type="checkbox" name="meeting" [(ngModel)]="task_setting.schedule_meeting"
+                        [checked]="task_setting.schedule_meeting">
+                    <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+            <div *ngIf="task_setting.schedule_meeting" class="pt-2">
+                <div class="v-center justify-content-between">
+                    <div class="f-3">Scheduler</div>
+                    <app-input-event-type (eventTypeChange)="selectEventType($event)" [id]="task_setting.default_scheduler">
+                    </app-input-event-type>
+                </div>
+                <div class="v-center" *ngIf="(scheduleService.eventTypes$ | async).length ==0">
+                    <div class="f-3 mt-1">There is no event type. Click <a [routerLink]="['/scheduler']"
+                            class="c-blue font-weight-bold undecoration" (click)="dialogRef.close()">here</a> to create new one</div>
+                </div>
+                <div class="invalid-error f-3 c-red ml-auto pt-1" *ngIf="!task_setting.default_scheduler && submitted">
+                    Scheduler is required!
+                </div>
+            </div>
+            <div class="v-center justify-content-between my-3">
+                <div class="f-4">Email</div>
+                <label class="custom-toggle mb-0">
+                    <input type="checkbox" name="email" [(ngModel)]="task_setting.schedule_email" [checked]="task_setting.schedule_email">
+                    <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+            <div class="v-center justify-content-between">
+                <div class="f-4">Text</div>
+                <label class="custom-toggle mb-0">
+                    <input type="checkbox" name="text" [(ngModel)]="task_setting.schedule_text" [checked]="task_setting.schedule_text">
+                    <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+        </div>
+
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button class="btn btn-white f-6 font-weight-bold mr-2" type="button" mat-dialog-close>
+            Cancel
+        </button>
+        <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="saving">
+            Save
+        </button>
+    </mat-dialog-actions>
+</form>

@@ -1,0 +1,205 @@
+<div class="page-content">
+  <div class="v-center op-56 c-pointer back-menu" (click)="goToBack()">
+    <i class="d-block i-icon i-triangle-left bgc-dark mr-2"></i>
+    <span class="f-5 font-weight-bold">Back {{getPrevPage()}}</span>
+  </div>
+  <div class="my-2">
+    <div class="d-flex justify-content-between mr-5">
+      <h6 class="page-title font-weight-bold my-2">Material Analytics</h6>
+      <ng-container *ngIf="!isLoading && selectedLibrary">
+        <div class="v-center mr-5">
+          <button class="v-center btn p-1 c-dark mr-2"
+                  placement="bottom" (click)="download()"
+                  ngbTooltip="Download Material Library">
+            <i class="i-icon i-download bgc-blue mr-1" aria-hidden="true"></i>
+            <span class="f-3 font-weight-bold c-blue">Download</span>
+          </button>
+          <!-- <button class="v-center btn p-1 c-dark mr-2"
+                  placement="bottom" (click)="sendMaterial('email')"
+                  ngbTooltip="Send via Email">
+            <i class="i-icon i-message bgc-blue mr-1" aria-hidden="true"></i>
+            <span class="f-3 font-weight-bold c-blue">Send Email</span>
+          </button>
+            <button class="v-center btn p-1 c-dark mr-2"
+              placement="bottom"
+              ngbTooltip="Send via Text" (click)="sendMaterial('text')"
+            >
+              <i class="i-icon i-sms-sent bgc-blue mr-1" aria-hidden="true"></i>
+              <span class="f-3 font-weight-bold c-blue">Send Text</span>
+            </button>
+          <button class="v-center btn p-1 c-dark mr-2" placement="bottom" ngbTooltip="Copy Link" (click)="copyLink()">
+            <i class="i-icon i-copy bgc-blue mr-1" aria-hidden="true"></i>
+            <span class="f-3 font-weight-bold c-blue">Copy Link</span>
+          </button>
+          <div class="v-center material-actions mr-3">
+            <div ngbDropdown #mainDrop="ngbDropdown" placement="bottom-right" class="ml-auto">
+              <a ngbDropdownToggle class="v-center btn bgc-white c-dark f-3 no-carot px-0">
+                <i class="d-block i-icon i-menu-more bgc-dark"></i>
+              </a>
+              <div ngbDropdownMenu class="light">
+                <ng-container *ngIf="analytic_material.user; else materialActionsTemplate">
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editMaterial()" *ngIf="analytic_material.user == user_id">
+                      <i class="i-icon i-edit bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Edit</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editTemplate()">
+                      <i class="i-icon i-template bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Edit Theme</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="leadCapture()">
+                      <i class="i-icon i-lead-capture bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Lead Capture</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="duplicateMaterial()" >
+                      <i class="i-icon i-duplicate bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Duplicate</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="shareMaterial()">
+                      <i class="i-icon i-shared-by bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Social Share</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="shareTeam()" *ngIf="(analytic_material.user == user_id) && analytic_material.role != 'team'">
+                      <i class="i-icon i-share-team bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Share Team</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item"
+                      *ngIf="analytic_material.material_type === 'video' && checkType(analytic_material.url) &&
+                      (analytic_material.user === user_id) && !analytic_material.default_edited"
+                      (click)="download()">
+                      <i class="i-icon i-download bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Download</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="deleteMaterial()">
+                      <i class="i-icon i-trash bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Delete</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="moveToFolder()">
+                      <i class="i-icon i-folder bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Move To</span>
+                    </button>
+                </ng-container>
+                <ng-template #materialActionsTemplate>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="editTemplate()">
+                      <i class="i-icon i-template bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Edit Theme</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="leadCapture()">
+                      <i class="i-icon i-lead-capture bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Lead Capture</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="duplicateMaterial()" >
+                      <i class="i-icon i-duplicate bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Duplicate</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="shareMaterial()">
+                      <i class="i-icon i-shared-by bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Social Share</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="deleteMaterial()">
+                      <i class="i-icon i-trash bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Delete</span>
+                    </button>
+                    <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="moveToFolder()">
+                      <i class="i-icon i-folder bgc-dark ml-1" aria-hidden="true"></i>
+                      <span class="ml-3 f-3 font-weight-bold">Move To</span>
+                    </button>
+                </ng-template>
+              </div>
+            </div>
+          </div> -->
+
+        </div>
+      </ng-container>
+    </div>
+
+  </div>
+  <div class="v-center">
+
+  <ng-container *ngIf="isLoading || !selectedLibrary">
+    <div class="list-loading text-center">
+      <div class="loader mt-5 lg"></div>
+      <h4 class="fw-600 mt-2">Loading analytics...</h4>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!isLoading && selectedLibrary">
+      <div class="analytics-area mt-3" *ngIf="selectedLibrary.material_type=='video';else otheranalyticTemplate">
+        <div class="material-wrapper form-group">
+          <a href="{{siteUrl}}/video?video={{material_id}}&user={{user_id}}" target="_blank">
+            <div class="thumb-prev-wrapper">
+              <img [src]="selectedLibrary.thumbnail" class="thumbnail" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+              <img [src]="selectedLibrary.preview" class="preview" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+            </div>
+          </a>
+        </div>
+        <div class="pl-3">
+          <div class="mt-3">
+            <label>Title:</label>
+            <div class="f-3 font-weight-bold">{{selectedLibrary?.title}}</div>
+          </div>
+          <div class="mt-3" *ngIf="selectedLibrary?.description">
+            <label>Description:</label>
+            <div class="f-1">{{(selectedLibrary?.description) | stripTags | shorten: 120: '...'}}</div>
+          </div>
+          <div class="mt-3">
+            <label>Type:</label>
+            <div class="v-center f-3 font-weight-bold">
+              <i class="i-icon d-block bgc-black" [class]="'i-' + getMaterialType(selectedLibrary?.material_type).toLowerCase()"></i>
+              <span class="f-3 font-weight-bold ml-3">{{selectedLibrary?.material_type}}</span>
+            </div>
+          </div>
+          <div class="mt-3">
+            <label>Owner:</label>
+            <div class="f-3 font-weight-bold">{{getOwner(selectedLibrary?.user)}}</div>
+          </div>
+          <div class="mt-3" *ngIf="selectedLibrary?.team?.name">
+            <label>Shared with:</label>
+            <div class="f-3 font-weight-bold">{{selectedLibrary?.team?.name}}</div>
+          </div>
+        </div>
+      </div>
+    <ng-template #otheranalyticTemplate>
+      <div class="analytics-area mt-3">
+        <div class="material-wrapper form-group">
+          <a href="{{siteUrl}}/pdf?pdf={{material_id}}&user={{user_id}}" target="_blank" *ngIf="selectedLibrary.material_type=='pdf'">
+            <div class="thumb-prev-wrapper">
+              <img [src]="selectedLibrary.preview" class="thumbnail" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+              <img [src]="selectedLibrary.preview" class="preview" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+            </div>
+          </a>
+          <a href="{{siteUrl}}/image?image={{material_id}}&user={{user_id}}" target="_blank" *ngIf="selectedLibrary.material_type=='image'">
+            <div class="thumb-prev-wrapper">
+              <img [src]="selectedLibrary.preview" class="thumbnail" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+              <img [src]="selectedLibrary.preview" class="preview" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+            </div>
+          </a>
+        </div>
+        <div class="pl-3">
+          <div class="mt-3">
+            <label>Title</label>
+            <div class="f-3 font-weight-bold">{{selectedLibrary.title}}</div>
+          </div>
+          <div class="mt-3" *ngIf="selectedLibrary.description">
+            <label>Description</label>
+            <div class="f-1">{{(selectedLibrary.description) | stripTags | shorten: 120: '...'}}</div>
+          </div>
+          <div class="mt-3">
+            <label>Type</label>
+            <div class="v-center">
+              <i class="i-icon d-block bgc-black font-weight-bold1" [class]="'i-' + getMaterialType(selectedLibrary?.material_type).toLowerCase()"></i>
+              <span class="f-3 font-weight-bold ml-3">{{selectedLibrary?.material_type}}</span>
+            </div>
+          </div>
+          <div class="mt-3">
+            <label>Owner:</label>
+            <div class="f-3 font-weight-bold">{{getOwner(selectedLibrary?.user)}}</div>
+          </div>
+          <div class="mt-3" *ngIf="selectedLibrary?.team?.name">
+            <label>Shared with:</label>
+            <div class="f-3 font-weight-bold">{{selectedLibrary?.team?.name}}</div>
+          </div>
+        </div>
+      </div>
+  </ng-template>
+
+  </ng-container>
+</div>

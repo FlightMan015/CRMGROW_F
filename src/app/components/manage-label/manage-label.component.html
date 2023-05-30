@@ -1,0 +1,61 @@
+<div class="panel p-4c">
+  <div class="v-center mb-3">
+    <h4 class="font-weight-bold">Manage labels</h4>
+    <button class="v-center border-0 bgc-trans ml-auto" type="button" (click)="close()">
+      <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+  </div>
+  <form #actionForm="ngForm" (ngSubmit)="actionForm.form.valid ? saveLabel(actionForm) : false"
+        [class.was-validated]="actionForm.submitted">
+      <div class="form-group">
+        <div>
+          <label>Create Custom Label</label>
+          <div class="d-flex justify-content-between w-100">
+            <div class="v-center">
+              <i class="i-icon i-label d-block mr-2 bgc-dark" [style.backgroundColor]="newLabel.color"></i>
+              <span class="f-3 fw-600 color-label">Select Color</span>
+              <button type="button" class="color-picker-button ml-2 p-0" (click)="editLabelColor()"><i class="i-icon i-edit bgc-dark d-block"></i></button>
+            </div>
+            <div>
+              <div class="v-center">
+                <input type="text" class="form-control label-name-input ml-2" [(ngModel)]="newLabel.name" placeholder="Name new label"
+                       name="edit_label_name" #edit_label_name="ngModel" required/>
+                <button type="submit" class="v-center btn btn-primary ml-2 px-2 save-btn" [class.loading]="loading">
+                  <i class="i-icon i-plus i-small bgc-white" [class.d-none]="loading"></i>
+                  <span class="f-3 font-weight-bold ml-2">Save</span>
+                </button>
+              </div>
+              <span class="error ml-2 mt-1" *ngIf="edit_label_name.errors" style="height: 0px;">
+                Label name is required.
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="my-3">
+          <label>Created Labels</label>
+          <div class="label-list" cdkDropList (cdkDropListDropped)="drop($event)">
+            <ng-container *ngFor="let item of labelService.labels$ | async">
+              <div class="label-item v-center justify-content-between px-2 py-2 bg-white" *ngIf="item.role != 'admin'" cdkDrag>
+                <div class="v-center">
+                  <i class="i-icon i-label d-block mr-2" [style.backgroundColor]="item.color === '#FFF' ? '#000' : item.color"></i>
+                  <span class="f-3 fw-600">{{item.name}}</span>
+                </div>
+                <div class="v-center">
+                  <button type="button" class="v-center btn bgc-trans c-blue border-0 py-1" (click)="editLabel(item)">
+                    <i class="i-icon i-edit bgc-blue"></i>
+                    <span class="f-3 ml-2 c-blue fw-600">Edit
+                      <span>label</span>
+                    </span>
+                  </button>
+                  <button type="button" class="v-center btn bgc-trans c-red border-0 py-1" (click)="removeLabel(item)">
+                    <i class="i-icon i-trash bgc-red"></i>
+                    <span class="f-3 ml-2 c-red fw-600">Remove</span>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+  </form>
+</div>

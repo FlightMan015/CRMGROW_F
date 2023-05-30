@@ -1,0 +1,250 @@
+<form
+  #eventForm="ngForm"
+  (ngSubmit)="submit()"
+>
+<mat-dialog-content>
+    <ng-container *ngIf="type !== 'update'">
+      <div class="form-group">
+        <label class="calendar-label mb-0">Choose calendar</label>
+        <app-select-calendar [(calendar)]="calendar"></app-select-calendar>
+        <span
+          class="invalid-error f-3 c-red"
+          *ngIf="submitted && !calendar"
+        >
+          Please select calendar
+        </span>
+      </div>
+    </ng-container>
+    <div class="row">
+      <div class="col-12">
+        <div class="form-group">
+          <label class="calendar-label mb-0">title</label>
+          <input
+            class="form-control"
+            type="text"
+            placeholder="Add meeting title"
+            name="title"
+            #title="ngModel"
+            [(ngModel)]="event.title"
+            required
+          />
+          <span
+            class="invalid-error f-3 c-red"
+            *ngIf="event.title == '' && submitted"
+          >
+            Please input event title
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="row date-time">
+      <div class="col-12 col-sm-4">
+        <div class="form-group">
+          <div class="v-center">
+            <label class="calendar-label mb-0">date</label>
+            <span
+              class="invalid-error f-3 font-weight-bold c-red"
+              *ngIf="selectedDateTime.year == '' && selectedDateTime.month == '' && selectedDateTime.day == '' && submitted"
+            >
+              Required!
+            </span>
+          </div>
+          <app-date-input type="prepend" [(value)]="selectedDateTime" [minDate]="minDate"></app-date-input>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="form-group">
+          <div class="v-center">
+            <label class="calendar-label mb-0">time</label>
+          </div>
+          <select
+            class="form-control"
+            [(ngModel)]="due_time"
+            name="time"
+            #time="ngModel"
+          >
+            <option value="" disabled>Due Time</option>
+            <option *ngFor="let time of times" value="{{ time.id }}">
+              {{ time.text }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="form-group">
+          <label class="calendar-label d-block mb-0">duration</label>
+          <select
+            class="form-control"
+            [(ngModel)]="duration"
+            name="period"
+            #period="ngModel"
+          >
+            <option
+              *ngFor="let calendar_duration of calendar_durations"
+              value="{{ calendar_duration.value }}"
+            >
+              {{ calendar_duration.text }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-8 time-zone-wrapper form-group">
+        <app-select-timezone [selectedTimezone]="event.timezone" [uiType]="'dropdown'" (onChange)="selectTimezone($event)"></app-select-timezone>
+        <span
+          class="invalid-error f-3 c-red"
+          *ngIf="!event.timezone && submitted"
+        >
+          Please select timezone
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="form-group">
+          <div class="v-center">
+            <label class="calendar-label mb-0">ASSIGN GUESTS</label>
+          </div>
+          <app-input-contacts
+            [selectedContacts]="contacts"
+            [keepContacts]="keepContacts"
+            *ngIf="!isDeal"
+          >
+          </app-input-contacts>
+          <app-input-contact-deal
+            [selectedContacts]="contacts"
+            [onlyFromSearch]="true"
+            [onlySubscriber]="true"
+            class="w-100"
+            *ngIf="isDeal"
+          ></app-input-contact-deal>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="zoomEnableAccount.indexOf(user_email) !== -1 && !event.location; else normal">
+      <div class="col-12 col-sm-4 form-group">
+        <label class="calendar-label mb-0">video conference</label>
+        <div class="form-group mb-0">
+          <button class="btn btn-blue text-white f-6 font-weight-bold w-100" type="button" [class.loading]="zoomCreating" (click)="createZoomLink()">
+            Add Zoom Link
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-sm-8 form-group">
+        <label class="calendar-label mb-0">location</label>
+        <div class="form-group mb-0">
+          <input
+            class="form-control"
+            placeholder="Add location"
+            [(ngModel)]="event.location"
+            name="address"
+            #address="ngModel"
+            ngx-google-places-autocomplete
+            #addressplacesRef="ngx-places"
+            [options]="{
+              types: [],
+              componentRestrictions: { country: 'US' }
+            }"
+            (onAddressChange)="handleAddressChange($event)"
+          />
+        </div>
+      </div>
+    </div>
+    <ng-template #normal>
+      <div class="row">
+        <div class="col-12 col-sm-12 form-group">
+          <label class="calendar-label d-block mb-0">location</label>
+          <div class="form-group mb-0">
+            <input
+              class="form-control"
+              placeholder="Add location"
+              [(ngModel)]="event.location"
+              name="address"
+              #address="ngModel"
+              ngx-google-places-autocomplete
+              #addressplacesRef="ngx-places"
+              [options]="{
+                types: [],
+                componentRestrictions: { country: 'US' }
+              }"
+              (onAddressChange)="handleAddressChange($event)"
+            />
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <div class="row">
+      <div class="col-12 form-group mb-0">
+        <label class="calendar-label d-block mb-0">DESCRIPTION</label>
+        <app-html-editor
+          [(value)]="event.description"
+          placeholder="Add description"
+          [noImage]="true"
+          [style]="{height: '90px'}"
+          #emailEditor
+          >
+        </app-html-editor>
+      </div>
+    </div>
+    <div class="row" [class.d-none]="type === 'update'">
+      <div class="col-12 v-center justify-content-between">
+        <!-- <div class="custom-control custom-checkbox my-auto">
+          <input
+            type="checkbox"
+            class="custom-control-input"
+            id="customControlInline"
+            [checked]="isRepeat"
+            (change)="setRepeatEvent()"
+          />
+          <label
+            class="custom-control-label f-3 font-weight-bold pt-1"
+            for="customControlInline"
+            >Set as recurring event</label
+          >
+        </div> -->
+        <div class="form-group mt-3 ml-auto">
+          <select
+            class="form-control text-primary"
+            [(ngModel)]="event.recurrence"
+            name="repeat"
+            #repeat="ngModel"
+          >
+            <option
+              *ngFor="let recurring of recurrings"
+              value="{{ recurring.value }}"
+            >
+              {{ recurring.text }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button
+    type="button"
+    mat-dialog-close
+    class="btn btn-white py-2 f-6 font-weight-bold"
+  >
+    Cancel
+  </button>
+  <button
+    type="submit"
+    class="btn btn-blue text-white br-default py-2 f-6 font-weight-bold ml-2"
+    [class.loading]="isLoading"
+    *ngIf="type == 'update'; else createButton"
+  >
+    Update
+  </button>
+  <ng-template #createButton>
+    <button
+      type="submit"
+      class="btn btn-blue text-white ml-2 br-default py-2 f-6 font-weight-bold"
+      [class.loading]="isLoading"
+    >
+      Create
+    </button>
+  </ng-template>
+</mat-dialog-actions>
+</form>

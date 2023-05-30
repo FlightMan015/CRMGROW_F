@@ -1,0 +1,140 @@
+<div class="page-content p-2">
+    <div class="video-finish">
+        <div class="v-center justify-content-between">
+            <div class="f-3 font-weight-bold">
+                Resend video when they didn't finish to the end
+            </div>
+            <div class="v-center custom-control custom-switch">
+                <label class="custom-toggle mb-0" placement="top">
+                  <input type="checkbox" [checked]="garbage.auto_resend.enabled" (change)="changeToggle($event, garbage.auto_resend, 'resend1')">
+                  <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-4">
+                <div class="f-3 font-weight-bold">
+                    Content
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    Choose the message copy of the resent video
+                </div>
+            </div>
+            <div class="col-sm-8 form-group">
+                <div class="search-email mt-3 mt-sm-0">
+                    <div class="f-1 op-64 template-label mb-2">
+                        Search email template
+                    </div>
+                    <app-input-template
+                        [type]="'email'"
+                        [placeholder]="'Click here to assign an email template'"
+                        [(id)]="garbage.auto_resend.email_canned_message"
+                        (idChange)="save('resend1')">
+                    </app-input-template>
+                </div>
+                <div class="search-sms mt-3">
+                    <div class="f-1 op-64 template-label mb-2">
+                        Search SMS template
+                    </div>
+                    <app-input-template
+                        [type]="'text'"
+                        [placeholder]="'Click here to assign an sms template'"
+                        [(id)]="garbage.auto_resend.sms_canned_message"
+                        (idChange)="save('resend1')">
+                    </app-input-template>
+                </div>
+            </div>
+        </div>
+        <div class="delay-time mt-3">
+            <div class="form-group">
+                <div class="f-3 font-weight-bold">
+                    Delay time
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    The time delay of when you want the system to automatically resend the video
+                </div>
+            </div>
+            <div class="form-group">
+                <select class="form-control f-3 font-weight-bold"
+                        [(ngModel)]="garbage.auto_resend.period"
+                        name="delay" id="finish-delay"
+                        required #delay="ngModel"
+                        (ngModelChange)="save('resend1')"
+                >
+                    <option *ngFor="let delay of delays" value="{{delay.id}}">
+                        {{delay.text}}
+                      </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="video-watch mt-3">
+        <div class="v-center justify-content-between">
+            <div class="f-3 font-weight-bold">
+                Resend video when they didn't watch video at all
+            </div>
+            <div class="v-center custom-control custom-switch">
+                <label class="custom-toggle mb-0" placement="top">
+                  <input type="checkbox" [checked]="garbage.auto_resend2.enabled" (change)="changeToggle($event, garbage.auto_resend2, 'resend2')">
+                  <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-4">
+                <div class="f-3 font-weight-bold">
+                    Content
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    Choose the message copy of the resent video
+                </div>
+            </div>
+            <div class="col-sm-8 form-group">
+                <div class="search-email mt-3 mt-sm-0">
+                    <div class="f-1 op-64 template-label mb-2">
+                        Search email template
+                    </div>
+                    <app-input-template
+                        [type]="'email'"
+                        [placeholder]="'Click here to assign an email template'"
+                        [(id)]="garbage.auto_resend2.email_canned_message"
+                        (idChange)="save('resend2')">
+                    </app-input-template>
+                </div>
+                <div class="search-sms mt-3">
+                    <div class="f-1 op-64 template-label mb-2">
+                        Search SMS template
+                    </div>
+                    <app-input-template
+                        [type]="'text'"
+                        [placeholder]="'Click here to assign an sms template'"
+                        [(id)]="garbage.auto_resend2.sms_canned_message"
+                        (idChange)="save('resend2')">
+                    </app-input-template>
+                </div>
+            </div>
+        </div>
+        <div class="delay-time mt-3">
+            <div class="form-group">
+                <div class="f-3 font-weight-bold">
+                    Delay time
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    The time delay of when you want the system to automatically resend the video
+                </div>
+            </div>
+            <div class="form-group">
+                <select class="form-control f-3 font-weight-bold"
+                        [(ngModel)]="garbage.auto_resend2.period"
+                        name="delay" id="watch-delay"
+                        required #delay="ngModel"
+                        (ngModelChange)="save('resend2')"
+                >
+                    <option *ngFor="let delay of delays" value="{{delay.id}}">
+                        {{delay.text}}
+                      </option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>

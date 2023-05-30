@@ -1,0 +1,206 @@
+<div class="custom-mat-table">
+  <div class="my-3 v-center">
+    <div class="form-group mb-0 search-form">
+      <div class="input-group-prepend">
+        <i class="i-icon i-search d-block bgc-dark"></i>
+      </div>
+      <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+        [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()"
+        [class.disabled]="(templatesService.loading$ | async) === STATUS.REQUEST">
+      <ng-container *ngIf="searchStr">
+        <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+          <i class="i-icon i-close d-block bgc-dark"></i>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="my-3 position-relative">
+    <ng-container *ngIf="libraries.length">
+      <div class="updating-status" *ngIf="libraries.length && (templatesService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div>
+      <table class="w-100 template-table page-table" mat-table multiTemplateDataRows
+        [dataSource]="filteredResult | paginate: {itemsPerPage: pageSize.id, currentPage: page, id: 'libraryTable', total: filteredResult.length}">
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef class="title">
+            <div class="v-center c-pointer head-sort" (click)="sort('title')">
+              <span [class]="selectedSort == 'title' ? 'fw-600 c-dark' : ''">Title</span>
+              <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.title ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'title'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let template" class="title">
+            <a [routerLink]="['/templates/edit/' + template._id]" class="td-none"
+              *ngIf="!template.isFolder; else folderTitle">
+              <span class="f-3 font-weight-bold">{{template.title}}</span>
+            </a>
+            <ng-template #folderTitle>
+              <a [routerLink]="['/templates-list/library/' + template._id]" class="td-none">
+                <div class="v-center c-pointer">
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-3 font-weight-bold">{{template.title}}</span>
+                </div>
+              </a>
+            </ng-template>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="owner">
+          <th mat-header-cell *matHeaderCellDef class="auth">
+            <div class="v-center c-pointer head-sort" (click)="sort('role')">
+              <span [class]="selectedSort == 'role' ? 'fw-600 c-dark' : ''">Owner</span>
+              <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.role ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'role'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let template" class="auth">
+            <div class="role" [class.admin]="template.role == 'admin'"
+              [class.team]="template.role === 'team' && template.user === userId"
+              [class.shared]="template.role === 'team' && template.user !== userId"></div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="template-content">
+          <th mat-header-cell *matHeaderCellDef class="template-content">Template</th>
+          <td mat-cell *matCellDef="let template" class="template-content">
+            <ng-container *ngIf="!template.isFolder">
+              <h5 class="font-weight-bold f-5 c-black mb-1">{{template.subject | stripTags | shorten: 40: '...'}}</h5>
+              <span [innerHTML]="template.content | stripTags | shorten: 80: '...'"></span>
+            </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="template-type">
+          <th mat-header-cell *matHeaderCellDef class="template-type">
+            <div class="v-center c-pointer head-sort" (click)="sort('type')">
+              <span [class]="selectedSort == 'type' ? 'fw-600 c-dark' : ''">Type</span>
+              <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.type ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'type'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let template" class="template-type">
+            <div class="v-center">
+              <ng-container *ngIf="template.type=='text'; else otherType">
+                <i class="i-icon bgc-dark i-sms-sent mr-1"></i>
+                <span class="f-4 menu-label font-weight-bold ml-1">Text</span>
+              </ng-container>
+              <ng-template #otherType>
+                <ng-container *ngIf="template.type === 'email'; else folderType">
+                  <i class="i-icon bgc-dark i-message mr-1"></i>
+                  <span class="f-4 menu-label font-weight-bold ml-1">Email</span>
+                </ng-container>
+                <ng-template #folderType>
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-4 menu-label font-weight-bold ml-1">Folder</span>
+                </ng-template>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+        <!-- <ng-container matColumnDef="template-action">
+          <th mat-header-cell *matHeaderCellDef class="template-action">
+            Default
+          </th>
+          <td mat-cell *matCellDef="let template" class="template-action">
+            <div class="v-center">
+              <label class="custom-toggle mb-0" placement="top" ngbTooltip="Set as {{template.type == 'email' ? 'Default Email' : 'Default Text'}}">
+                <input type="checkbox" [checked]="template._id == emailDefault || template._id == smsDefault" (change)="setDefault(template)">
+                <span class="custom-toggle-slider rounded-circle"></span>
+              </label>
+            </div>
+          </td>
+        </ng-container> -->
+        <ng-container matColumnDef="template-sub-action">
+          <th mat-header-cell *matHeaderCellDef class="template-sub-action">
+          </th>
+          <td mat-cell *matCellDef="let template; let index=dataIndex;" class="template-sub-action">
+            <div class="v-center justify-content-around sub-item-action mr-1"
+              [class.first-send]="(index == 0 && !user.onboard.template_download) || d_status[template._id]">
+              <ng-container *ngIf="folder?.user !== userId && template.user !== userId; else unshareAction">
+                <div class="v-center download-action items pr-3">
+                  <span class="c-dark font-weight-bold" *ngIf="d_status[template._id]">
+                    <i class="small-spinner"></i>
+                  </span>
+                  <button class="v-center btn p-1 c-dark" *ngIf="!d_status[template._id]"
+                    (click)="downloadTemplate(template)" placement="bottom" ngbTooltip="Download To Own List">
+                    <i class="i-icon i-download template-download bgc-dark" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #unshareAction>
+                <ng-container *ngIf="!folder && template.user === userId">
+                  <div class="v-center download-action items pr-3">
+                    <button class="v-center btn p-1 c-dark" (click)="unshareTemplate(template)" placement="bottom"
+                      ngbTooltip="Stop Share">
+                      <i class="i-icon i-share-off template-download bgc-dark" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </ng-container>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="root-folder">
+          <th mat-header-cell *matHeaderCellDef colspan="12" class="root-folder">
+            <a [routerLink]="['/templates-list/library/root']">
+              <div class="v-center c-pointer">
+                <i class="i-icon bgc-dark i-folder mr-1"></i>
+                <span>.. to root</span>
+              </div>
+            </a>
+          </th>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS"></tr>
+        <tr mat-header-row *matHeaderRowDef="folder ? ['root-folder'] : []" class="{{!folder ? 'is_root' : ''}}"></tr>
+        <tr mat-row *matRowDef="let element; columns: DISPLAY_COLUMNS;"></tr>
+      </table>
+      <ng-container *ngIf="filteredResult.length">
+        <div class="my-2 table-control mode-1">
+          <div class="pagination-wrapper m-auto">
+            <pagination-controls (pageChange)="page = $event" (pageBoundsCorrection)="page = $event" id="libraryTable"
+              maxSize="5" previousLabel="" nextLabel="">
+            </pagination-controls>
+          </div>
+          <div class="shadow-dropdown ml-auto page-size-control" ngbDropdown placement="top-right">
+            <div class="v-center c-pointer f-3 p-3 font-weight-bold" ngbDropdownToggle>
+              <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+            </div>
+            <div ngbDropdownMenu aria-labelledby="contactPageSize">
+              <div class="py-2" ngbDropdownItem *ngFor="let type of PAGE_COUNTS" (click)="changePageSize(type)">
+                <span class="f-3 v-center" [class.font-weight-bold]="type.id === pageSize.id">
+                  Show {{type.label}} rows per page
+                  <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === pageSize.id"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="!(templatesService.libraries$ | async).length; else showingStatusTemplate">
+      <ng-container [ngSwitch]="(templatesService.loading$ | async)">
+        <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-template d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            There is no libraries for emailing and texting yet.
+          </h4>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading libraries for emailing and texting...</h4>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #showingStatusTemplate>
+      <ng-container *ngIf="!filteredResult?.length">
+        <div class="empty-list py-5">
+          <div class="object-icon v-center">
+            <i class="i-icon i-template d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold text-center mt-4 mb-3">
+            There is no libraries to match your filter conditions.
+          </h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+<input class="form-control" [(ngModel)]="currentStage.title" (blur)="saveStage($event)" (keyup)="checkAndSave($event)"/>
+<!-- <ng-container *ngIf="saving">
+  <div class="saving-status">Saving</div>
+</ng-container>
+<ng-container *ngIf="!saving && currentStage.title !== originalStageTitle">
+  <div class="change-status">When you blur or type in "Enter", this title would be saved.</div>
+</ng-container> -->

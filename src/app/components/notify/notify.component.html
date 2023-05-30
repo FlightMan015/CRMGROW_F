@@ -1,0 +1,6 @@
+<mat-dialog-content>
+  <div [innerHTML]="data.message | safeHtml" ></div>
+</mat-dialog-content>
+<mat-dialog-actions align='end' class="mx-0">
+  <button class="btn btn-custom btn-primary" mat-dialog-close>{{data.label || 'OK'}}</button>
+</mat-dialog-actions>

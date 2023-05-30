@@ -1,0 +1,248 @@
+<!-- <div class="v-center main-actions mb-3" *ngIf="!userLoading && !defaultUser.onboard.sub_account">
+  <img src="../../../assets/img/onboarding/account.svg">
+  <div class="ml-3">
+    <div class="f-6 font-weight-bold">Multiple Accounts<span class="f-3 font-weight-bold plan-type ml-3">ELITE PLAN</span></div>
+    <div class="f-4 font-weight-bold mt-2">With crmgrow you can manage multiple businesses from one place</div>
+  </div>
+</div> -->
+<div class="v-center justify-content-end main-actions">
+  <!-- <button class="btn f-6 font-weight-bold c-blue rounded border mr-2 border-primary" [class.disabled]="!(selectedAccount && selectedSeat)" (click)="mergeAccount()">Merge Account</button> -->
+  <button class="btn btn-blue f-6 font-weight-bold text-white rounded shadow" (click)="buyAccount()">Buy Profile</button>
+</div>
+<div class="custom-mat-table position-relative mt-3">
+    <div class="mat-table-wrapper" [class.empty]="!userList.length">
+        <table class="w-100 page-table"
+            mat-table
+            [dataSource]="userList">
+            
+            <ng-container matColumnDef="loader-cell">
+                <th mat-header-cell
+                  *matHeaderCellDef colspan="12" class="loader-cell">
+                  <div class="updating-status" *ngIf="userList.length && loading ">
+                    LOADING
+                  </div>
+                </th>
+            </ng-container>
+            
+            <!-- <ng-container matColumnDef="select">
+              <th mat-header-cell
+                *matHeaderCellDef
+                class="pl-1 select-cell">
+              </th>
+              <td mat-cell
+                *matCellDef="let element"
+                class="pl-1 select-cell">
+                <div class="custom-control custom-checkbox" [class.radio]="!element.is_seat">
+                  <input type="checkbox"
+                    class="custom-control-input "
+                    id="company-{{element._id}}"
+                    (change)="toggle(element)"
+                    [checked]="element._id === selectedAccount?._id || element._id === selectedSeat?._id" />
+                  <label class="custom-control-label"
+                    for="company-{{element._id}}"></label>
+                </div>
+              </td>
+            </ng-container> -->
+            
+            <ng-container matColumnDef="account_company">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> company name </th>
+                </ng-container>
+                
+                <ng-container *matCellDef="let element">
+                  <td mat-cell *ngIf="!element.is_seat; else seatTemplate">
+                    <span class="">{{element.company}}</span>
+                  </td>
+                  <ng-template #seatTemplate>
+                    <td colspan="10" class="pl-0">
+                      <div class="v-center">
+                        <a class="c-pointer d-flex align-items-center td-none ml-1 btn btn-primary py-2 seat-action" (click)="createAccount()">
+                          <!-- <div class="i-icon-wrapper seat-create"><i class="i-icon bgc-blue i-plus sm d-block"></i></div> -->
+                          <span class="f-3 c-white fw-600">New Profile</span>
+                        </a>
+                        <a class="c-pointer ml-3 d-flex align-items-center td-none btn py-2 seat-action btn-light" (click)="recallAccount()" *ngIf="seatLimit > 2">
+                          <!-- <div class="i-icon-wrapper seat-remove"><i class="i-icon bgc-red i-minus sm d-block"></i></div> -->
+                          <span class="f-3 c-dark fw-600">Delete Profile</span>
+                          <i class="i-icon bgc-dark i-claim sm d-block ml-1"
+                            ngbPopover="It will remove $49 subscription from your payment."
+                            popoverTitle="Delete Profile"
+                            triggers="mouseenter:mouseleave"
+                            placement="bottom"
+                          >
+                          </i>
+                        </a>
+                      </div>
+                    </td>
+                  </ng-template>
+                </ng-container>
+            </ng-container>
+            <ng-container matColumnDef="account_name">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell class="pl-0"> user name  </th>
+                </ng-container>
+                <ng-container *matCellDef="let element">
+                  <td *ngIf="!element.is_seat" class="pl-0" mat-cell>
+                      <div class="v-center c-pointer">
+                          <img *ngIf="element.picture_profile; else avatarNameTemplate" [src]="element.picture_profile" onerror="(this.src = './assets/img/user_avatar.svg');" class="form-avatar contact-avatar rounded-circle mr-1" />
+                          <ng-template #avatarNameTemplate>
+                            <div class="contact-avatar f-3 mr-2">
+                                {{getAvatarName(element.user_name)}}
+                            </div>
+                          </ng-template>
+                          <span class="fw-600">{{element.user_name}}</span>
+                      </div>
+                  </td>
+                </ng-container>
+            </ng-container>
+            <ng-container matColumnDef="account_email">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> email address  </th>
+                </ng-container>
+                <ng-container *matCellDef="let element">
+                  <td *ngIf="!element.is_seat" mat-cell>
+                    <span class="">{{element.email}}</span>
+                  </td>
+                </ng-container>
+            </ng-container>
+
+            <ng-container matColumnDef="account_phone">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> phone number </th>
+                </ng-container>
+                <ng-container *matCellDef="let element">
+                  <td *ngIf="!element.is_seat" mat-cell>
+                    <span class="c-blue font-weight-bold">{{element.phone.number | phone_format}}</span>
+                  </td>
+                </ng-container>
+            </ng-container>
+            <ng-container matColumnDef="account_timezone">
+                <ng-container *matHeaderCellDef>
+                  <th mat-header-cell> time zone </th>
+                </ng-container>
+                <ng-container *matCellDef="let element">
+                  <td *ngIf="!element.is_seat" mat-cell>
+                    <span class="">{{getTimeZone(element.time_zone_info)}}</span>
+                  </td>
+                </ng-container>
+            </ng-container>
+
+            <ng-container matColumnDef="account_seat">
+              <ng-container *matHeaderCellDef>
+                <th mat-header-cell> Volume </th>
+              </ng-container>
+              <ng-container *matCellDef="let element">
+                <td *ngIf="!element.is_seat" mat-cell>
+                  <ng-template #popContent>
+                    <ul *ngIf="element.is_primary; else normalProfile" class="pl-0">
+                      <li>{{element.contact_info?.is_limit ? element.contact_info.max_count : 'Unlimited'}} contacts</li>
+                      <li>{{element.material_info?.is_limit ? element.material_info.upload_max_count : 'Unlimited'}} material uploads</li>
+                      <li>{{element.material_info?.is_limit ? getRecordingDuration(element.material_info.record_max_duration) : 'Unlimited'}} video recording</li>
+                      <li>{{element.automation_info?.is_limit ? element.automation_info.max_count : 'Unlimited'}} active automations</li>
+                      <li>{{element.calendar_info?.is_limit ? element.calendar_info.max_count : 'Unlimited'}} calendar connection</li>
+                      <li>{{element.text_info?.is_limit ? element.text_info.max_count : 'Unlimited'}} sms</li>
+                      <li>{{element.assistant_info?.is_limit ? element.assistant_info.max_count : 'Unlimited'}} assistant access</li>
+                    </ul>
+                    <ng-template #normalProfile>
+                      <ul class="pl-0">
+                        <li>{{element.contact_info?.is_limit ? element.contact_info.max_count : 'Unlimited'}} contacts</li>
+                        <li>{{element.material_info?.is_limit ? element.material_info.upload_max_count : 'Unlimited'}} material uploads</li>
+                        <li>{{element.material_info?.is_limit ? getRecordingDuration(element.material_info.record_max_duration) : 'Unlimited'}} video recording</li>
+                        <li>{{element.automation_info?.is_limit ? element.automation_info.max_count : 'Unlimited'}} active automations</li>
+                        <li>{{element.calendar_info?.is_limit ? element.calendar_info.max_count : 'Unlimited'}} calendar connection</li>
+                        <li>{{element.text_info?.is_limit ? element.text_info.max_count : 'Unlimited'}} sms</li>
+                        <li>{{element.assistant_info?.is_limit ? element.assistant_info.max_count : 'Unlimited'}} assistant access</li>
+                      </ul>
+                    </ng-template>
+                  </ng-template>
+                  <ng-template #popTitle>
+                    Profile Volume
+                  </ng-template>
+                  <span class="badge badge-primary f-3 fw-600 c-pointer" style="line-height: 1;" [ngbPopover]="popContent" [popoverTitle]="popTitle" placement="bottom">{{element.equal_account}}</span>
+                </td>
+              </ng-container>
+            </ng-container>
+
+            <ng-container matColumnDef="action">
+              <ng-container *matHeaderCellDef>
+                <th mat-header-cell></th>
+              </ng-container>
+              <ng-container *matCellDef="let element">
+                <td *ngIf="!element.is_seat" mat-cell class="pr-0">
+                  <div class="d-flex justify-content-end" *ngIf="!element.is_primary; else primaryMark">
+                    <a (click)="settingAccount(element)" class="c-pointer user-action empty-popover"
+                      ngbPopover=""
+                      popoverTitle="Profile permission"
+                      triggers="mouseenter:mouseleave"
+                      placement="left"
+                    >
+                      <i class="i-icon d-block i-setting bgc-dark"></i>
+                    </a>
+                    <a (click)="mergeAccount(element)" class="ml-2 c-pointer user-action"
+                      ngbPopover="When you increase volume, it will become higher volume by merging with empty profile."
+                      popoverTitle="Increase Volume"
+                      triggers="mouseenter:mouseleave"
+                      placement="left"
+                      *ngIf="hasSeat"
+                    >
+                      <i class="i-icon d-block i-merge bgc-dark"></i>
+                    </a>
+                    <a (click)="editAccount(element)" class="ml-2 c-pointer user-action empty-popover"
+                      ngbPopover=""
+                      popoverTitle="Edit Profile"
+                      triggers="mouseenter:mouseleave"
+                      placement="left"
+                    >
+                      <i class="i-icon d-block i-edit bgc-dark"></i>
+                    </a>
+                    <a (click)="deleteAccount(element)" class="ml-2 c-pointer user-action empty-popover"
+                      ngbPopover=""
+                      popoverTitle="Format Profile"
+                      triggers="mouseenter:mouseleave"
+                      placement="left"
+                    >
+                      <i class="i-icon d-block i-trash bgc-dark"></i>
+                    </a>
+                  </div>
+                  <ng-template #primaryMark>
+                    <div class="v-center justify-content-end">
+                      <a (click)="mergeAccount(element)" class="c-pointer user-action mr-2"
+                        ngbPopover="When you increase volume, it will become higher volume by merging with empty profile."
+                        popoverTitle="Increase Volume"
+                        triggers="mouseenter:mouseleave"
+                        placement="left"
+                        *ngIf="hasSeat"
+                      >
+                        <i class="i-icon d-block i-merge bgc-dark"></i>
+                      </a>
+                      <span class="badge badge-primary">PRIMARY</span>
+                    </div>
+                  </ng-template>
+                </td>
+              </ng-container>
+            </ng-container>
+            <tr mat-header-row
+            *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+            <tr mat-header-row
+                *matHeaderRowDef="DISPLAY_COLUMNS" class="table-header"></tr>
+            <tr mat-row
+                *matRowDef="let row; columns: DISPLAY_COLUMNS;"></tr>
+        </table>
+        <ng-container *ngIf="defaultUser._id">
+          <div class="list-loading text-center" *ngIf="loading && !userList.length">
+            <div class="loader mt-5 lg"></div>
+            <h4 class="fw-600 mt-2">Loading your business profiles...</h4>
+          </div>
+          <div class="empty-list mt-5" *ngIf="!loading && !userList.length">
+            <div class="object-icon v-center">
+              <i class="i-icon i-company d-block bgc-dark"></i>
+            </div>
+            <h4 class="font-weight-bold mt-3 mb-3">
+              There is no business profile.
+            </h4>
+            <a class="btn btn-primary" (click)="buyAccount()">
+              <span class="font-weight-bold f-3">Buy Profile</span>
+            </a>
+          </div>
+        </ng-container>
+    </div>
+</div>

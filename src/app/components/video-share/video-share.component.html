@@ -1,0 +1,47 @@
+<div mat-dialog-title class="mx-0">
+  <h4 class="c-dark f-5 font-weight-bold">Create Team Video</h4>
+</div>
+<div mat-dialog-content class="share-dialog-content">
+  <div class="content">
+    <div class="list">
+      <div class="loading" *ngIf="loading; else listTemplate">
+        Loading
+      </div>
+      <ng-template #listTemplate>
+        <ng-container *ngIf="materials.length; else emptyTemplate">
+          <div class="material video v-center mt-2" *ngFor="let material of materials">
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" id="{{material._id}}-own-video" type="checkbox" [checked]="selectedMaterials.indexOf(material._id) !== -1" (change)="toggleMaterial(material._id)">
+              <label class="custom-control-label c-label" for="{{material._id}}-own-video"> </label>
+            </div>
+            <div class="thumbnail mr-2">
+              <img [src]="material.preview || material.thumbnail" />
+            </div>
+            <div class="info">
+              <div class="title f-4 font-weight-bold">
+                {{material.title}}
+              </div>
+              <div class="f-2 c-dark opacity-6">
+                {{material.description | stripTags | shorten: 80: '...'}}
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #emptyTemplate>
+          <div class="empty-list">
+            <img src="../../../assets/img/icons/emoj.png">
+            <div>There are no videos to share with team.</div>
+          </div>
+        </ng-template>
+      </ng-template>
+    </div>
+    <!-- <div class="create-new d-flex">
+      <div class="desc">You can create new video material for your team.</div>
+      <a class="btn btn-primary btn-sm text-white" (click)="createNewVideo()">Create New</a>
+    </div> -->
+  </div>
+</div>
+<div mat-dialog-actions class="mx-0" align="end">
+  <button class="btn btn-white text-blue btn-sm mr-2" mat-dialog-close>Cancel</button>
+  <button class="btn btn-primary btn-sm" [class.loading]="sharing" [disabled]="!selectedMaterials.length" (click)="shareMaterials()">Share</button>
+</div>

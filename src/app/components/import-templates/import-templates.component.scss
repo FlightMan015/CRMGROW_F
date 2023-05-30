@@ -1,0 +1,39 @@
+.templates {
+  column-count: 3;
+  column-gap: 10px;
+
+  .template {
+    position: relative;
+    margin-bottom: 10px;
+    transition: all .3s;
+
+    .thumbnail img {
+      width: 100%;
+    }
+    .overlay {
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #ffffffbf;
+      color: black;
+      font-size: 20px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    &:hover {
+      box-shadow: 4px 4px 16px -4px #0006;
+    }
+
+    &:hover .overlay {
+      opacity: 1;
+    }
+  }
+}

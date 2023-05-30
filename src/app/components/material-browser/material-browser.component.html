@@ -1,0 +1,337 @@
+<h1 mat-dialog-title class="v-center d-flex">
+  <span>{{data.title}}</span>
+  <button class="v-center border-0 bgc-trans ml-auto" mat-dialog-close>
+    <i class="d-block i-icon i-close bgc-dark"></i>
+  </button>
+</h1>
+<mat-dialog-content>
+  <div class="browser-container">
+    <div class="contact-list-controls pt-0 pb-1">
+      <div class="v-center f-3 mb-2" *ngIf="selectedFolder; else emptyFolder">
+        <a class="c-pointer to-root" (click)="toRoot()">Materials</a>
+        <i class="i-icon i-chev-right sm d-block bgc-dark mx-2"></i>
+        <a>{{selectedFolder.title}}</a>
+      </div>
+      <ng-template #emptyFolder>
+        <div class="v-center f-3 mb-2">
+          <a>Materials</a>
+        </div>
+      </ng-template>
+      <div class="v-center">
+        <div class="form-group mb-0 search-form">
+          <div class="input-group-prepend">
+            <i class="i-icon i-search d-block bgc-dark"></i>
+          </div>
+          <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon" [(ngModel)]="searchStr" (ngModelChange)="filter()">
+          <ng-container *ngIf="searchStr">
+            <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+              <i class="i-icon i-close d-block bgc-dark"></i>
+            </div>
+          </ng-container>
+        </div>
+        <div class="ml-3 material-options" *ngIf="!material_type">
+          <mat-select [(ngModel)]="matType" (ngModelChange)="filter()" id="filter-mat" name="matFilter" #matFilter="ngModel" required>
+            <mat-option value="">All file types</mat-option>
+            <mat-option value="folder" *ngIf="!selectedFolder || multiple">
+              <div class="f-3 c-black">
+                Folder
+              </div>
+            </mat-option>
+            <mat-option value="video">
+              <div class="f-3 c-black">
+                Video
+              </div>
+            </mat-option>
+            <mat-option value="pdf">
+              <div class="f-3 c-black">
+                Pdf
+              </div>
+            </mat-option>
+            <mat-option value="image">
+              <div class="f-3 c-black">
+                Image
+              </div>
+            </mat-option>
+          </mat-select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Material List -->
+    <div class="custom-mat-table position-relative" [class.no-selected]="selection.length <= 0">
+      <div class="mat-table-wrapper" [class.empty]="!filteredMaterials.length">
+        <table class="w-100 page-table"
+               mat-table
+               [dataSource]="filteredMaterials">
+
+          <ng-container matColumnDef="loader-cell">
+            <th mat-header-cell
+                *matHeaderCellDef colspan="12" class="loader-cell">
+              <div class="updating-status"
+                   *ngIf="materials.length && (materialService.loading$ | async) === STATUS.REQUEST">
+                LOADING
+              </div>
+            </th>
+          </ng-container>
+
+          <ng-container matColumnDef="select">
+            <th mat-header-cell
+                *matHeaderCellDef
+                class="pl-0 checkbox-col">
+              <div class="custom-control custom-checkbox"
+                   [class.indeterminate]="selection.length && !isAllSelected()">
+                <input type="checkbox"
+                       class="custom-control-input"
+                       id="selectAllMaterialsB"
+                       (change)="$event ? masterToggle() : null"
+                       [checked]="isAllSelected()" />
+                <label class="custom-control-label"
+                       for="selectAllMaterialsB"></label>
+              </div>
+            </th>
+            <td mat-cell
+                *matCellDef="let element"
+                class="pl-0 checkbox-col">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox"
+                       class="custom-control-input"
+                       id="b-material-{{element._id}}"
+                       (change)="toggleElement(element)"
+                       [checked]="isSelected(element)" />
+                <label class="custom-control-label"
+                       for="b-material-{{element._id}}"></label>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="material_name">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell
+                  *ngIf="!selection.length; else toolHeader" class="name-col">
+                <div class="v-center c-pointer head-sort" (click)="sort('title')">
+                  <span [class]="selectedSort == 'title' ? 'fw-600 c-dark' : ''">Name</span>
+                  <i class="i-icon d-block bgc-black ml-2"
+                      [class]="searchCondition.title ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'title'"></i>
+                </div>
+              </th>
+              <ng-template #toolHeader>
+                <th mat-header-cell colspan="8">
+                  <div class="v-center">
+                    <span class="c-dark f-3 text-lowercase font-weight-bold">{{selection.length}} selected</span>
+                    <div class="px-3 border-left ml-3">
+                      <a class="c-blue c-pointer" (click)="clearSelection()">Clear selection</a>
+                    </div>
+                  </div>
+                </th>
+              </ng-template>
+            </ng-container>
+            <td mat-cell
+                *matCellDef="let element" class="name-col">
+              <ng-container *ngIf="element.material_type === 'folder'; else materialInfoTemplate">
+                <div class="v-center c-pointer material-main-info" (click)="openFolder(element)">
+                  <div class="thumbnail">
+                    <a>
+                      <div class="folder-thumb">
+                      </div>
+                    </a>
+                  </div>
+                  <span class="font-weight-bold">{{(element.title || '') | shorten: 40: '...'}}</span>
+                </div>
+              </ng-container>
+              <ng-template #materialInfoTemplate>
+                <div class="v-center c-pointer material-main-info">
+                  <div class="thumbnail" (click)="toggleElement(element)">
+                    <ng-container [ngSwitch]="element.material_type">
+                      <div class="v-center link-wrapper"
+                         *ngSwitchCase="'video'">
+                        <div class="thumb-prev-wrapper">
+                          <img [src]="element.thumbnail" class="thumbnail" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+                          <img [src]="element.preview" class="preview" onerror="( this.src = './assets/img/video_thumb.jpg');"/>
+                        </div>
+                        <span class="font-weight-bold">{{(element.title || '') | shorten: 40: '...'}}
+                          <ng-container *ngIf="!selectedFolder && searchStr && element.folder && foldersKeyValue[element.folder]">
+                            <br/> <span class="fw-400 f-2">\ <a class="folder-info" (click)="openFolder(foldersKeyValue[element.folder])">{{foldersKeyValue[element.folder].title}}</a></span>
+                          </ng-container>
+                        </span>
+                      </div>
+                      <div class="v-center link-wrapper"
+                         *ngSwitchCase="'pdf'">
+                        <img class="thumbnail" src="{{element.preview}}" onerror="( this.src = './assets/img/video_thumb.jpg' );" />
+                        <span class="font-weight-bold">{{(element.title || '') | shorten: 40: '...'}}
+                          <ng-container *ngIf="!selectedFolder && searchStr && element.folder && foldersKeyValue[element.folder]">
+                            <br/> <span class="fw-400 f-2">\ <a class="folder-info" (click)="openFolder(foldersKeyValue[element.folder])">{{foldersKeyValue[element.folder].title}}</a></span>
+                          </ng-container>
+                        </span>
+                      </div>
+                      <div class="v-center link-wrapper"
+                         *ngSwitchCase="'image'">
+                        <img class="thumbnail" src="{{element.preview}}" onerror="( this.src = './assets/img/video_thumb.jpg' );" />
+                        <span class="font-weight-bold">{{(element.title || '') | shorten: 40: '...'}}
+                          <ng-container *ngIf="!selectedFolder && searchStr && element.folder && foldersKeyValue[element.folder]">
+                            <br/> <span class="fw-400 f-2">\ <a class="folder-info" (click)="openFolder(foldersKeyValue[element.folder])">{{foldersKeyValue[element.folder].title}}</a></span>
+                          </ng-container>
+                        </span>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </ng-template>
+              <div class="responsive-data">
+                <div class="type">
+                  <span class="info-title">type:</span>
+                  <span class="info-value">{{element.material_type}}</span>
+                </div>
+                <div class="time">
+                  <span class="info-title">created at:</span>
+                  <span class="info-value">{{element.created_at | date : 'mediumDate'}}</span>
+                </div>
+                <div class="analytics v-center">
+                  <span class="info-title">views:</span>
+                  <div class="info-value">
+                    <a [routerLink]="['/materials/analytics/' + element._id]" class="text-decoration-none">
+                      <div class="v-center justify-content-end">
+                        <span class="f-3 c-dark">{{element.views}}</span>
+                        <i class="i-icon i-analytics bgc-blue ml-1 sm" aria-hidden="true"></i>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+                <div class="owner">
+                  <span class="info-title">owner:</span>
+                  <span class="info-value">
+                    {{element.user ? (element.user._id ? (element.user._id === user_id ? 'Me' : element.user.user_name) : (element.user === user_id ? 'Me' : 'Unknown User')) : 'Admin'}}
+                  </span>
+                </div>
+                <div class="share">
+                  <span class="info-title">share with:</span>
+                  <span class="info-value">
+                    {{element.team ? element.team.name : '--'}}
+                  </span>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Owner Column -->
+          <ng-container matColumnDef="creator">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell
+                  *ngIf="!selection.length" class="owner-col">
+                <div class="v-center c-pointer head-sort" (click)="sort('owner')">
+                  <span [class]="selectedSort == 'owner' ? 'fw-600 c-dark' : ''">Owner</span>
+                  <i class="i-icon d-block bgc-black ml-2"
+                      [class]="searchCondition.owner ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'owner'"></i>
+                </div>
+              </th>
+            </ng-container>
+            <td mat-cell
+                *matCellDef="let element" class="owner-col">
+              {{element.user ? (element.user._id ? (element.user._id === user_id ? 'Me' : element.user.user_name) : (element.user === user_id ? 'Me' : 'Unknown User')) : 'Admin'}}
+            </td>
+          </ng-container>
+
+          <!-- Share Column -->
+          <ng-container matColumnDef="share">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell
+                  *ngIf="!selection.length" class="share-col">shared with</th>
+            </ng-container>
+            <td mat-cell
+                *matCellDef="let element" class="share-col">
+              {{element.team ? element.team.name : '--'}}
+            </td>
+          </ng-container>
+
+
+          <!-- Type Column -->
+          <ng-container matColumnDef="type">
+            <ng-container *matHeaderCellDef>
+              <th mat-header-cell
+                  *ngIf="!selection.length" class="type-col">
+                <div class="v-center c-pointer head-sort" (click)="sort('material_type')">
+                  <span [class]="selectedSort == 'material_type' ? 'fw-600 c-dark' : ''">Type</span>
+                  <i class="i-icon d-block bgc-black ml-2"
+                      [class]="searchCondition.material_type ? 'i-sort-down' : 'i-sort-up'" *ngIf="selectedSort == 'material_type'"></i>
+                </div>  
+              </th>
+            </ng-container>
+            <td mat-cell
+                *matCellDef="let element" class="type-col {{element.material_type}}">
+              {{element.material_type}}
+            </td>
+          </ng-container>
+
+
+          <tr mat-header-row
+              *matHeaderRowDef="['loader-cell']" class="loader-row"></tr>
+          <tr mat-header-row
+              *matHeaderRowDef="DISPLAY_COLUMNS" [class.selected]="selection.length" class="table-header"></tr>
+          <tr mat-row
+              *matRowDef="let row; columns: DISPLAY_COLUMNS;" (click)="selectMaterial(row)" [class.selected]="!multiple && selection.indexOf(row._id) !== -1"></tr>
+        </table>
+      </div>
+      <ng-container *ngIf="!(storeService.materials$ | async).length; else showingStatusTemplate">
+        <ng-container [ngSwitch]="(materialService.loading$ | async)">
+          <div class="empty-list py-5" *ngSwitchCase="STATUS.SUCCESS">
+            <div class="object-icon v-center">
+              <i class="i-icon i-material d-block bgc-dark"></i>
+            </div>
+            <h4 class="font-weight-bold mt-4 mb-3">
+              There is no materials (Videos, PDFs, Images) in your account.
+            </h4>
+          </div>
+          <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+            <div class="loader mt-5 lg"></div>
+            <h4 class="fw-600 mt-2">Loading materials...</h4>
+          </div>
+        </ng-container>
+      </ng-container>
+      <ng-template #showingStatusTemplate>
+        <ng-container *ngIf="!filteredMaterials.length">
+          <div class="empty-list py-5">
+            <div class="object-icon v-center">
+              <i class="i-icon i-material d-block bgc-dark"></i>
+            </div>
+            <h4 class="font-weight-bold mt-4 mb-3">
+              There is no {{matType == '' ? 'materials' : matType + 's'}} for the filter options.
+            </h4>
+          </div>
+        </ng-container>
+      </ng-template>
+    </div>
+    <div class="selected-materials-wrapper" *ngIf="selection.length > 0">
+      <table class="table mt-0 mb-0">
+        <thead>
+        <th class="selected-media op-full pb-1">
+          Selected Media
+        </th>
+        <th class="type op-full pb-1">Type</th>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let selected of selection">
+          <tr *ngIf="getMaterialById(selected)">
+            <td class="selected-media">
+              <div class="c-blue f-2 font-weight-bold">{{getMaterialById(selected).title}}</div>
+            </td>
+            <td class="type">
+              <div class="v-center border-0 bgc-trans">
+                <i class="i-icon bgc-black" aria-hidden="true"
+                   [class]="'i-' + getMaterialById(selected).material_type"
+                ></i>
+                <span class="f-2 ml-2">{{capitalizeFirstLetter(getMaterialById(selected).material_type)}}</span>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button class="btn c-blue" mat-dialog-close>Cancel</button>
+  <button class="btn btn-primary" (click)="select()">{{data.buttonLabel || 'Insert'}}</button>
+</mat-dialog-actions>

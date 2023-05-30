@@ -1,0 +1,158 @@
+<div style="max-width: 500px;">
+    <span class="f-6 font-weight-bold">Business Hour Settings</span>
+    <div class="f-3 op-75">
+        Email and Text sending would work in business hours.
+    </div>
+    <hr />
+    <h6 class="mt-3 font-weight-bold">For Emailing</h6>
+    <div class="pl-4">
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="custom-control custom-checkbox">
+                    <input
+                        type="checkbox"
+                        class="custom-control-input"
+                        id="email-working-hour"
+                        name="emailSettingStatus"
+                        #emailSettingStatus="ngModel"
+                        [(ngModel)]="isEmailBusiness"
+                    />
+                    <label class="custom-control-label" for="email-working-hour">Enable working hours</label>
+                </div>
+            </div>
+        </div>
+        <div [class.disabled]="!isEmailBusiness">
+            <div class="row mt-3">
+                <div class="col-sm-6 col-12">
+                    <div class="form-group has-feedback">
+                        <label class="theme-label">START TIME</label>
+                        <select
+                            class="form-control theme-control"
+                            [(ngModel)]="emailStartTime"
+                            name="emailStart"
+                            #emailStart="ngModel"
+                        >
+                            <option value="" disabled>Due Time</option>
+                            <ng-container *ngFor="let time of times">
+                                <option value="{{time.id}}" *ngIf="time.id < emailEndTime">{{time.text}}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-12">
+                    <div class="form-group has-feedback">
+                        <label class="theme-label">END TIME</label>
+                        <select
+                            class="form-control theme-control"
+                            [(ngModel)]="emailEndTime"
+                            name="emailEnd"
+                            #emailEnd="ngModel"
+                        >
+                            <option value="" disabled>Due Time</option>
+                            <ng-container *ngFor="let time of times;">
+                                <option value="{{time.id}}" *ngIf="time.id > emailStartTime">{{time.text}}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="week-days">
+                <ng-container *ngFor="let day of WEEK_DAYS">
+                    <div class="week-day" [class.selected]="emailWeekDays.includes(day.id)" (click)="toggleEmailWeekDay(day)">
+                        {{day.label}}
+                    </div>
+                </ng-container>
+            </div>
+            <div class="timezone-wrapper mt-2">
+                <app-select-timezone [selectedTimezone]="emailTimezone" [uiType]="'dropdown'" (onChange)="selectEmailTimezone($event)"></app-select-timezone>
+            </div> -->
+        </div>
+    </div>
+    <hr />
+    <h6 class="mt-3 font-weight-bold">For Texting</h6>
+    <div>
+        <div class="row mt-3 pl-1">
+            <div class="col-12">
+                <div class="custom-control custom-checkbox">
+                    <input
+                        type="checkbox"
+                        class="custom-control-input"
+                        id="same-with-email"
+                        name="sameStatus"
+                        #sameStatus="ngModel"
+                        [(ngModel)]="useAnotherSetting"
+                    />
+                    <label class="custom-control-label" for="same-with-email">Use different hours for texting</label>
+                </div>
+            </div>
+        </div>
+        <div [class.d-none]="!useAnotherSetting"  class="pl-4">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="custom-control custom-checkbox">
+                        <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            id="text-working-hour"
+                            name="textSettingStatus"
+                            #textSettingStatus="ngModel"
+                            [(ngModel)]="isTextBusiness"
+                        />
+                        <label class="custom-control-label" for="text-working-hour">Enable working hours</label>
+                    </div>
+                </div>
+            </div>
+            <div [class.disabled]="!isTextBusiness">
+                <div class="row mt-3">
+                    <div class="col-sm-6 col-12">
+                        <div class="form-group has-feedback">
+                            <label class="theme-label">START TIME</label>
+                            <select
+                                class="form-control theme-control"
+                                [(ngModel)]="textStartTime"
+                                name="textStart"
+                                #textStart="ngModel"
+                            >
+                                <option value="" disabled>Due Time</option>
+                                <ng-container *ngFor="let time of times">
+                                    <option value="{{time.id}}" *ngIf="time.id < textEndTime">{{time.text}}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-12">
+                        <div class="form-group has-feedback">
+                            <label class="theme-label">END TIME</label>
+                            <select
+                                class="form-control theme-control"
+                                [(ngModel)]="textEndTime"
+                                name="textEnd"
+                                #textEnd="ngModel"
+                            >
+                                <option value="" disabled>Due Time</option>
+                                <ng-container *ngFor="let time of times">
+                                    <option value="{{time.id}}" *ngIf="time.id > textStartTime">{{time.text}}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="week-days">
+                    <ng-container *ngFor="let day of WEEK_DAYS">
+                        <div class="week-day" [class.selected]="textWeekDays.includes(day.id)" (click)="toggleTextWeekDay(day)">
+                            {{day.label}}
+                        </div>
+                    </ng-container>
+                </div>
+                <div class="timezone-wrapper mt-2">
+                    <app-select-timezone [selectedTimezone]="textTimezone" [uiType]="'dropdown'" (onChange)="selectTextTimezone($event)"></app-select-timezone>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex mt-3">
+        <button class="btn btn-primary ml-auto mr-0" type="button" [class.loading]="saving" (click)="saveSetting()">Save</button>
+    </div>
+</div>
+  

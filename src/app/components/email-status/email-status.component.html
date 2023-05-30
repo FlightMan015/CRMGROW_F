@@ -1,0 +1,48 @@
+<div class="delivery" ngbDropdown display="dynamic" placement="bottom-right">
+  <div class="v-center c-pointer delivery-button" ngbDropdownToggle >
+    <div class="chart-wrapper">
+      <canvas baseChart
+        width="32"
+        height="32"
+        [data]="chartData"
+        [labels]="chartLabels"
+        [chartType]="chartType"
+        [options]="chartOptions"
+        [colors]="chartColor"
+      >
+      </canvas>
+    </div>
+  </div>
+  <div class="delivery-dropdown mt-2 p-3" ngbDropdownMenu>
+    <div class="v-center justify-content-between">
+      <h1 class="f-6 font-weight-bold m-0">
+        Email Delivery Status
+      </h1>
+      <span class="f-3 font-weight-bold c-blue c-pointer" (click)="clear()">
+      Clear
+    </span>
+    </div>
+    <div class="mt-3 delivery">
+      <div class="f-3 op-64 count-detail">
+        Sent 500. Delivered 450. Failed 50.
+      </div>
+      <div class="mt-3 sms-wrapper pr-1">
+        <div class="mb-2 all-sms" *ngFor="let sms of sentSms">
+          <div class="v-center justify-content-between">
+            <div>
+              <div class="f-3 font-weight-bold user-name">{{sms.name}}</div>
+              <div class="f-1 op-64 mt-1 user-phone">{{sms.cellPhone}}</div>
+            </div>
+            <div class="mt-1">
+              <div class="v-center justify-content-center ml-3 f-1 font-weight-bold text-uppercase deliver-status" *ngIf="sms.status == 'delivered'; else failStatus">{{sms.status}}</div>
+              <ng-template #failStatus>
+                <div class="v-center justify-content-center ml-4 f-1 font-weight-bold text-uppercase fail-status" *ngIf="sms.status == 'failed'">{{sms.status}}</div>
+              </ng-template>
+              <div class="f-1 op-64 mt-1 create-time">{{sms.created_at}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

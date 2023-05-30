@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28.075" height="26.409" viewBox="0 0 28.075 26.409">
+  <defs>
+    <rect id="rect-1" width="20" height="20" x="0" y="0"/>
+  </defs>
+  <g transform="translate(3.9972837 4.2046301)">
+    <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M10 1v16"/>
+    <g transform="rotate(-46.000016 16.63126943 -11.02645276)">
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M1.4995 1.5l2.88981674 2.9386796"/>
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M.5.5v4.2427"/>
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M.4995.5h4.2427"/>
+    </g>
+    <g transform="scale(-1 1) rotate(-46.000016 6.59127858 12.626274)">
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M1.4995 1.5l2.88981674 2.9386796"/>
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M.5.5v4.2427"/>
+      <path fill="none" stroke="rgb(16,19,54)" stroke-linecap="round" stroke-linejoin="miter" stroke-width="2" d="M.4995.5h4.2427"/>
+    </g>
+  </g>
+</svg>

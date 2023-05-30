@@ -1,0 +1,46 @@
+<div class="custom-mat-field">
+    <mat-form-field appearance="outline" floatLabel="never" class="d-block">
+      <mat-chip-list aria-label="Contact Selection" #stageList>
+        <mat-basic-chip
+          *ngFor="let stage of selectedStages"
+          [selectable]="selectable"
+          [removable]="true"
+          (removed)="remove(stage)">
+          <div class="v-center chip p-1 rounded-pill mr-1">
+            <div class="info c-dark font-weight-bold ml-1">
+              {{ getStage(stage) }}
+            </div>
+            <div class="close-icon-wrapper rounded-circle bg-white ml-1">
+              <div class="i-icon i-close bgc-dark" matChipRemove></div>
+            </div>
+          </div>
+        </mat-basic-chip>
+        <input
+          [placeholder]="placeholder"
+          #inputField
+          [formControl]="formControl"
+          [matChipInputFor]="stageList"
+          [matAutocomplete]="auto"
+          [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
+          [matChipInputAddOnBlur]="false"
+          (matChipInputTokenEnd)="onAdd($event)"
+        >
+      </mat-chip-list>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="onSelectOption($event)"
+        (optionActivated)="onActiveOption($event)"
+        [autoActiveFirstOption]="onlyFromSearch"
+      >
+        <mat-option *ngFor="let item of filteredResults | async" [value]="item">
+          <div class="d-flex chip py-2" *ngIf="item.title">
+            <div class="info">
+              <div class="f-3" *ngIf="item.isNew">Create new stage:</div>
+              <div class="f-4 fw-600">{{item.title}}</div>
+            </div>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+  

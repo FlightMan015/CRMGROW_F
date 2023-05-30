@@ -1,0 +1,272 @@
+.record-dialog {
+  pointer-events: auto;
+}
+.setting-screen {
+  padding: 2.25rem 2.25rem 2rem 2.25rem;
+  width: 600px;
+  position: fixed;
+  background: white;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+
+  .bgc-record {
+    background-color: #9797B7;
+  }
+
+  .record-mode-wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+
+    .record-item {
+      border-radius: 3px;
+      background-color: #FFFFFF;
+      box-shadow: 0 2px 20px 0 rgba(0,0,0,0.1);
+      text-align: center;
+      padding: 20px 24px;
+
+      .i-icon {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .text {
+        color: #9797B7;
+      }
+
+      .both {
+        width: 88px;
+        height: 34px;
+        background-color: #9797B7;
+      }
+
+      .single {
+        width: 38px;
+        height: 34px;
+        background-color: #9797B7;
+      }
+
+      &.active {
+        background-color: #0000ff;
+
+        .text {
+          color: #ffffff;
+        }
+
+        .both {
+          background-color: #ffffff;
+        }
+
+        .single {
+          background-color: #ffffff;
+        }
+      }
+    }
+  }
+
+  .type-item {
+    .i-icon {
+      width: 20px;
+      height: 24px;
+    }
+  }
+
+  .record-button {
+    height: 46px;
+  }
+}
+
+.counting-screen {
+  overflow: hidden;
+  background-color: rgba(43, 43, 43, 0.5);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  bottom: 0px;
+  right: 0px;
+  text-align: center;
+  padding: 20vh 0px;
+  z-index: 1000;
+
+  .count-number {
+    font-size: 50vh;
+    line-height: 50vh;
+    color: white;
+  }
+}
+
+video {
+  width: 100%;
+}
+
+.record-screen {
+  display: flex;
+  position: fixed;
+  bottom: 55px;
+  right: 0px;
+  align-items: flex-end;
+  z-index: 1001;
+
+  .preview-container {
+    position: absolute;
+    right: 40px;
+    bottom: 0.25rem;
+    height: 120px;
+    transition: all .3s;
+    box-shadow: 0px 0px 3px #aaa;
+
+    video {
+      width: 220px;
+      height: 120px;
+    }
+  }
+
+  .action-container {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    padding: 0px;
+    z-index: 10;
+    background-color: transparent;
+    border-radius: 15px;
+
+    button {
+      width: 40px;
+      height: 40px;
+      border-radius: 3px 0 0 3px;
+      background-color: #40425e;
+      border: 0px;
+
+      .i-icon {
+        width: 16px;
+        height: 12px;
+        background-color: #ffffff;
+      }
+
+      .complete {
+        background-color: #4AC236;
+      }
+
+      &:hover {
+        background-color: #0000ff;
+      }
+
+      &.disable {
+        pointer-events: none;
+        background-color: #9fa1af;
+      }
+    }
+
+    .tip {
+      width: 0px;
+      height: 0px;
+      position: absolute;
+      background: transparent;
+      border: 6px solid #101336;
+    }
+
+    .tip-right {
+      top: 8px;
+      right: -12px;
+      border-top-color: transparent;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+    }
+
+    .tooltip-box {
+      position: relative;
+      max-width: 300px;
+      height: auto;
+      padding: 7px 10px;
+      background-color: #101336;
+      border-radius: 3px;
+      box-shadow: 0 4px 8px -4px #101336;
+      margin-right: 15px;
+    }
+
+    .elapse-time {
+      color:white;
+      background: #40425e;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+
+  }
+}
+
+.upload-screen {
+  padding: 2.25rem 2.25rem 2.25rem 2.25rem;
+  width: 500px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+@keyframes shadow-pulse
+{
+  0% {
+    box-shadow: 0 0 0 0px rgba(255, 0, 0, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+}
+
+.recording-mark {
+  width: 14px;
+  height: 14px;
+  letter-spacing: 1px;
+  background: rgba(255, 0, 0, 0.8);
+  border-radius: 50%;
+  margin: 13px;
+
+  &.recording {
+    width: 10px;
+    height: 10px;
+    animation: shadow-pulse 1s infinite;
+    margin: 15px;
+
+    &.passed-bounced {
+      animation: shadow-pulse 0.4s infinite;
+    }
+  }
+}
+
+.progress-wrapper{
+  position: absolute;
+  top: 50%;
+  width: 84%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+}
+
+.record-screen.closed .preview-container {
+  transform: translateX(300px);
+  transition: all .3s;
+}
+
+.modes {
+  display: flex;
+  justify-content: space-between;
+}
+.modes .mode {
+  width: calc(33.33% - 15px);
+  padding: 10px;
+  text-align: center;
+  border: 1px solid gainsboro;
+  border-radius: 5px;
+
+  img {
+    width: 40px;
+    height: 40px;
+  }
+}

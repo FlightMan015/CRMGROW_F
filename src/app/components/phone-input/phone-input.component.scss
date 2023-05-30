@@ -1,0 +1,37 @@
+.flag-container {
+  display: flex;
+  align-items: center;
+  background: #eee;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  height: calc(100% - 2px);
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+
+  .dropdown-toggle {
+    height: 100%;
+    width: 96px;
+    justify-content: center;
+  }
+}
+
+.countries-wrapper {
+  background-color: white;
+  max-height: 200px;
+  overflow: auto;
+}
+
+input {
+  padding-left: 104px;
+  font-size: 14px;
+}
+
+.prevent-event {
+  pointer-events: none;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}

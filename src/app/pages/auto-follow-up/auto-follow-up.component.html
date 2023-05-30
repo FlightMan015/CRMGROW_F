@@ -1,0 +1,106 @@
+<div class="page-content p-2">
+    <div class="video-watch">
+        <div class="v-center justify-content-between">
+            <div class="f-3 font-weight-bold">
+                Schedule task automatically <span class="c-green">when video has been watched</span>
+            </div>
+            <div class="v-center custom-control custom-switch">
+                <label class="custom-toggle mb-0" placement="top">
+                  <input type="checkbox" [checked]="garbage.auto_follow_up.enabled" (change)="changeToggle($event, garbage.auto_follow_up, 'follow_up1')">
+                  <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+        </div>
+        <div class="delay-time mt-5">
+            <div class="form-group mb-2 mb-sm-4">
+                <div class="f-3 font-weight-bold">
+                    When to send?
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    Follow up time duration after video is being watched
+                </div>
+            </div>
+            <div class="form-group mb-2 mb-sm-4">
+                <select class="form-control f-3 font-weight-bold"
+                        [(ngModel)]="garbage.auto_follow_up.period"
+                        name="delay" id="watch-delay"
+                        required #delay="ngModel"
+                        (ngModelChange)="save('follow_up1')"
+                >
+                    <option *ngFor="let delay of delays" value="{{delay.id}}">
+                        {{delay.text}}
+                      </option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="f-3 font-weight-bold">
+                    Task Content
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    This is the task note
+                </div>
+            </div>
+            <div class="col-sm-8 form-group mt-2 mt-sm-0">
+                <input class="f-3 form-control"
+                       placeholder="Type in follow up text"
+                       [(ngModel)]="garbage.auto_follow_up.content"
+                       (ngModelChange)="save('follow_up1')"
+                >
+            </div>
+        </div>
+    </div>
+    <div class="video-not-watch mt-5">
+        <div class="v-center justify-content-between">
+            <div class="f-3 font-weight-bold">
+                Schedule task automatically <span class="c-red">when video has NOT been watched</span>
+            </div>
+            <div class="v-center custom-control custom-switch">
+                <label class="custom-toggle mb-0" placement="top">
+                  <input type="checkbox" [checked]="garbage.auto_follow_up2.enabled" (change)="changeToggle($event, garbage.auto_follow_up2, 'follow_up2')">
+                  <span class="custom-toggle-slider rounded-circle"></span>
+                </label>
+            </div>
+        </div>
+        <div class="delay-time mt-5">
+            <div class="form-group mb-2 mb-sm-4">
+                <div class="f-3 font-weight-bold">
+                    When to send?
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    Follow up time duration after video is being watched
+                </div>
+            </div>
+            <div class="form-group mb-2 mb-sm-4">
+                <select class="form-control f-3 font-weight-bold"
+                        [(ngModel)]="garbage.auto_follow_up2.period"
+                        name="delay" id="notwatch-delay"
+                        required #delay="ngModel"
+                        (ngModelChange)="save('follow_up2')"
+                >
+                    <option *ngFor="let delay of delays" value="{{delay.id}}">
+                        {{delay.text}}
+                      </option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="f-3 font-weight-bold">
+                    Task Content
+                </div>
+                <div class="f-1 op-64 mt-1">
+                    This is the task note
+                </div>
+            </div>
+            <div class="col-sm-8 form-group mt-2 mt-sm-0">
+                <input class="f-3 form-control"
+                       placeholder="Type in follow up text"
+                       [(ngModel)]="garbage.auto_follow_up2.content"
+                       (ngModelChange)="save('follow_up2')"
+                >
+            </div>
+        </div>
+    </div>
+</div>

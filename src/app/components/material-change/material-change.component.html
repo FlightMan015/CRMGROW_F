@@ -1,0 +1,196 @@
+<div class="v-center justify-content-between">
+    <h6 mat-dialog-title class="f-8 ls-2 font-weight-bold text-uppercase my-2">Upload new {{material.material_type}}</h6>
+
+    <button class="v-center border-0 bgc-trans" (click)="closeDialog()">
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<mat-dialog-content>
+    <div *ngIf="material.material_type === 'video'" class="upload-step">
+        <div class="step-body-1" [class.active]="isStep == 1">
+            <span class="f-3 font-weight-bold text-c-dark">Copy a YouTube or Vimeo link and paste below to bring that video into
+                crmgrow.</span>
+            <div class="web-video my-3">
+                <img src="./assets/img/youtube.svg">
+                <span class="f-3 font-weight-bold text-c-dark mx-2">or</span>
+                <img src="./assets/img/vimeo.svg">
+            </div>
+            <div class="form-group has-feedback mb-4 position-relative">
+                <input class="f-2 form-control pr-4" type="text" id="step-1-link" name="video_link"
+                    placeholder="eg. https://www.youtube.com/watch?v=dQw4w9WgXcQ" required [(ngModel)]="video.url" #video_link="ngModel"
+                    (ngModelChange)="checkVideoUrl()">
+                <img class="check-spinner" src="../../../assets/img/spinner.gif" alt="" *ngIf="socialVideoLoading">
+            </div>
+            <div class="font-weight-bold text-c-dark large-text">or</div>
+            <div class="local-video text-center mt-4" [ngClass]="{'file-over': overFile}" ng2FileDrop [uploader]="videoUploader"
+                (dragover)="activeFileZone($event)" (dragenter)="activeFileZone($event)" (dragend)="disableFileZone($event)"
+                (dragleave)="disableFileZone($event)" (drop)="disableFileZone($event)" (click)="openFileDialog('video')"
+                (fileOver)="fileDrop($event, 'video')">
+                <input type="file" style="display: none;" ng2FileSelect [uploader]="videoUploader" accept=".mp4, .mov"
+                    (change)="fileChange($event, 'video')" (click)="fileClick($event)" #videoFile />
+                <div class="f-3 font-weight-bold text-c-dark my-4">
+                    Upload your video
+                </div>
+                <i class="i-icon i-upload d-block bgc-black upload-icon"></i>
+                <p class="f-1 text-c-dark description mx-auto my-4">Drag and drop your video in the area or click to select it from your
+                    local
+                    device</p>
+            </div>
+            <span class="d-flex f-1 text-c-dark mt-3">You can upload only MP4 and MOV file types!</span>
+        </div>
+
+        <div class="step-body-2 position-relative" [class.active]="isStep == 2">
+            <form #finishUploadForm="ngForm" (ngSubmit)="submitted = true; finishUploadForm.form.valid ? finishUpload('video') : false"
+                [class.was-validated]="submitted">
+                <div class="v-center">
+                    <span class="f-3 font-weight-bold c-dark">Final Review</span>
+                    <span class="f-3 c-dark ml-3" *ngIf="uploadingChunks || mergingChunks || savingData">
+                        Uploading ({{totalUploadProgress}}%)...
+                    </span>
+                </div>
+                <div class="my-4 position-relative">
+                    <img class="w-100" [src]="video.thumbnail">
+                    <div class="video-uploading" *ngIf="uploadingChunks || mergingChunks || savingData">
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" [style.width]="totalUploadProgress + '%'"></div>
+                        </div>
+                        <div class="status w-100 text-left mt-1">
+                            {{ uploadingChunks ? 'Uploading...' : (mergingChunks ? 'Completing...' : (savingData ? 'Saving video data...' :
+                            ''))}}
+                        </div>
+                        <div class="retrying" *ngIf="retryAttempt">
+                            {{retryAttempt + 'th uploading retry attempting...'}}
+                        </div>
+                        <div class="error" *ngIf="uploadingError">
+                            {{uploadingError}}
+                        </div>
+                        <div *ngIf="retryAttempt || uploadingError">
+                            <button class="btn btn-primary cancel-btn" (click)="cancelVideoUpload()" [class.loading]="canceling">Cancel
+                                Uploading</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="v-center justify-content-end mt-4">
+                    <a class="btn f-6 font-weight-bold text-primary px-4 py-2" (click)="backUpload()"
+                        [class.disabled]="uploading || uploadingChunks || mergingChunks || savingData">
+                        Back
+                    </a>
+                    <button class="btn btn-blue f-6 font-weight-bold text-white px-4 py-2" type="submit"
+                        [class.loading]="uploading || uploadingChunks || mergingChunks || savingData">
+                        Finish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div *ngIf="material.material_type === 'pdf'" class="upload-step">
+        <div class="step-body-1" [class.active]="isStep == 1">
+            <div class="local-video text-center mt-4" [ngClass]="{'file-over': overFile}" (dragover)="activeFileZone($event)"
+                (dragenter)="activeFileZone($event)" (dragend)="disableFileZone($event)" (dragleave)="disableFileZone($event)"
+                (drop)="disableFileZone($event)" ng2FileDrop [uploader]="pdfUploader" (click)="openFileDialog('pdf')"
+                (fileOver)="fileDrop($event, 'pdf')">
+                <input type="file" style="display: none;" ng2FileSelect [uploader]="pdfUploader" accept=".pdf"
+                    (change)="fileChange($event, 'pdf')" (click)="fileClick($event)" #pdfFile />
+                <div class="f-3 font-weight-bold text-c-dark my-4">
+                    Upload your pdf
+                </div>
+                <i class="i-icon i-upload d-block bgc-black upload-icon"></i>
+                <p class="f-1 text-c-dark description mx-auto my-4">Drag and drop your pdf in the area or click to select it from your local
+                    device</p>
+            </div>
+            <span class="d-flex f-1 text-c-dark mt-3">You can upload only PDF file types!</span>
+        </div>
+
+        <div class="step-body-2 position-relative" [class.active]="isStep == 2">
+            <form #finishUploadForm="ngForm" (ngSubmit)="submitted = true; finishUploadForm.form.valid ? finishUpload('pdf') : false"
+                [class.was-validated]="submitted">
+                <div class="v-center">
+                    <span class="f-3 font-weight-bold c-dark">Final Review</span>
+                    <span class="f-3 c-dark ml-3" *ngIf="uploading">
+                        Uploading ({{
+                        pdfUploader.progress != 0 ? pdfUploader.progress.toFixed(0) : uploaded_time.toFixed(0)
+                        }}%)...
+                    </span>
+                </div>
+                <div class="video-default mb-4">
+                    <div class="thumbnail" id="pdf-wrapper">
+                        <pdf-viewer [src]="file" [show-all]="false" [fit-to-page]="true" (page-rendered)="pageRendered($event)"
+                            [hidden]="!thumbnail_loading">
+                        </pdf-viewer>
+                        <img class="image" src="{{pdf.preview}}">
+                    </div>
+                </div>
+                <div class="progress-wrapper" *ngIf="uploading">
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" [style.width]="
+                              pdfUploader.progress != 0
+                                ? pdfUploader.progress + '%'
+                                : uploaded_time + '%'
+                            "></div>
+                    </div>
+                </div>
+                <div class="v-center justify-content-end mt-4">
+                    <a class="btn f-6 font-weight-bold text-primary px-4 py-2" (click)="backUpload()">
+                        Back
+                    </a>
+                    <button class="btn btn-blue f-6 font-weight-bold text-white px-4 py-2" type="submit" [class.loading]="uploading">
+                        Finish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div *ngIf="material.material_type === 'image'" class="upload-step">
+        <div class="step-body-1" [class.active]="isStep == 1">
+            <div class="local-video text-center mt-4" [ngClass]="{'file-over': overFile}" (dragover)="activeFileZone($event)"
+                (dragenter)="activeFileZone($event)" (dragend)="disableFileZone($event)" (dragleave)="disableFileZone($event)"
+                (drop)="disableFileZone($event)" ng2FileDrop [uploader]="imageUploader" (click)="openFileDialog('image')"
+                (fileOver)="fileDrop($event, 'image')">
+                <input type="file" style="display: none;" ng2FileSelect [uploader]="imageUploader" accept="image/*"
+                    (change)="fileChange($event, 'image')" (click)="fileClick($event)" #imageFile multiple/>
+                <div class="f-3 font-weight-bold text-c-dark my-4">
+                    Upload your image
+                </div>
+                <i class="i-icon i-upload d-block bgc-black upload-icon"></i>
+                <p class="f-1 text-c-dark description mx-auto my-4">Drag and drop your images in the area or click to select it from your local device</p>
+            </div>
+            <span class="d-flex f-1 text-c-dark mt-3">You can select more than one images so can show slide view for several images!</span>
+        </div>
+        <div class="step-body-2 position-relative" [class.active]="isStep == 2">
+            <form #finishUploadForm="ngForm" (ngSubmit)="submitted = true; finishUploadForm.form.valid ? finishUpload('image') : false"
+                [class.was-validated]="submitted">
+                <div class="v-center">
+                    <span class="f-3 font-weight-bold c-dark">Final Review</span>
+                    <span class="f-3 c-dark ml-3" *ngIf="uploading">
+                        Uploading ({{
+                        imageUploader.progress != 0 ? imageUploader.progress.toFixed(0) : uploaded_time.toFixed(0)
+                        }}%)...
+                    </span>
+                </div>
+                <div class="my-4">
+                    <img class="w-100" src="{{image.preview}}">
+                </div>
+                <div class="progress-wrapper" *ngIf="uploading">
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" [style.width]="
+                              imageUploader.progress != 0
+                                ? imageUploader.progress + '%'
+                                : uploaded_time + '%'
+                            "></div>
+                    </div>
+                </div>
+
+                <div class="v-center justify-content-end mt-4">
+                    <a class="btn f-6 font-weight-bold text-primary px-4 py-2" (click)="backUpload()">
+                        Back
+                    </a>
+                    <button class="btn btn-blue f-6 font-weight-bold text-white px-4 py-2" type="submit" [class.loading]="uploading">
+                        Finish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</mat-dialog-content>

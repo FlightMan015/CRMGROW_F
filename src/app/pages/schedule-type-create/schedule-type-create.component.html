@@ -1,0 +1,381 @@
+<div class="page-content position-relative container">
+  <div class="v-center op-56 mb-4 mt-3 back-menu">
+    <div class="v-center c-pointer" (click)="goToBack()">
+      <i class="d-block i-icon i-triangle-left bgc-dark mr-2 back-menu "></i>
+      <span class="f-5 font-weight-bold">Back to Event Types</span>
+    </div>
+  </div>
+
+  <div class="step-container" [class.loading-event-type]="loadingEventType">
+    <div class="updating-status" *ngIf="loadingEventType">LOADING</div>
+    <ng-container [ngSwitch]="stepIndex" *ngIf="!loadingEventType">
+      <ng-container *ngSwitchCase="1">
+        <form #form="ngForm">
+          <div class="d-flex justify-content-end step-next">
+            <button class="btn btn-primary py-1  step-btn" type="submit"
+              (click)="form.submitted=true;form.form.valid ? goToStep(2) : false">
+              Next
+            </button>
+          </div>
+          <div class="mt-4">
+            <!-- Main information -->
+            <div class="row">
+              <div class="col-12 mb-3">
+                <div class="form-group mb-0">
+                  <label for="title_cc" class="mb-1 ">Type</label>
+                </div>
+                <div>
+                  <mat-radio-group name="type" [(ngModel)]="eventType.type">
+                    <mat-radio-button class=" f-4" [color]="'primary'" [value]="1">
+                      One-on-One
+                    </mat-radio-button>
+                    <mat-radio-button class=" ml-5 f-4" [color]="'primary'" [value]="2">
+                      Group
+                    </mat-radio-button>
+                  </mat-radio-group>
+                </div>
+              </div>
+              <div class="col-12 form-group"
+                [class.invalid]="form.submitted && title.invalid && (title.dirty || title.touched || form.submitted)">
+                <div class="v-center justify-content-between">
+                  <label for="title_cc" class=" mb-1">Title</label>
+                  <span class="error" *ngIf="title.errors">
+                    <ng-container *ngIf="title.errors.required">Required!</ng-container>
+                  </span>
+                </div>
+                <input type="text" id="title_cc" class="form-control" required name="title" #title="ngModel" [(ngModel)]="eventType.title"
+                  (ngModelChange)="onTitleChanged()" />
+
+              </div>
+              <div class="col-12 ">
+                <div class="row">
+                  <div class="col-6 form-group">
+                    <div class="v-center">
+                      <label for="location_cc" class="mb-1">Meeting type</label>
+                    </div>
+                    <mat-select id="location_cc" class="form-control d-flex align-items-center" [(ngModel)]="locationType" name="location"
+                      #location="ngModel" [disableOptionCentering]="true">
+                      <mat-option *ngFor="let location of Locations" [value]="location.value">{{location.name}}</mat-option>
+                    </mat-select>
+                  </div>
+
+                  <ng-container *ngIf="locationType == 'in_person'">
+                    <div class="col-6 form-group"
+                      [class.invalid]="form.submitted && address.invalid && (address.dirty || address.touched || form.submitted)">
+                      <div class="v-center justify-content-between">
+                        <label for="address_cc" class=" mb-1">Meeting address</label>
+                        <span class="error" *ngIf="address.errors">
+                          <ng-container *ngIf="address.errors.required">Required!</ng-container>
+                        </span>
+                      </div>
+                      <input id="address_cc" name="address" class="form-control" type="text" placeholder="Enter a Location"
+                        [(ngModel)]="meetingAddress" #address="ngModel" ngx-google-places-autocomplete required
+                        (onAddressChange)="handleAddressChange($event)" />
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="locationType == 'phone'">
+                    <div class="col-6 form-group"
+                      [class.invalid]="form.submitted && phone.invalid && (phone.dirty || phone.touched || form.submitted)">
+                      <div class="v-center justify-content-between">
+                        <label for="phone_cc" class=" mb-1">Phone Number</label>
+                        <span class="error" [class.d-block]="form.submitted">
+                          <ng-container *ngIf="!meetingPhone; else wrongTemplate;">Required!</ng-container>
+                          <ng-template #wrongTemplate>
+                            <ng-container *ngIf="phone && meetingPhone && !phone.valid">
+                              Wrong Phone Number!
+                            </ng-container>
+                          </ng-template>
+                        </span>
+                      </div>
+
+                      <app-phone-input [cssClass]="'form-control phone-form'" [onlyCountries]="countries"
+                        [selectedCountryISO]="CountryISO.UnitedStates" [(ngModel)]="meetingPhone" name="phonename" #phone>
+                      </app-phone-input>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="locationType == 'webinar'">
+                    <div class="col-6 form-group"
+                      [class.invalid]="form.submitted && email.invalid && (email.dirty || email.touched || form.submitted)">
+                      <div class="v-center justify-content-between">
+                        <label for="email_cc" class=" mb-1">Webinar Address</label>
+                        <span class="error" *ngIf="email.errors">
+                          <ng-container *ngIf="email.errors.required">Required!</ng-container>
+                        </span>
+                      </div>
+                      <input type="text" id="email_cc" class="form-control" name="email" required autocomplete="off"
+                        [(ngModel)]="meetingEmail" #email="ngModel" />
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+              <div class="col-12 form-group">
+                <label for="description_cc" class=" mb-1">Description</label>
+                <app-html-editor id="description_cc" [(value)]="eventType.description"
+                  placeholder="Write a summary and any details your invitee should know about the event." [style]="{ height: '200px' }"
+                  [submitted]="form.submitted" [noImage]="true" [noFont]="true" [noSize]="true" [hasScheduler]="false">
+                </app-html-editor>
+              </div>
+              <div class="col-12 form-group" [ngClass]="{
+                  invalid: existingLink
+                }">
+                <label for="link_cc" class=" mb-1">Link</label>
+                <div class="f-3">{{ linkRouteURL }}</div>
+                <input type="text" id="link_cc" class="form-control" name="link" #link="ngModel" [(ngModel)]="eventType.link"
+                  (ngModelChange)="onLinkChanged()" />
+                <div class="text-danger ml-1" *ngIf="existingLink">
+                  Has already been taken
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </ng-container>
+      <ng-container *ngSwitchCase="2">
+        <form #form="ngForm">
+          <div class="d-flex justify-content-end step-next">
+            <button class="btn btn-primary step-btn mr-3 py-1" (click)="goToStep(1)">
+              Prev
+            </button>
+            <button class="btn btn-primary step-btn mr-3 py-1" (click)="form.form.valid && validateDateRange()?goToStep(3):false">
+              Next
+            </button>
+          </div>
+          <div class="mt-4">
+            <!-- Date Range -->
+            <div class="date-range">
+              <label for="date-range_cc" class="mb-1">Date range</label>
+              <div class="ml-3">
+                <mat-radio-group name="daterange" [(ngModel)]="dateRange.type">
+                  <div class="v-center">
+                    <mat-radio-button [color]="'primary'" class="" [value]="'days'">{{' '}} </mat-radio-button>
+                    <input id="days-value" type="text" class="form-control days-value mr-1" name="days"
+                      [(ngModel)]="dateRange.data.days.value" [disabled]="dateRange.type != 'days'" required />
+
+                    <div class="col-auto days-type pl-0">
+                      <mat-select id="days-type" class="form-control d-flex align-items-center" [(value)]="dateRange.data.days.type"
+                        name="days-type" [disabled]="dateRange.type != 'days'" disableOptionCentering>
+                        <mat-option *ngFor="let daysType of DaysTypes" [value]="daysType.value">{{ daysType.name }}</mat-option>
+                      </mat-select>
+                    </div>
+                    <div class="col-auto f-4">
+                      into the future
+                    </div>
+                  </div>
+                  <div class="v-center mt-2 days-selection">
+                    <mat-radio-button class="mr-2 f-4" [color]="'primary'" [value]="'range'">
+                      Within a date range
+                    </mat-radio-button>
+                    <div class="v-center mb-0" [ngClass]="{
+                      'invalid':
+                        form.submitted && !validateDateRange()
+                    }" *ngIf="dateRange.type === 'range'">
+                      <app-date-input type="prepend" [clearable]="true" [(value)]="dateRange.data.range.start" [markToday]="true">
+                      </app-date-input>
+                      <div class="mx-2 date-range-dash"></div>
+                      <app-date-input type="prepend" [clearable]="true" [(value)]="dateRange.data.range.end" [markToday]="true">
+                      </app-date-input>
+                    </div>
+                    <div class="text-danger ml-2" *ngIf="
+                      form.submitted &&
+                      !validateDateRange() &&
+                      dateRange.type === 'range'
+                    ">
+                      Invalid date range
+                    </div>
+                  </div>
+                  <mat-radio-button class=" mt-2 f-4" [color]="'primary'" [value]="'infinite'">
+                    Indefinitely into the future
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+            </div>
+
+            <!-- Duration -->
+            <div class=" mt-3">
+              <label for="duration_cc" class="mb-1">Duration</label>
+              <div class="v-center date-range ml-3 ">
+                <mat-select *ngIf="!customDuration" id="duration_cc" class="form-control select-duration d-flex align-items-center"
+                  [(ngModel)]="eventType.duration" name="duration" #duration="ngModel" required disableOptionCentering required>
+                  <mat-option *ngFor="let duration of Durations" [value]="duration.value">{{ duration.name }}</mat-option>
+                </mat-select>
+                <div *ngIf="customDuration" class="input-group select-duration ">
+                  <input id="duration_cc" type="number" class="form-control " name="custom-duration-input" [(ngModel)]="eventType.duration"
+                    required min="1" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">mins</span>
+                  </div>
+                </div>
+
+                <mat-checkbox class="f-4 ml-3" [color]="'primary'" name="custom-duration-checkbox" [(ngModel)]="customDuration"
+                  (change)="setCustomeDuration($event)">
+                  Custom duration
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <!-- Weekly Hours -->
+            <div class="mt-3">
+              <label class="mb-1">Please choose your availability for this event.</label>
+              <div class="ml-3 ">
+                <ng-container *ngFor="let weekday of WeekDays; let i = index">
+                  <div class="weekday row mt-2">
+                    <div class="col-3">
+                      <div class="v-center row-h-min">
+                        <mat-checkbox class="example-margin" [checked]="weeklyHours[weekday].available" [color]="'primary'"
+                          name="weekday-availability-{{ weekday }}" [(ngModel)]="weeklyHours[weekday].available"
+                          (change)="onWeekdayAvailabilityChange(weekday)">
+                          {{ WeekDaysObj[weekday] }}
+                        </mat-checkbox>
+                      </div>
+                    </div>
+                    <div class="col-7 weekly-hours" *ngIf="weeklyHours[weekday].available">
+                      <div class="v-center weekly-hour mb-2" *ngFor="
+                          let hour of weeklyHours[weekday].hours;
+                          let index = index
+                        ">
+                        <div class="mb-0">
+                          <select class="form-control theme-control" name="{{ weekday }}-hors-start-{{ index }}" [(ngModel)]="hour.start">
+                            <ng-container *ngFor="let time of TIMES">
+                              <option value="{{ time.id }}">
+                                {{ time.text }}
+                              </option>
+                            </ng-container>
+                          </select>
+                        </div>
+                        <div class="mx-2 date-range-dash"></div>
+                        <div class="mb-0">
+                          <select class="form-control theme-control" name="{{ weekday }}-hors-end-{{ index }}" [(ngModel)]="hour.end">
+                            <ng-container *ngFor="let time of TIMES">
+                              <option value="{{ time.id }}">
+                                {{ time.text }}
+                              </option>
+                            </ng-container>
+                          </select>
+                        </div>
+                        <div class="p-1 v-center ml-2 c-pointer" (click)="removeWeeklyHour(weekday, index)">
+                          <i class="d-block i-icon i-trash bgc-red"></i>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-7 weekly-hours" *ngIf="!weeklyHours[weekday].available">
+                      <div class="no-hours v-center f-4 row-h-min">Unavailable </div>
+                    </div>
+                    <div class="col-2">
+                      <div class="v-center c-pointer row-h-min" (click)="addNewHour(weekday)">
+                        <i class="d-block i-icon i-plus bgc-blue"></i>
+                      </div>
+                      <!-- <div class="row weekday-actions v-center ml-2">
+                      </div> -->
+                    </div>
+                  </div>
+                  <hr class="my-1" *ngIf="i !== WeekDays.length - 1" />
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Gaps -->
+            <div class="mt-3">
+              <label class="mb-1 f-6 mb-1">Want to add time before or after your events?</label>
+              <div class="gaps ml-3 v-center">
+                <div class="d-flex flex-column mr-5">
+                  <mat-checkbox class="f-4" [color]="'primary'" name="gap-start-availability" [(ngModel)]="gap.start.available">
+                    Before event
+                  </mat-checkbox>
+                  <mat-select class="form-control select-duration d-flex align-items-center" name="gap-start-value"
+                    [(ngModel)]="gap.start.value" [disabled]="!gap.start.available" disableOptionCentering>
+                    <mat-option *ngFor="let duration of Durations" [value]="duration.value">{{ duration.name }}</mat-option>
+                  </mat-select>
+                </div>
+                <div class="d-flex flex-column">
+                  <mat-checkbox class="f-4" [color]="'primary'" name="gap-end-availability" [(ngModel)]="gap.end.available">
+                    After event
+                  </mat-checkbox>
+                  <mat-select class="form-control select-duration d-flex align-items-center" name="gap-end-value"
+                    [(ngModel)]="gap.end.value" [disabled]="!gap.end.available" disableOptionCentering>
+                    <mat-option *ngFor="let duration of Durations" [value]="duration.value">{{ duration.name }}</mat-option>
+                  </mat-select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="3">
+        <form #form="ngForm">
+          <div class="d-flex justify-content-end step-next">
+            <button class="btn btn-primary step-btn mr-3 py-1" (click)="goToStep(2)">
+              Prev
+            </button>
+            <button class="btn btn-primary step-btn py-1" type="submit" [class.disabled]="saving" [class.loading]="saving"
+              (click)="form.submitted=true;form.form.valid ? save() : false">
+              {{ isNew ? 'Add' : 'Save' }}
+            </button>
+          </div>
+          <div class="mt-4">
+            <div class="form-group mt-2">
+              <div class="v-center">
+                <label class="theme-label">Tags</label>
+                <!-- <span class="invalid-error f-3 c-red ml-auto" *ngIf="tags.length == 0 && submitted">
+                  Required!
+                </span> -->
+              </div>
+              <app-input-tag [selectedTags]="eventType.tags"></app-input-tag>
+            </div>
+
+            <div class="mt-3">
+              <mat-checkbox class="f-2 text-uppercase font-weight-bold" [color]="'primary'" name="automation-checkbox"
+                [(ngModel)]="requiredAutomation">Add automation</mat-checkbox>
+            </div>
+            <div *ngIf="requiredAutomation" class="form-group mt-2">
+
+              <div class="v-center">
+                <label class="theme-label">Automation happens</label>
+                <span class="invalid-error f-3 c-red ml-auto" *ngIf="!eventType.auto_trigger_type && form.submitted">
+                  Required!
+                </span>
+              </div>
+              <mat-select class="form-control d-flex align-items-center" [(value)]="eventType.auto_trigger_type" name="remind-event"
+                disableOptionCentering (selectionChange)="changeAutoTriggerType($event)">
+                <mat-option *ngFor="let trigger of autoTriggers" [value]="trigger.value">{{ trigger.name }}</mat-option>
+              </mat-select>
+
+              <div *ngIf="eventType.auto_trigger_type > 0" class="mt-3 form-group ">
+                <label class="theme-label ml-5">How long {{selectedAutoTrigger.name | lowercase}}?</label>
+                <mat-radio-group name="trigger-type" class="d-flex flex-column" [(ngModel)]="selectedTriggerTime">
+                  <mat-radio-button *ngIf="eventType.auto_trigger_type!=2" class=" f-4 ml-5 mb-2" [color]="'primary'" [value]="'immediate'"
+                    (change)="changeAutoTriggerTime($event)">
+                    Immediately
+                  </mat-radio-button>
+
+                  <div class="v-center col-sm-6 px-0">
+                    <mat-radio-button class=" ml-5 my-1 f-4" [color]="'primary'" [value]="'custom'"
+                      (change)="changeAutoTriggerTime($event)">
+                    </mat-radio-button>
+                    <input type="number" class="form-control mr-2" name="custom-duration-input"
+                      [(ngModel)]="eventType.auto_trigger_duration" required min="1" [disabled]="selectedTriggerTime!=='custom'" />
+                    <mat-select class="form-control d-flex align-items-center" [(value)]="eventType.auto_trigger_time" name="remind-time"
+                      disableOptionCentering [disabled]="selectedTriggerTime!=='custom'">
+                      <mat-option *ngFor="let time of autoTriggerTimes" [value]="time.value">{{ time.name }}</mat-option>
+                    </mat-select>
+                  </div>
+                </mat-radio-group>
+              </div>
+              <div class="mt-2 ">
+                <div class="v-center">
+                  <label class="theme-label">Automation</label>
+                  <span class="invalid-error f-3 c-red ml-auto" *ngIf="!selectedAutomation && form.submitted">
+                    Required!
+                  </span>
+                </div>
+                <app-input-automation [automation]="selectedAutomation" (automationChange)="selectAutomation($event)" [type]="'contact'"
+                  required>
+                </app-input-automation>
+              </div>
+            </div>
+          </div>
+        </form>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

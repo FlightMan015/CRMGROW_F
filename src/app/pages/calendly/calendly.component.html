@@ -1,0 +1,19 @@
+<div class="page-content bg-white">
+  <div class="v-center mb-3">
+    <h1 class="page-title">Scheduler</h1>
+    <!-- <div class="ml-auto">
+      <button class="v-center btn btn-blue f-6 font-weight-bold text-white rounded shadow px-3" (click)="createEventType()">
+        New
+      </button>
+    </div> -->
+  </div>
+  <div class="page-header mb-2">
+    <app-slide-tab [tabs]="tabs" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain" class="border-bottom pl-0 rounded-0">
+    </app-slide-tab>
+  </div>
+  <div class="container-fluid">
+    <app-schedule-types [class.d-none]="selectedTab.id !== 'types'"></app-schedule-types>
+    <app-scheduled-events [class.d-none]="selectedTab.id !== 'schedules'"></app-scheduled-events>
+    <app-integrated-calendars [class.d-none]="selectedTab.id !== 'calendars'"></app-integrated-calendars>
+  </div>
+</div>

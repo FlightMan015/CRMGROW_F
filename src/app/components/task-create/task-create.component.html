@@ -1,0 +1,130 @@
+<form #form="ngForm" (ngSubmit)="form.form.valid ? submit() : false" [class.was-validated]="form.submitted" class="general">
+  <h1 mat-dialog-title>New task</h1>
+  <mat-dialog-content>
+    <ng-container *ngIf="type === 'deal'; else normalTaskContacts">
+      <div class="f-6 mb-2">
+        adding to
+        <!-- <span class="f-6 c-blue font-weight-bold">{{contacts[0].fullName}}</span>
+        <ng-container *ngIf="contacts.length > 1">
+          <span class="f-6 c-blue font-weight-bold"> and {{contacts.length - 1}} contact(s)</span>
+        </ng-container> -->
+      </div>
+      <div class="new-contacts-wrapper my-2" (click)="setFocus()">
+        <app-input-contact-chip [selectedContacts]="contacts" [display]="'email'" [onlyFromSearch]="true" [onlySubscriber]="false"
+          [isDealContact]="true" (onFocus)="setFocus()" [focus]="isFocus()" class="w-100">
+        </app-input-contact-chip>
+      </div>
+    </ng-container>
+    <ng-template #normalTaskContacts>
+      <ng-container *ngIf="isSelected">
+        <div class="f-6 mb-2">
+          adding to
+          <span class="f-6 c-blue font-weight-bold">{{contacts[0].fullName}}</span>
+          <ng-container *ngIf="contacts.length > 1">
+            and <span class="f-6 c-blue font-weight-bold">{{contacts.length - 1}} contact(s)</span>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-template>
+
+    <div class="form-group" (click)="blueAll()">
+      <label class="mb-0">task type</label>
+      <div>
+        <app-task-type [(value)]="task.type"></app-task-type>
+      </div>
+    </div>
+
+    <div class="form-group" (click)="blueAll()">
+      <div class="v-center">
+        <label for="content_tc" class="mb-0">task description</label>
+        <span class="error ml-auto" *ngIf="content.errors">
+          <ng-container *ngIf="content.errors.required">Required!</ng-container>
+        </span>
+      </div>
+      <input type="text" class="form-control" id="content_tc" name="content" #content="ngModel" [(ngModel)]="task.content" required>
+    </div>
+
+    <ng-container *ngIf="!isSelected">
+      <div class="form-group">
+        <div class="v-center">
+          <label for="contact_tc" class="mb-0">assign to contact</label>
+          <span class="error ml-auto" *ngIf="!contacts.length">
+            <ng-container>Required!</ng-container>
+          </span>
+        </div>
+        <app-input-contacts [placeholder]="'Search for Contact'" [display]="'email'" [selectedContacts]="contacts"></app-input-contacts>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="task.type === 'meeting' && task_setting.schedule_meeting && task_setting.default_scheduler;else normalDateTimeTemplate">
+      <div class="form-group mt-2">
+        <div *ngIf="!selectedDateTime && form.submitted" class="v-center">
+          <div class="f-3">Select Date & Time</div>
+          <span class="error ml-auto">
+            Required!
+          </span>
+        </div>
+        <app-input-scheduler [id]="task_setting.default_scheduler" (valueChange)="selectDateTime($event)" [showTimezone]="false"> </app-input-scheduler>
+      </div>
+    </ng-container>
+
+    <ng-template #normalDateTimeTemplate>
+      <div class="row" (click)="blueAll()">
+        <div class="col-sm-6 col-12">
+          <div class="form-group">
+            <div class="v-center">
+              <label class="mb-0">date</label>
+              <span class="error ml-auto" *ngIf="!date">
+                <ng-container>Required!</ng-container>
+              </span>
+            </div>
+            <app-date-input type="prepend" [(value)]="date" [minDate]="MIN_DATE"></app-date-input>
+          </div>
+        </div>
+        <div *ngIf="!task.is_full || task.type === 'email' || task.type === 'text'" class="col-sm-6 col-12">
+          <div class="form-group">
+            <label for="time_tc" class="mb-0 d-block">time</label>
+            <select class="form-control" name="due_time" #due_time="ngModel" [(ngModel)]="time">
+              <option *ngFor="let time of TIMES" [value]="time.id">
+                {{time.text}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="task.type !== 'email' && task.type !== 'text'" class="d-flex align-items-center justify-content-between">
+        <div class="custom-control custom-checkbox v-center">
+          <input type="checkbox" class="custom-control-input" id="all_day_tc" [checked]="task.is_full"
+            (change)="toggleTimeSelector($event)" />
+          <label class="custom-control-label f-3 fw-600 pt-1" for="all_day_tc">All Day Task</label>
+        </div>
+
+        <app-select-timezone class="pt-1" [selectedTimezone]="selectedTimezone" [uiType]="'dropdown'" (onChange)="selectTimezone($event)">
+        </app-select-timezone>
+      </div>
+    </ng-template>
+
+    <div class="row mt-2 mb-3">
+      <div class="col-12 v-center">
+        <div class="custom-control custom-checkbox mr-3 v-center">
+          <input type="checkbox" class="custom-control-input" id="repeat_tc" [checked]="task.set_recurrence"
+            (change)="toggleRepeatSetting()" />
+          <label class="custom-control-label f-3 fw-600 pt-1" for="repeat_tc">Set as recurring event</label>
+        </div>
+        <div class="form-group ml-auto mb-0">
+          <select *ngIf="task.set_recurrence" class="form-control c-blue font-weight-bold" [(ngModel)]="task.recurrence_mode"
+            name="duration" #duration="ngModel">
+            <option *ngFor="let type of REPEAT_DURATIONS" [value]="type.value" [selected]="type.value=='DAILY'">
+              {{type.label}}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button class="btn c-blue" mat-dialog-close>Cancel</button>
+    <button class="btn btn-primary" [class.loading]="saving">Create</button>
+  </mat-dialog-actions>
+</form>

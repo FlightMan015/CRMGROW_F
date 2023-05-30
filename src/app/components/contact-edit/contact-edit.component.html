@@ -1,0 +1,202 @@
+<form #form="ngForm" (ngSubmit)="form.form.valid ? update() : false;">
+    <div mat-dialog-title class="title">
+      <div class="v-center justify-content-between">
+        <h1 class="mb-0">Edit contact details</h1>
+        <button type="button" class="v-center border-0 bgc-trans close-button" mat-dialog-close>
+            <i class="i-icon i-close bgc-black ml-1" aria-hidden="true"></i>
+        </button>
+      </div>
+      <span class="error mb-1" *ngIf="form.submitted && (sameEmailContacts.length || sameCellPhoneContacts.length)">
+        Please input another contact information or edit the existing contact.
+      </span>
+    </div>
+    <mat-dialog-content>
+      <div class="row">
+        <div class="col-sm-6 col-12 form-group" [ngClass]="{invalid: form.submitted && first_name.invalid && (first_name.dirty || first_name.touched || form.submitted)}">
+          <label for="first_name_cc">first name</label>
+          <input type="text" id="first_name_cc"
+                 class="form-control"
+                 required name="first_name"
+                 #first_name="ngModel"
+                 [(ngModel)]="contact.first_name"
+                 [class.disabled]="isSharedContact && isNullFirstName"
+          />
+          <span class="error" *ngIf="first_name.errors">
+            <ng-container *ngIf="first_name.errors.required">First name is required!</ng-container>
+          </span>
+        </div>
+        <div class="col-sm-6 col-12 form-group">
+          <label for="last_name_cc">last name</label>
+          <input type="text"
+                 id="last_name_cc"
+                 class="form-control"
+                 name="last_name"
+                 #last_name="ngModel"
+                 [(ngModel)]="contact.last_name"
+                 [class.disabled]="isSharedContact && isNullLastName"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 col-12 form-group position-relative" [ngClass]="{invalid: form.submitted && email.invalid && (email.dirty || email.touched || form.submitted)}">
+          <label for="email_cc">email</label>
+          <input type="email" id="email_cc" class="form-control" name="email"
+              [(ngModel)]="contact.email"
+              pattern="^[a-zA-Z0-9'._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{1,}$"
+              #email="ngModel"
+              (ngModelChange)="checkEmailDuplicate($event)"
+              [class.disabled]="isSharedContact && isNullEmail"
+          />
+            <span class="form-append-icon c-pointer" (click)="toggleSameEmails()" *ngIf="sameEmailContacts.length">
+              <i class="d-block i-icon i-close bgc-dark" *ngIf="sameEmailsFlag"></i>
+              <i class="d-block i-icon i-triangle-down bgc-dark sm" style="margin-right: 2px;" *ngIf="!sameEmailsFlag"></i>
+            </span>
+            <div class="form-checking-result p-2" [hidden]="!sameEmailsFlag"
+              *ngIf="sameEmailContacts.length">
+              <div class="contact-item" *ngFor="let item of sameEmailContacts">
+                <div class="d-flex chip">
+                  <div class="form-avatar rounded-circle bg-dark mr-2 mt-1">{{item.avatarName}}</div>
+                  <div class="info">
+                    <a class="f-3 font-weight-bold text-primary c-pointer td-none" (click)="redirectContact(item)">
+                      {{item.fullName}}
+                    </a>
+                    <div class="f-2">{{item['email'] || 'Undefined'}}</div>
+                    <div class="f-2">{{item['cell_phone'] || 'Undefined'}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="error" *ngIf="email.errors">
+              <ng-container *ngIf="email.errors.pattern">Email is invalid!</ng-container>
+            </span>
+        </div>
+        <div class="col-sm-6 col-12 form-group phone-form position-relative top-phone">
+          <label for="cell_phone_cc">phone number</label>
+          <app-phone-input
+            [cssClass]="'form-control phone-form'"
+            [onlyCountries]="countries"
+            [selectedCountryISO]="CountryISO.UnitedStates"
+            [(ngModel)]="contact_phone"
+            (ngModelChange)="checkPhoneDuplicate($event)"
+            name="phone"
+            #phoneControl
+            [disabled]="isSharedContact && contact_phone"
+            [class.disabled]="isSharedContact && isNullPhone"
+          >
+          </app-phone-input>
+          <span class="error d-block mt-1" *ngIf="phoneControl && contact_phone && !phoneControl.valid">
+            Wrong phone number!
+          </span>
+          <span class="form-append-icon c-pointer" (click)="toggleSamePhones()" *ngIf="sameCellPhoneContacts.length">
+            <i class="d-block i-icon i-close bgc-dark" *ngIf="samePhonesFlag"></i>
+            <i class="d-block i-icon i-triangle-down bgc-dark sm" style="margin-right: 2px;" *ngIf="!samePhonesFlag"></i>
+          </span>
+          <div class="form-checking-result p-2" [hidden]="!samePhonesFlag"
+            *ngIf="sameCellPhoneContacts.length">
+            <div class="contact-item" *ngFor="let item of sameCellPhoneContacts">
+              <div class="d-flex chip">
+                <div class="form-avatar rounded-circle bg-dark mr-2 mt-1">{{item.avatarName}}</div>
+                <div class="info">
+                  <a class="f-3 font-weight-bold text-primary c-pointer td-none" (click)="redirectContact(item)">
+                    {{item.fullName}}
+                  </a>
+                  <div class="f-2">{{item['email'] || 'Undefined'}}</div>
+                  <div class="f-2">{{item['cell_phone'] || 'Undefined'}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 col-12 form-group">
+          <label for="address_cc">address</label>
+          <input type="text" placeholder="" id="address_cc" class="form-control" [(ngModel)]="contact.address" name="address" #address="ngModel" ngx-google-places-autocomplete #addressplacesRef="ngx-places" [options]="{types: [], componentRestrictions: { country: contact.country || LOCATION_COUNTRIES }}" (onAddressChange)="handleAddressChange($event)" />
+        </div>
+        <div class="col-sm-6 col-12 form-group">
+          <label for="city_cc">city</label>
+          <input type="text" placeholder="" id="city_cc" class="form-control" [(ngModel)]="contact.city" name="city" #city="ngModel" ngx-google-places-autocomplete #cityplacesRef="ngx-places" [options]="{types: ['(cities)'], componentRestrictions: { country: contact.country || LOCATION_COUNTRIES }}" (onAddressChange)="handleAddressChange($event)" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-12 form-group">
+          <label for="country_cc">country</label>
+          <select id="country_cc" class="form-control" [(ngModel)]="contact.country" name="country" #country="ngModel" (ngModelChange)="setContactStates()">
+            <option value="">None</option>
+            <option *ngFor="let country of COUNTRIES" value="{{country.code}}">{{country.name}}</option>
+          </select>
+        </div>
+        <div class="col-sm-4 col-12 form-group">
+          <label for="state_cc">state</label>
+          <select id="state-cc" class="form-control" [(ngModel)]="contact.state" name="state" #state="ngModel">
+            <option value="">None</option>
+            <ng-container *ngIf="!contact.country; else selectedState">
+              <optgroup *ngFor="let country of DefaultCountryStates | keyvalue: orderOriginal" label="{{country.key}}">
+                <option *ngFor="let region of country.value" value="{{region}}">{{region}}</option>
+              </optgroup>
+            </ng-container>
+            <ng-template #selectedState>
+              <option *ngFor="let region of COUNTRY_REGIONS[contact.country]" value="{{region}}">{{region}}</option>
+            </ng-template>
+          </select>
+        </div>
+        <div class="col-sm-4 col-12 form-group">
+          <label for="zipcode_cc">zipcode</label>
+          <input type="text" id="zipcode_cc" class="form-control" [(ngModel)]="contact.zip" name="zip" #zip="ngModel" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-12 form-group">
+          <label for="status_uc">label</label>
+          <app-label-select [value]="contact.label" (valueChange)="updateLabel($event)" type="form"></app-label-select>
+        </div>
+        <div class="col-sm-4 col-12 form-group">
+          <label for="company_uc">website</label>
+          <input type="text" id="company_uc" class="form-control" [(ngModel)]="contact.website" name="website" #website="ngModel">
+        </div>
+        <!-- <div class="col-sm-4 col-12 form-group">
+          <label for="stage_cc">Deal Stage</label>
+          <select id="stage_cc" class="form-control" [(ngModel)]="contact.deal_stage" name="stage" #stage="ngModel">
+            <option *ngFor="let stage of stages" value="{{stage._id}}">{{stage.title}}</option>
+          </select>
+        </div> -->
+      </div>
+      <div class="row" [class.d-none]="!panelOpenState">
+        <div class="col-sm-6 col-12 form-group" [ngClass]="{invalid: form.submitted && secondEmail.invalid && (secondEmail.dirty || secondEmail.touched || form.submitted)}">
+          <label for="second_email">secondary email address (optional)</label>
+          <input type="email" id="second_email" class="form-control" name="secondEmail" #secondEmail="ngModel" [(ngModel)]="contact.secondary_email" pattern="^[a-zA-Z0-9'._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{1,}$"/>
+          <span class="error" *ngIf="secondEmail.errors">
+            <ng-container *ngIf="secondEmail.errors.pattern">Email is invalid!</ng-container>
+          </span>
+        </div>
+        <div class="col-sm-6 col-12 form-group phone-form bottom-phone">
+          <label for="second_phone_call">secondary phone number (optional)</label>
+          <app-phone-input
+            [cssClass]="'form-control phone-form'"
+            [onlyCountries]="countries"
+            [selectedCountryISO]="CountryISO.UnitedStates"
+            [(ngModel)]="second_contact_phone"
+            name="secondPhone"
+            #secondPhoneControl
+          >
+          </app-phone-input>
+          <span class="error" *ngIf="secondPhoneControl && second_contact_phone && !secondPhoneControl.valid">
+            Wrong phone number!
+          </span>
+        </div>
+      </div>
+      <div class="v-center justify-content-center secondary-contact c-pointer" (click)="panelOpenState = !panelOpenState">
+        <span class="f-3 font-weight-bold c-blue mr-2" *ngIf="!panelOpenState">
+          Add secondary contact information
+        </span>
+        <span class="f-3 font-weight-bold c-blue mr-2" *ngIf="panelOpenState">
+          Hide secondary contact information
+        </span>
+        <i class="d-block i-icon bgc-blue" [ngClass]="{'i-minus': panelOpenState, 'i-plus': !panelOpenState}"></i>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button type="button" mat-dialog-close class="btn c-blue">Cancel</button>
+      <button type="submit" class="btn btn-primary" [class.loading]="isUpdating">Update</button>
+    </mat-dialog-actions>
+</form>

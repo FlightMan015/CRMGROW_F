@@ -1,0 +1,224 @@
+<div class="v-center justify-content-between bgc-blue text-header"
+  [class.minimize-content]="dialogType == 'global_text' ? !(storeService.textWindowType$ | async) : !isMinimizable">
+  <div class="p-3 flex-grow-1" (click)="minimizeDialog()">
+    <h1 class="f-6 font-weight-bold text-white m-0">
+      Text
+    </h1>
+  </div>
+  <div class="v-center p-3">
+    <ng-container *ngIf="dialogType == 'global_text'; else subWindow">
+      <button type="button" class="v-center border-0 bgc-trans close-button px-0" (click)="minimizeDialog()">
+        <i class="i-icon i-minimize sm bgc-white" aria-hidden="true" *ngIf="storeService.textWindowType$ | async"></i>
+        <i class="i-icon i-maximize sm bgc-white" aria-hidden="true" *ngIf="!(storeService.textWindowType$ | async)"></i>
+      </button>
+    </ng-container>
+    <ng-template #subWindow>
+      <button type="button" class="v-center border-0 bgc-trans close-button px-0" (click)="minimizeDialog()">
+        <i class="i-icon i-minimize sm bgc-white" aria-hidden="true" *ngIf="isMinimizable"></i>
+        <i class="i-icon i-maximize sm bgc-white" aria-hidden="true" *ngIf="!isMinimizable"></i>
+      </button>
+    </ng-template>
+    <button type="button" class="v-center border-0 bgc-trans close-button" (click)="closeDialog()">
+      <i class="i-icon i-close bgc-white" aria-hidden="true"></i>
+    </button>
+  </div>
+  <!--  <h1 class="f-6 font-weight-bold text-white m-0">-->
+  <!--      Text-->
+  <!--  </h1>-->
+  <!--  <button type="button" class="v-center border-0 bgc-trans close-button" mat-dialog-close>-->
+  <!--    <i class="i-icon i-close bgc-white ml-1" aria-hidden="true"></i>-->
+  <!--  </button>-->
+</div>
+<div class="text-panel" [class.minimize-content]="dialogType == 'global_text' ? !(storeService.textWindowType$ | async) : !isMinimizable">
+  <div class="contact-info border-bottom">
+    <div class="contact v-center py-2 px-3" *ngIf="type == 'single'">
+      <div class="avatar bgc-dark text-white text-center mr-2">
+        {{contact.avatarName}}
+      </div>
+      <div class="info">
+        <span class="f-3 font-weight-bold">{{contact.fullName}}</span>
+        <div class="c-blue font-weight-bold f-3">{{contact.cell_phone}}</div>
+      </div>
+    </div>
+    <div class="address-wrapper pl-3 pr-2 py-1" *ngIf="type == 'multi'">
+      <div class="overflow-visible">
+        <div class="d-flex w-100" (click)="setFocus()">
+          <label class="f-6 op-56 m-0">To:</label>
+          <app-input-contact-chip [selectedContacts]="textContacts" [onlyFromSearch]="false" [onlySubscriber]="true" (onFocus)="setFocus()"
+            [focus]="isFocus()" [display]="'cell_phone'" [maxLimit]=10 class="w-100 ml-2"></app-input-contact-chip>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="conversation-info" #scrollMe [scrollTop]="scrollMe.scrollHeight">
+    <ng-container *ngIf="loading; else messagesTemplate">
+      <div class="loader"></div>
+    </ng-container>
+    <ng-template #messagesTemplate>
+      <ng-container *ngFor="let message of messages">
+        <div class="message mt-3"
+          [ngClass]="{send: message.type == 0, receive: message.type == 1}"
+          [innerHTML]="parseContent(message.content)"
+        ></div>
+        <div class="f-2 message-date mt-1 mx-1" [ngClass]="{send: message.type == 0, receive: message.type == 1}">
+            <ng-container *ngIf="calcDate(message.updated_at) == 0">
+                {{message.updated_at | date:'h:mm a'}}
+            </ng-container>
+            <ng-container *ngIf="calcDate(message.updated_at) > 0 && calcDate(message.updated_at) < 8">
+                {{message.updated_at | date:'EEE h:mm a'}}
+            </ng-container>
+            <ng-container *ngIf="calcDate(message.updated_at) > 8">
+                {{message.updated_at | date:'EEE dd, yyyy'}}
+            </ng-container>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div> -->
+  <div class="message-info px-0 pb-2 border-top">
+    <mat-form-field class="w-100">
+      <textarea matInput cdkTextareaAutosize [(ngModel)]="message" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="3"
+        (keydown)="keyTrigger($event)" #messageText></textarea>
+    </mat-form-field>
+  </div>
+  <div class="px-3 pt-0 pb-3 text-setting">
+    <div class="v-center">
+      <button type="button" class="v-center btn border-primary f-3 font-weight-bold c-blue p-2 mr-2 material-button"
+        (click)="openMaterialsDlg()">
+        <i class="d-block i-icon i-material bgc-blue"></i>
+        <span class="f-3 font-weight-bold c-blue mx-2">Material</span>
+        <i class="d-block i-icon i-plus bgc-blue"></i>
+      </button>
+    </div>
+    <div ngbDropdown class="insert-token">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="top" ngbTooltip="Template" style="width: fit-content;">
+        <i class="d-block i-icon i-template bgc-dark"></i>
+      </div>
+      <div ngbDropdownMenu class="light template-container">
+        <div class="template dropdown-item" (click)="createNewTemplate()">
+          <a class="f-3 font-weight-bold">Create New Template ...</a>
+        </div>
+        <ng-container *ngFor="let template of (templateService.templates$ | async)">
+          <div class="position-relative template-wrapper" *ngIf="template.type !== 'email'">
+            <div class="template dropdown-item v-center" (click)="selectTemplate(template)">
+              <div class="f-3 font-weight-bold w-100 text-ellipse template-title">{{template.title}}</div>
+            </div>
+            <a class="abrc-y" [routerLink]="['/templates/edit/' + template._id]" target="_blank">
+              <i class="d-block i-icon i-expand bgc-dark"></i>
+            </a>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="top-left" ngbTooltip="Schedule" (click)="showSchedule()"
+        style="width: fit-content;">
+        <i class="d-block i-icon i-schedule-send bgc-blue" *ngIf="scheduleCheck"></i>
+        <i class="d-block i-icon i-schedule-send bgc-dark" *ngIf="!scheduleCheck"></i>
+      </div>
+    </div>
+    <div class="insert-token ml-2 datetime" *ngIf="scheduleCheck">
+      <div class="v-center no-carot c-pointer">{{scheduleDateTime | date}}</div>
+      <div class="v-center no-carot c-pointer">{{scheduleDateTime | date:'shortTime'}}</div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Emoji" style="width: fit-content;">
+        <img class="emoji-icon" src="../../../assets/img/emoji.png">
+      </div>
+      <div ngbDropdownMenu class="light templates">
+        <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertTextContentValue($event.emoji.native)"
+          title="Pick your emoji…">
+        </emoji-mart>
+      </div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2" *ngIf="(scheduleService.eventTypes$ | async).length">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Scheduler">
+        <i class="d-block i-icon i-event-note bgc-dark"></i>
+      </div>
+      <div ngbDropdownMenu class="light template-container">
+        <ng-container *ngFor="let eventType of (scheduleService.eventTypes$ | async)">
+          <div class="template dropdown-item border-top px-2" (click)="selectCalendly(eventType.link)">
+            <div class="v-center h-100">
+              <div class="f-3 font-weight-bold flex-grow-1 mr-1 h-100 v-center">{{(eventType.title || '') | shorten: 35: '...'}}
+              </div>
+              <a class="ml-auto" [href]="eventType.link" target="blank">
+                <i class="d-block i-icon i-expand bgc-dark sm"></i>
+              </a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2" *ngIf="isCalendly">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Calendly">
+        <i class="d-block i-icon i-calendly bgc-dark"></i>
+      </div>
+      <div ngbDropdownMenu class="light template-container">
+        <ng-container *ngFor="let calendly of (connectService.calendlyAll$ | async)">
+          <div class="template dropdown-item border-top px-2" (click)="selectCalendly(calendly.attributes.url)">
+            <div class="v-center h-100">
+              <div class="f-3 font-weight-bold flex-grow-1 mr-1 h-100 v-center">{{(calendly.attributes.name || '') | shorten: 35: '...'}}
+              </div>
+              <a class="ml-auto" [href]="calendly.attributes.url" target="blank">
+                <i class="d-block i-icon i-expand bgc-dark sm"></i>
+              </a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Record">
+        <i class="d-block i-icon i-record-toolbar bgc-red" (click)="record()"></i>
+      </div>
+    </div>
+    <div ngbDropdown class="insert-token ml-2">
+      <div class="v-center no-carot c-pointer" ngbDropdownToggle>
+        <span class="f-1 font-weight-bold mr-1">Token</span>
+        <i class="d-block i-icon i-triangle-down bgc-dark"></i>
+        <i class="d-block i-icon i-triangle-up bgc-dark"></i>
+      </div>
+      <div ngbDropdownMenu class="light py-1">
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_name}')">Your Name</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_email}')">Your Email</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_phone}')">Your Phone</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_company}')">Your Company</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_first_name}')">Contact Firstname</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_last_name}')">Contact Lastname</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_email}')">Contact Email</div>
+        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_phone}')">Contact Phone</div>
+      </div>
+    </div>
+    <div class="v-center justify-content-between mt-2 mt-sm-0 w-100">
+      <button type="button" class="btn btn-blue text-white br-default py-1 f-6 font-weight-bold shadow ml-auto" [class.loading]="sending"
+        (click)="send()" *ngIf='!scheduleCheck' [disabled]="!isEnableSend && !scheduleCheck">
+        Send
+      </button>
+      <button type="button" class="btn btn-blue text-white br-default py-1 f-6 font-weight-bold shadow ml-auto" [class.loading]="sending"
+        (click)="send()" *ngIf='scheduleCheck'>
+        Schedule
+      </button>
+    </div>
+  </div>
+  <ng-container *ngIf="!isEnableSend && !scheduleCheck">
+    <div class="d-flex align-items-center business-hour-claim">
+        <span class="f-3">
+            Now is out of the business hours.
+        </span>
+        <div class="d-flex align-items-center ml-1">
+            <ng-template #popContent>
+                <span class="f-2">Your business hours is {{startTime?.text}} - {{endTime?.text}}. Please click <a [routerLink]="['/settings/business-hour']">here</a> to change this.</span>
+            </ng-template>
+            <ng-template #popTitle>
+                <span class="f-3">Business Hours</span>
+            </ng-template>
+            <span [ngbPopover]="popContent" [popoverTitle]="popTitle" placement="top">
+                <i class="bgc-dark i-icon i-support d-block"></i>
+            </span>
+        </div>
+    </div>
+  </ng-container>
+</div>
+<ng-template #createNewContent>
+  <app-template-create class="w-100" [type]="'text'" [value]="value" (onClose)="closeOverlay($event)" [subject]="subject">
+  </app-template-create>
+</ng-template>

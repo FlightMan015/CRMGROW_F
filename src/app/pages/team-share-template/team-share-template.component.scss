@@ -1,0 +1,132 @@
+@import '../../../variables';
+
+.page-content {
+  padding: 0;
+}
+
+.role{
+  font-size: 10px;
+  font-weight: bold;
+  padding: 3px 8px;
+  background: #f28422;
+  border-radius: 3px;
+  width: 60px;
+  text-align: center;
+  color: white;
+  line-height: 14px;
+  &.admin {
+    background-color: $color-blue;
+  }
+  &.team {
+    background-color: #1ca57a;
+  }
+  &.shared {
+    background-color: #b72ad8;
+  }
+  &::after {
+    content: "OWN"
+  }
+  &.admin::after {
+    content: "ADMIN"
+  }
+  &.team::after {
+    content: "TEAM"
+  }
+  &.shared::after {
+    content: 'SHARED'
+  }
+}
+
+.template-table {
+  tr td {
+    height: 70px;
+  }
+  .template-type {
+    min-width: 80px;
+    padding-left: 0.5rem;
+
+    @media screen and (max-width: 400px) {
+      display: none;
+    }
+  }
+  th {
+    height: 45px;
+    color: rgba(0,0,0,.54);
+    .head-sort {
+      span {
+        line-height: 1;
+      }
+      i {
+          width: 8px;
+          height: 12px;
+          min-width: 8px;
+      }
+    }
+  }
+
+  .auth {
+    width: 90px;
+
+    @media screen and (max-width: 768px) {
+      width: 80px;
+    }
+  }
+
+  .template-action {
+    opacity: 0;
+    width: 100px;
+
+    @media screen and (max-width: 768px) {
+      opacity: 1;
+    }
+  }
+
+  tr:hover {
+    .template-action {
+      opacity: 1;
+    }
+  }
+}
+
+
+@media screen and (max-width: 576px) {
+  .template-table {
+    .template-content {
+      display: none;
+    }
+
+    .template-type {
+      min-width: 40px;
+
+      .menu-label {
+        display: none;
+      }
+    }
+  }
+}
+
+.icon-button {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+
+  &.disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+input.disabled {
+  pointer-events: none;
+  background-color: #f8f8f8;
+}
+
+:host ::ng-deep {
+  th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
+    padding-left: 0;
+  }
+
+  td.mat-cell, td.mat-footer-cell {
+    padding: 10px 0px;
+  }
+}

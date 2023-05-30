@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>{{type == 'add' ? 'New' : 'Update'}} List</h1>
+<form #teamForm="ngForm" (ngSubmit)="submitted = true; teamForm.form.valid ? addList() : false"
+      [class.was-validated]="submitted">
+  <mat-dialog-content class="content-section">
+    <ng-container>
+      <div class="my-3 form-group">
+        <label>List name</label>
+        <div clas="contact-input">
+          <input type="text" class="form-control" [(ngModel)]="listName" name="listname" #listname="ngModel" required>
+          <span class="invalid-feedback"
+                *ngIf="listname.errors && (listname.dirty || listname.touched || submitted) && submitted">Name is
+              required.</span>
+        </div>
+      </div>
+    </ng-container>
+  </mat-dialog-content>
+  <mat-dialog-actions class="justify-content-end mx-0">
+    <button type="button" mat-dialog-close class="btn btn-white f-6 font-weight-bold ml-2">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary font-weight-bold f-6"
+      [class.loading]="creating"
+    >
+      {{type == 'add' ? 'Create' : 'Update'}}
+    </button>
+  </mat-dialog-actions>
+</form>

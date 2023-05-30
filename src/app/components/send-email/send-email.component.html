@@ -1,0 +1,223 @@
+<div class="v-center justify-content-between bgc-blue email-header"
+  [class.minimize-content] = "dialogType == 'global_email' ? !(storeService.emailWindowType$ | async) : !isMinimizable"
+>
+  <div class="p-3 flex-grow-1" (click)="minimizeDialog()">
+    <h1 class="f-6 font-weight-bold text-white m-0">
+      Email
+    </h1>
+  </div>
+  <div class="v-center p-3">
+    <ng-container *ngIf="dialogType == 'global_email'; else subWindow">
+      <button type="button" class="v-center border-0 bgc-trans close-button px-0" (click)="minimizeDialog()">
+        <i class="i-icon i-minimize sm bgc-white" aria-hidden="true" *ngIf="storeService.emailWindowType$ | async"></i>
+        <i class="i-icon i-maximize sm bgc-white" aria-hidden="true" *ngIf="!(storeService.emailWindowType$ | async)"></i>
+      </button>
+    </ng-container>
+    <ng-template #subWindow>
+      <button type="button" class="v-center border-0 bgc-trans close-button px-0" (click)="minimizeDialog()">
+        <i class="i-icon i-minimize sm bgc-white" aria-hidden="true" *ngIf="isMinimizable"></i>
+        <i class="i-icon i-maximize sm bgc-white" aria-hidden="true" *ngIf="!isMinimizable"></i>
+      </button>
+    </ng-template>
+    <button type="button" class="v-center border-0 bgc-trans close-button" (click)="closeDialog()">
+      <i class="i-icon i-close bgc-white" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+<div class="email-panel"
+     [class.minimize-content]="dialogType == 'global_email' ? !(storeService.emailWindowType$ | async) : !isMinimizable"
+>
+    <form #emailForm="ngForm" (ngSubmit)="emailSubmitted = true; emailForm.form.valid ? sendEmail() : false">
+      <div class="email-box">
+        <div class="receiver pl-3 pr-2 py-1 contacts-wrapper address-wrapper">
+          <div class="overflow-visible">
+            <div class="d-flex w-100" (click)="setFocus()" >
+              <label class="f-6 op-56 m-0">To:</label>
+              <app-input-contact-chip
+                [selectedContacts]="emailContacts"
+                [onlyFromSearch]="false"
+                [onlySubscriber]="true"
+                (onSelect)="checkDuplication('to')"
+                (onRemove)="removeContact($event)"
+                (onFocus)="setFocus()"
+                [focus]="isFocus()"
+                [isDealContact]="this.type == 'deal'"
+                class="w-100 ml-2"
+              >
+              </app-input-contact-chip>
+            </div>
+            <div class="v-center justify-content-end" *ngIf="isFocus()">
+              <div class="f-3 c-blue p-1 c-pointer" (click)="ccFlag = !ccFlag">{{ccFlag ? "Disable Cc" : "Add Cc"}}</div>
+              <div class="f-3 c-blue p-1 c-pointer" (click)="bccFlag = !bccFlag">{{bccFlag ? "Disable Bcc" : "Add Bcc"}}</div>
+            </div>
+          </div>
+        </div>
+        <div class="email-tracking contacts-wrapper" *ngIf="ccFlag || bccFlag" (click)="blueAll()">
+          <div class="v-center pl-3 f-2 py-1">
+            <mat-icon class="mr-2">warning</mat-icon>
+              Email tracking does not work for any emails in the cc, bcc
+          </div>
+          <div class="v-center pl-3 py-2 email-cc address-wrapper" *ngIf="ccFlag">
+            <label class="f-6 text-uppercase op-56 m-0">cc:</label>
+            <app-input-email-chip
+              [selectedContacts]="ccContacts"
+              (onSelect)="checkDuplication('cc')"
+              class="w-100 ml-2"
+            ></app-input-email-chip>
+          </div>
+          <div class="v-center pl-3 py-2 email-bcc address-wrapper" *ngIf="bccFlag">
+            <label class="f-6 text-uppercase op-56 m-0">bcc:</label>
+            <app-input-email-chip
+              [selectedContacts]="bccContacts"
+              (onSelect)="checkDuplication('bcc')"
+              class="w-100 ml-2"
+            ></app-input-email-chip>
+          </div>
+        </div>
+        <div class="email-title px-3 py-2 position-relative" (click)="blueAll()">
+          <input
+            class="w-100"
+            type="text"
+            placeholder="Subject:"
+            name="emailTitle"
+            #emailTitle="ngModel"
+            [(ngModel)]="emailSubject"
+            (focus)="subjectFoucs()"
+            required
+            #subjectField
+          >
+          <span
+            class="invalid-error f-3 c-red inline-error"
+            *ngIf="emailTitle.invalid && (emailTitle.touched || emailTitle.dirty || emailSubmitted) && emailSubmitted"
+          >
+            Required!
+          </span>
+        </div>
+        <div class="email-body" (click)="blueAll()">
+          <app-html-editor
+            [(value)]="emailContent"
+            [(attach)]="attachments"
+            placeholder="Start typing here..."
+            required="true"
+            (onFocus)="contentFoucs()"
+            [hasAttachment]="true"
+            [hasTemplates]="false"
+            [hasCalendly]="isCalendly"
+            [hasRecord]="true"
+            [subject]="emailSubject"
+            [style]="{height: '300px'}"
+            [submitted]="emailSubmitted"
+            (attachmentChange)="onAttachmentChange($event)"
+            (onRecordCompleted)="onRecordCompleted($event)"
+            #editor
+          >
+          </app-html-editor>
+        </div>
+        <div class="p-3 email-setting" (click)="blueAll()">
+          <div class="v-center">
+            <button type="button" class="v-center btn border-primary f-3 font-weight-bold c-blue p-2 mr-2 material-button" (click)="openMaterialsDlg()">
+              <i class="d-block i-icon i-material bgc-blue"></i>
+              <span class="f-3 font-weight-bold c-blue mx-2">Material</span>
+              <i class="d-block i-icon i-plus bgc-blue"></i>
+            </button>
+          </div>
+          <div ngbDropdown class="insert-token ">
+            <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="top" ngbTooltip="Template" style="width: fit-content;">
+              <i class="d-block i-icon i-template bgc-dark"></i>
+            </div>
+            <div ngbDropdownMenu class="light template-container">
+              <div class="template dropdown-item" (click)="createNewTemplate()">
+                <a class="f-3 font-weight-bold">Create New Template ...</a>
+              </div>
+              <ng-container *ngFor="let template of (templateService.templates$ | async)">
+                <div class="position-relative template-wrapper" *ngIf="template.type === 'email'">
+                  <div class="template dropdown-item v-center" (click)="selectTemplate(template)">
+                    <div class="f-3 font-weight-bold w-100 text-ellipse template-title">{{template.title}}</div>
+                  </div>
+                  <a class="abrc-y" [routerLink]="['/templates/edit/' + template._id]" target="_blank">
+                    <i class="d-block i-icon i-expand bgc-dark"></i>
+                  </a>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <div ngbDropdown class="insert-token ml-2">
+            <div class="v-center no-carot c-pointer"  ngbDropdownToggle placement="top-left" ngbTooltip="Schedule" (click)="showSchedule()" style="width: fit-content;">
+              <i class="d-block i-icon i-schedule-send bgc-blue" *ngIf="scheduleCheck"></i>
+              <i class="d-block i-icon i-schedule-send bgc-dark" *ngIf="!scheduleCheck"></i>
+            </div>
+          </div>
+          <div class="insert-token ml-2 datetime" *ngIf="scheduleCheck">
+            <div class="v-center no-carot c-pointer">{{scheduleDateTime | date}}</div>
+            <div class="v-center no-carot c-pointer">{{scheduleDateTime | date:'shortTime'}}</div>
+          </div>
+          <div ngbDropdown class="insert-token ml-2">
+            <div class="v-center no-carot c-pointer" ngbDropdownToggle>
+              <img class="emoji-icon" src="../../../assets/img/emoji.png">
+            </div>
+            <div ngbDropdownMenu class="light templates">
+              <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertEmojiContentvalue($event.emoji.native)" title="Pick your emoji…">
+              </emoji-mart>
+            </div>
+          </div>
+          <div ngbDropdown class="insert-token ml-2">
+            <div class="v-center no-carot c-pointer" ngbDropdownToggle>
+              <span class="f-1 font-weight-bold mr-1">Token</span>
+              <i class="d-block i-icon i-triangle-down bgc-dark"></i>
+              <i class="d-block i-icon i-triangle-up bgc-dark"></i>
+            </div>
+            <div ngbDropdownMenu class="light py-1">
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_name}')">Your Name</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_email}')">Your Email</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_phone}')">Your Phone</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_company}')">Your Company</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_first_name}')">Contact Firstname</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_last_name}')">Contact Lastname</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_email}')">Contact Email</div>
+              <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_phone}')">Contact Phone</div>
+            </div>
+          </div>
+          <div class="v-center justify-content-between mt-2 mt-sm-0 w-100">
+            <button
+              type="submit"
+              class="btn btn-blue text-white br-default py-1 f-6 font-weight-bold shadow ml-auto"
+              [class.loading]="emailSending" *ngIf='!scheduleCheck'
+              [disabled]="!isEnableSend && !scheduleCheck"
+            >
+              Send
+            </button>
+            <button
+            type="submit"
+            class="btn btn-blue text-white br-default py-1 f-6 font-weight-bold shadow ml-auto"
+            [class.loading]="emailSending" *ngIf='scheduleCheck'
+          >
+            Schedule
+          </button>
+          </div>
+        </div>
+        <ng-container *ngIf="!isEnableSend && !scheduleCheck">
+          <div class="d-flex align-items-center business-hour-claim">
+              <span class="f-3">
+                  Now is out of the business hours.
+              </span>
+              <div class="d-flex align-items-center ml-1">
+                  <ng-template #popContent>
+                      <span class="f-2">Your business hours is {{startTime?.text}} - {{endTime?.text}}. Please click <a [routerLink]="['/settings/business-hour']">here</a> to change this.</span>
+                  </ng-template>
+                  <ng-template #popTitle>
+                      <span class="f-3">Business Hours</span>
+                  </ng-template>
+                  <span [ngbPopover]="popContent" [popoverTitle]="popTitle" placement="top">
+                      <i class="bgc-dark i-icon i-support d-block"></i>
+                  </span>
+              </div>
+          </div>
+        </ng-container>
+      </div>
+    </form>
+</div>
+
+<ng-template #createNewContent>
+  <app-template-create class="w-100" [value]="value" (onClose)="closeOverlay($event)" [subject]="subject">
+  </app-template-create>
+</ng-template>

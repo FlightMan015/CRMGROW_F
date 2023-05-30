@@ -1,0 +1,94 @@
+<h1 mat-dialog-title>Scheduled Call</h1>
+<form #actionForm="ngForm" (ngSubmit)="submitted = true; actionForm.form.valid ? backCall() : false"
+      [class.was-validated]="submitted">
+  <mat-dialog-content class="content-section form-group">
+    <ng-container>
+      <div class="my-3">
+        <label>Subject</label>
+        <div class="f-8 font-weight-bold">
+          {{formData.subject}}
+        </div>
+      </div>
+      <div class="my-3" *ngIf="!isLeader && formData.leader">
+        <label>Leader</label>
+        <div class="v-center">
+          <ng-container *ngIf="formData.leader.picture_profile; else leaderProfilePlaceholder">
+            <img [src]="formData.leader.picture_profile" class="avatar" />
+          </ng-container>
+          <ng-template #leaderProfilePlaceholder>
+            <div class="name-avatar">
+              {{formData.leader.user_name[0]}}
+            </div>
+          </ng-template>
+          <div class="f-4 font-weight-bold c-blue ml-2">{{formData.leader.user_name}}</div>
+        </div>
+      </div>
+      <div class="my-3">
+        <label>Organizer</label>
+        <div class="v-center">
+          <ng-container *ngIf="formData.user.picture_profile; else userProfilePlaceholder">
+            <img [src]="formData.user.picture_profile" class="avatar" />
+          </ng-container>
+          <ng-template #userProfilePlaceholder>
+            <div class="name-avatar">
+              {{formData.user.user_name[0]}}
+            </div>
+          </ng-template>
+          <div class="f-4 font-weight-bold c-blue ml-2">{{formData.user.user_name}}</div>
+        </div>
+      </div>
+      <div class="my-3">
+        <label>Invite contacts & guests</label>
+        <div class="members" *ngFor="let contact of formData.contacts">
+          <div class="v-center mb-2">
+            <ng-container *ngIf="contact.picture_profile; else prospectNamePlaceholder">
+              <img [src]="contact.picture_profile" class="avatar" />
+            </ng-container>
+            <ng-template #prospectNamePlaceholder>
+              <div class="name-avatar">{{contact.first_name[0]}}</div>
+            </ng-template>
+            <div class="f-4 font-weight-bold c-blue ml-2">
+              {{contact.first_name + " " + contact.last_name}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="my-3" *ngIf="formData.description">
+        <label>Description</label>
+        <div class="text-wrapper description bgc-silver f-4">{{formData.description || '' | stripTags | shorten: 80: '...'}}</div>
+      </div>
+      <div class="my-3 form-group" *ngIf="isEditable">
+        <label>Note</label>
+        <app-html-editor
+          [(value)]="formData.note"
+          placeholder="Enter Text..."
+          [noImage]="true"
+          [style]="{height: '200px'}"
+          #editor
+        >
+        </app-html-editor>
+      </div>
+      <div class="my-3">
+        <label>Duration</label>
+        <div class="f-5 font-weight-bold">{{duration}}</div>
+      </div>
+      <div class="my-3">
+        <label>Scheduled Date</label>
+        <div class="v-center">
+          <i class="i-icon i-calendar bgc-dark" aria-hidden="true"></i>
+          <span class="ml-2 f-4 c-dark font-weight-bold">{{selectedDate | date : 'MMM dd, yyyy h:mm a'}}</span>
+        </div>
+      </div>
+    </ng-container>
+  </mat-dialog-content>
+  <mat-dialog-actions class="justify-content-between mx-0">
+    <button type="button" class="btn btn-decline font-weight-bold mr-2"
+      [class.loading]="isCancelLoading"
+      [class.bgc-red]="isCancelLoading" (click)="cancelCall()"
+      *ngIf="isEditable"
+    >
+      Cancel Call
+    </button>
+    <button type="submit" class="btn btn-primary" [class.loading]="isAddNoteLoading">Back</button>
+  </mat-dialog-actions>
+</form>

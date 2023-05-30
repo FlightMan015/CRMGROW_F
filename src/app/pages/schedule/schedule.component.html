@@ -1,0 +1,42 @@
+<div class="card border-0 rounded-lg px-2 py-5 px-sm-5">
+    <img class="logo" src="../../../assets/img/crmgrow-logo.svg">
+    <h4 class="text-center font-weight-bold mb-4">Schedule a one-on-one training strategy session</h4>
+    <p class="f-3 text-center mb-4">A video screenshare session with one of our software experts</p>
+    <div class="v-center justify-content-between plan p-3">
+        <div class="condition">
+            <div class="time">
+                50 min training
+            </div>
+            <div class="summary">
+                Total deep dive.
+            </div>
+        </div>
+        <div class="price">
+            <span class="price-symbol mr-1">$</span>49
+        </div>
+    </div>
+    <button class="btn btn-primary d-block w-100 f-8 font-weight-bold mt-4" [class.loading]="isSaving" (click)="schedule()">
+        Schedule my training
+    </button>
+</div>
+<div class="footer">
+    <div class="v-center justify-content-between desktop">
+        <img class="logo-exit" src="../../../assets/img/logo-exit.png">
+        <img class="logo-remax" src="../../../assets/img/logo-remax.png">
+        <img class="logo-cent21" src="../../../assets/img/logo-cent21.png">
+        <img class="logo-exp" src="../../../assets/img/logo-exp.png">
+    </div>
+    <div class="mobile">
+        <div class="v-center justify-content-around">
+            <img class="logo-exit" src="../../../assets/img/logo-exit.png">
+            <img class="logo-remax" src="../../../assets/img/logo-remax.png">
+        </div>
+        <div class="v-center justify-content-around">
+            <img class="logo-cent21" src="../../../assets/img/logo-cent21.png">
+            <img class="logo-exp" src="../../../assets/img/logo-exp.png">
+        </div>
+    </div>
+    <div class="footer-text text-center f-5 mt-3">
+        Trusted across the US and Canada
+    </div>
+</div>

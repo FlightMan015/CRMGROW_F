@@ -1,0 +1,44 @@
+<div class="v-center pb-3 header-icon">
+    <img src="../../../assets/img/calendly.svg" class="mr-3">
+    <h1 class="m-0" mat-dialog-title>
+        Select one of the event.
+    </h1>
+</div>
+<div class="row calendly">
+    <ng-container *ngIf="calendlyList.length; else noCalendly">
+        <div class="col-md-4 calendly-list" *ngFor="let calendly of calendlyList; let index=index;">
+            <div class="calendly-card" [ngStyle]="{'border-top-color': calendly.attributes.color, 
+                'border-top-width': '6px', 'border-top-style': 'solid'}">
+                <div class="calendly-card-body p-3">
+                    <p class="m-0 calendly-card-title">{{ calendly.attributes.name }}</p>
+                    <p class="m-0 calendly-card-duration">{{ calendly.attributes.duration }} mins</p>
+                </div>
+                <div class="py-2 text-right calendly-card-footer">
+                    <button class="mr-2 btn bg-white c-blue border-primary" (click)="setEvent(index)" [disabled]="calendly.selectStatus == true">
+                        <ng-container *ngIf="calendly.selectStatus == false">
+                            Select
+                        </ng-container>
+                        <ng-container *ngIf="calendly.selectStatus == true">
+                            <ng-container>Selected</ng-container>
+                        </ng-container>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-template #noCalendly>
+        <ng-container *ngIf="loading; else emptyResult">
+            <div class="list-loading mx-auto">
+                <div class="loader mt-5 lg"></div>
+                <h4 class="fw-600 mt-2">Loading calendly lists...</h4>
+            </div>
+        </ng-container>
+        <ng-template #emptyResult>
+            <div class="empty-list mx-auto py-5">
+                <h4 class="font-weight-bold mt-4 mb-3">
+                There is no calendly lists.
+                </h4>
+            </div>
+        </ng-template>
+    </ng-template>
+</div>

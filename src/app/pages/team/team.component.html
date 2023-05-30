@@ -1,0 +1,342 @@
+<div class="page-content">
+  <div class="p-0">
+    <ng-container *ngIf="loading">
+      <div class="list-loading text-center">
+        <div class="loader mt-5 lg"></div>
+        <h4 class="fw-600 mt-2">Loading team informations...</h4>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="loadError">
+      <div class="error-result">
+        <i class="i-icon i-error d-block bgc-dark"></i>
+        <p>
+          Something went go wrong. If your team information is correct, please reach our support team.
+        </p>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!loading && !loadError && team">
+      <div class="v-center op-56 c-pointer mb-3 back-menu" (click)="goToBack()">
+        <i class="d-block i-icon i-triangle-left bgc-dark mr-2"></i>
+        <span class="f-5 font-weight-bold">Back to Teams</span>
+      </div>
+      <div class="team-title-wrapper">
+        <h5 class="font-weight-bold mb-0">{{team.name}}</h5>
+        <div class="team-info-container d-flex mb-4 ml-4">
+          <div class="owner">
+            <label class="f-2 op-75 text-uppercase">Owner</label>
+            <div class="v-center value">
+              <div class="owners v-center mr-3">
+                <ng-container *ngIf="team.owner">
+                  <ng-container *ngIf="team.owner.length < 5; else overTemplate">
+                    <div class="owner" *ngFor="let own of team.owner">
+                      <ng-container *ngIf="own.picture_profile; else ownNamePlaceholder">
+                        <img [src]="own.picture_profile" class="avatar" (click)="showProfile(own)" [class.shadow-avatar]="team.owner.length > 1"/>
+                      </ng-container>
+                      <ng-template #ownNamePlaceholder>
+                        <div class="name-avatar" (click)="showProfile(own)" [class.shadow-avatar]="team.owner.length > 1">{{own.user_name[0]}}</div>
+                      </ng-template>
+                    </div>
+                  </ng-container>
+                  <ng-template #overTemplate>
+                    <div class="owner" *ngFor="let mIndex of [0,1,2,3]">
+                      <ng-container *ngIf="team.owner[mIndex].picture_profile; else ownNamePlaceholder">
+                        <img [src]="team.owner[mIndex].picture_profile" (click)="showProfile(team.owner[mIndex])" class="avatar shadow-avatar" />
+                      </ng-container>
+                      <ng-template #ownNamePlaceholder>
+                        <div class="name-avatar shadow-avatar" (click)="showProfile(team.owner[mIndex])">{{team.owner[mIndex].username[0]}}</div>
+                      </ng-template>
+                    </div>
+                    <div class="owner remain-number">
+                      <div class="name-avatar shadow-avatar">+{{team.owner.length - 4}}</div>
+                    </div>
+                  </ng-template>
+                </ng-container>
+              </div>
+              <!-- <div class="owner-names">
+                <ng-container *ngIf="team.owner">
+                  <ng-container *ngIf="team.owner.length < 2; else overNameTemplate">
+                    <div class="owner-main-name font-weight-bold">{{team.owner[0].user_name}}</div>
+                  </ng-container>
+                  <ng-template #overNameTemplate>
+                    <div class="owner-main-name font-weight-bold">{{team.owner[0].user_name}}</div>
+                    <div class="owner-remain-count f-3">(+ {{team.owner.length - 1}} Owners)</div>
+                  </ng-template>
+                </ng-container>
+              </div> -->
+            </div>
+          </div>
+          <div class="members ml-5">
+            <label class="f-2 op-75 text-uppercase">Members</label>
+            <div class="value f-37 font-weight-bold ml-3">{{getMemberCount()}}</div>
+          </div>
+          <div class="ml-5">
+            <label class="f-2 op-75 text-uppercase">Your Role</label>
+            <div class="value v-center">
+              <div class="status font-weight-bold f-1 c-white" [class] = "status()">{{status()}}</div>
+            </div>
+          </div>
+        </div>
+        <div class="button-group v-center justify-content-lg-end justify-content-md-start ml-auto">
+          <button class="v-center btn btn-primary f-3 font-weight-bold shadow text-white p-2" (click)="inviteMember()">
+            <i class="bgc-white i-icon i-invite-member sm mr-2"></i>
+            Invite Member
+          </button>
+          <div class="more-actions ml-2" ngbDropdown *ngIf="role == 'owner'">
+            <a class="f-3 font-weight-bold td-none c-pointer c-blue" ngbDropdownToggle>
+              More
+            </a>
+            <div class="" ngbDropdownMenu>
+              <a class="dropdown-item f-3" (click)="editTeam()">Edit Team</a>
+              <hr class="my-1">
+              <a class="dropdown-item f-3" (click)="shareMaterial()">Share Material</a>
+              <a class="dropdown-item f-3" (click)="shareEmailTemplate()">Share Template</a>
+              <a class="dropdown-item f-3" (click)="shareAutomation()" [class.disable]="!isPackageAutomation">Share Automation</a>
+              <a class="dropdown-item f-3" (click)="shareContact()">Share Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <app-slide-tab [tabs]="tabs" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain">
+      </app-slide-tab>
+
+      <ng-container [ngSwitch]="selectedTab.id">
+        <div class="members-table-container mt-3" *ngSwitchCase="'members'">
+          <ng-container *ngIf="team.requests.length && (role=='editor' || role == 'owner')">
+            <div class="f-6 font-weight-bold">Requests</div>
+            <table class="table join-request-table mt-3 mb-5">
+              <thead>
+              <th class="name-cell">Members</th>
+              <th class="invite-received">Invite Received</th>
+              <th class="team-actions text-right">Actions</th>
+              </thead>
+              <tbody>
+              <tr *ngFor="let user of team.requests">
+                <td class="name-cell">
+                  <div class="v-center">
+                    <ng-container *ngIf="user.picture_profile; else ownNamePlaceholder">
+                      <img [src]="user.picture_profile" class="avatar mr-3" />
+                    </ng-container>
+                    <ng-template #ownNamePlaceholder>
+                      <div class="name-avatar mr-3">{{avatarName(user.user_name)}}</div>
+                    </ng-template>
+                    <div class="f-3 font-weight-bold">{{user.user_name || 'Unnamed Contact'}}</div>
+                  </div>
+                </td>
+                <td class="invite-received">{{user.updated_at | date : 'hh:mm a, dd MMM yyyy'}}</td>
+                <td class="team_actions d-flex justify-content-end">
+                  <button class="btn btn-accept-outline f-1 mr-2 font-weight-bold"
+                          [class.loading]="acceptJoinRequest && this.acceptUserId == user._id"
+                          (click)="acceptRequest(user)"
+                  >
+                    <span class="button-label">Accept</span>
+                  </button>
+                  <button class="btn btn-decline f-1 font-weight-bold"
+                          [class.loading]="declineJoinRequest && this.declineUserId == user._id"
+                          (click)="declineRequest(user)"
+                  >
+                    <span class="button-label">Decline</span>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </ng-container>
+          <div class="f-6 font-weight-bold">Members</div>
+          <table class="table members-table mt-3">
+            <thead>
+            <tr>
+              <th class="name-cell border-top-0">Members</th>
+              <th class="status-cell border-top-0">Role</th>
+              <th class="action-cell border-top-0" *ngIf="role=='editor' || role == 'owner'"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <ng-container *ngIf="team.members.length + team.owner.length + team.invites.length + team.referrals.length">
+              <tr *ngFor="let own of team.owner">
+                <td class="name-cell c-pointer" (click)="showProfile(own)">
+                  <div class="v-center">
+                    <ng-container *ngIf="own.picture_profile; else ownNamePlaceholder">
+                      <img [src]="own.picture_profile" class="avatar mr-3" />
+                    </ng-container>
+                    <ng-template #ownNamePlaceholder>
+                      <div class="name-avatar mr-3">{{own.user_name[0]}}</div>
+                    </ng-template>
+                    <div class="f-3 font-weight-bold">{{own.user_name}}</div>
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <div class="label-cell">
+                    <div class="value v-center">
+                      <div class="status Owner font-weight-bold f-1 c-white">Owner</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="action-cell" *ngIf="role=='editor' || role == 'owner'">
+                </td>
+              </tr>
+              <tr *ngFor="let member of editors">
+                <td class="name-cell c-pointer" (click)="showProfile(member)">
+                  <div class="v-center">
+                    <ng-container *ngIf="member.picture_profile; else memberNamePlaceholder">
+                      <img [src]="member.picture_profile" class="avatar mr-3" />
+                    </ng-container>
+                    <ng-template #memberNamePlaceholder>
+                      <div class="name-avatar mr-3">{{member.user_name[0]}}</div>
+                    </ng-template>
+                    <div class="font-weight-bold">{{member.user_name}}</div>
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <div class="label-cell">
+                    <ng-container *ngIf="role == 'owner'; else noOwnerTemplate">
+                      <select (change)="toggleMember(member)"
+                              class="c-white status value f-1 font-weight-bold"
+                              [class]="team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'"
+                              [disabled]="role != 'owner'"
+                      >
+                        <option [value]="'Viewer'" class="Viewer c-white f-1 font-weight-bold" [selected]="team.editors.indexOf(member._id) === -1">
+                          Viewer
+                        </option>
+                        <option [value]="'Editor'" class="Editor c-white f-1 font-weight-bold" [selected]="team.editors.indexOf(member._id) !== -1">
+                          Editor
+                        </option>
+                      </select>
+                    </ng-container>
+                    <ng-template #noOwnerTemplate>
+                      <div class="value v-center">
+                        <div class="status font-weight-bold f-1 c-white" [class] = "team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'">
+                          {{team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'}}
+                        </div>
+                      </div>
+                    </ng-template>
+                  </div>
+                </td>
+                <td class="action-cell d-flex justify-content-end" *ngIf="role=='editor' || role == 'owner'">
+                  <ng-container *ngIf="member._id === userId; else removeTemplate">
+                    <button class="v-center btn bgc-white c-black f-3 justify-content-end mt-1" (click)="leaveTeam(member)" placement="bottom" ngbTooltip="Leave team" ngbButtonLabel>
+                      <i class="bgc-black i-icon i-trash"></i>
+                    </button>
+                  </ng-container>
+                  <ng-template #removeTemplate>
+                    <button class="v-center btn bgc-white c-black f-3 justify-content-end mt-1" (click)="removeMember(member)" placement="bottom" ngbTooltip="Remove member" ngbButtonLabel>
+                      <i class="bgc-black i-icon i-trash"></i>
+                    </button>
+                  </ng-template>
+
+                </td>
+              </tr>
+              <tr *ngFor="let member of viewers">
+                <td class="name-cell c-pointer" (click)="showProfile(member)">
+                  <div class="v-center">
+                    <ng-container *ngIf="member.picture_profile; else memberNamePlaceholder">
+                      <img [src]="member.picture_profile" class="avatar mr-3" />
+                    </ng-container>
+                    <ng-template #memberNamePlaceholder>
+                      <div class="name-avatar mr-3">{{member.user_name[0]}}</div>
+                    </ng-template>
+                    <div class="font-weight-bold">{{member.user_name}}</div>
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <div class="label-cell">
+                    <ng-container *ngIf="role == 'owner'; else noOwnerTemplate">
+                      <select (change)="toggleMember(member)"
+                              class="c-white status value f-1 font-weight-bold"
+                              [class]="team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'"
+                              [disabled]="role != 'owner'"
+                      >
+                        <option [value]="'Viewer'" class="Viewer c-white f-1 font-weight-bold" [selected]="team.editors.indexOf(member._id) === -1">
+                          Viewer
+                        </option>
+                        <option [value]="'Editor'" class="Editor c-white f-1 font-weight-bold" [selected]="team.editors.indexOf(member._id) !== -1">
+                          Editor
+                        </option>
+                      </select>
+                    </ng-container>
+                    <ng-template #noOwnerTemplate>
+                      <div class="value v-center">
+                        <div class="status font-weight-bold f-1 c-white" [class] = "team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'">
+                          {{team.editors.indexOf(member._id) === -1 ? 'Viewer' : 'Editor'}}
+                        </div>
+                      </div>
+                    </ng-template>
+                  </div>
+                </td>
+                <td class="action-cell d-flex justify-content-end" *ngIf="role=='editor' || role == 'owner'">
+                  <button class="v-center btn bgc-white c-black f-3 justify-content-end mt-1" (click)="removeMember(member)" placement="bottom" ngbTooltip="Remove member" ngbButtonLabel>
+                    <i class="bgc-black i-icon i-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngFor="let invite of team.invites">
+                <td class="name-cell c-pointer" (click)="showProfile(invite)">
+                  <div class="v-center">
+                    <ng-container *ngIf="invite.picture_profile; else inviteNamePlaceholder">
+                      <img [src]="invite.picture_profile" class="avatar mr-3" />
+                    </ng-container>
+                    <ng-template #inviteNamePlaceholder>
+                      <div class="name-avatar mr-3">{{invite.user_name[0]}}</div>
+                    </ng-template>
+                    <div class="font-weight-bold">{{invite.user_name}}</div>
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <div class="value v-center">
+                    <div class=" status Invite f-1 font-weight-bold mr-2">
+                      Invite sent
+                    </div>
+                    <div class="btn-white-blue remind f-1 ml-1 font-weight-bold">Remind</div>
+                  </div>
+                </td>
+                <td class="action-cell value d-flex justify-content-end" *ngIf="role=='editor' || role == 'owner'">
+                  <button class="v-center btn bgc-white c-dark f-3 mt-1" (click)="cancelInvite(invite)" placement="bottom" ngbTooltip="Cancel Invite" ngbButtonLabel>
+                    <i class="i-icon i-trash bgc-black d-block mr-2"></i>
+                    <span class="button-label">Cancel invitation</span>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngFor="let referral of team.referrals">
+                <td class="name-cell c-pointer">
+                  <div class="v-center">
+                    <div class="name-avatar mr-3">{{referral[0]}}</div>
+                    <div class="font-weight-bold">{{referral}}</div>
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <div class="value v-center">
+                    <div class=" status Invite f-1 font-weight-bold mr-2">
+                      Invite sent
+                    </div>
+                    <div class="btn-white-blue remind f-1 ml-1 font-weight-bold">Remind</div>
+                  </div>
+                </td>
+                <td class="action-cell value d-flex justify-content-end" *ngIf="role=='editor' || role == 'owner'">
+                  <button class="v-center btn bgc-white c-dark f-3 mt-1" (click)="cancelInvite(referral)" placement="bottom" ngbTooltip="Cancel Invite" ngbButtonLabel>
+                    <i class="i-icon i-trash bgc-black d-block mr-2"></i>
+                    <span class="button-label">Cancel invitation</span>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </table>
+        </div>
+        <div *ngSwitchCase="'materials'" class="materials-container mt-3">
+          <app-team-share-material [team]="team" [role]="role"></app-team-share-material>
+        </div>
+
+        <div class="contacts-container mt-3" *ngSwitchCase="'contacts'">
+          <app-team-share-contact [team]="team" [role]="role"></app-team-share-contact>
+        </div>
+
+        <div class="automation-list-wrapper mt-3" *ngSwitchCase="'automations'">
+          <app-team-share-automation [team]="team" [role]="role"></app-team-share-automation>
+        </div>
+
+        <div class="template-list-wrapper mt-3" *ngSwitchCase="'templates'">
+          <app-team-share-template [team]="team" [role]="role"></app-team-share-template>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

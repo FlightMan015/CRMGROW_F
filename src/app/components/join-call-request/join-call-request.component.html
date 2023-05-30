@@ -1,0 +1,95 @@
+<h1 mat-dialog-title>{{type == 'edit' ? 'Edit group call inquiry' : 'New group call inquiry'}}</h1>
+<form #actionForm="ngForm" (ngSubmit)="submitted = true; actionForm.form.valid ? assignCallRequest() : false"
+      [class.was-validated]="submitted">
+  <mat-dialog-content class="content-section form-group">
+    <ng-container>
+      <div class="form-group">
+        <div class="v-center">
+          <label class="mb-0">Subject</label>
+          <span class="invalid-feedback ml-auto"
+                *ngIf="!subject && submitted"  [class.invalid]="!subject && submitted">Required!</span>
+        </div>
+        <input type="text" class="form-control" [(ngModel)]="subject" name="callSubject" #callSubject="ngModel" required>
+      </div>
+      <div class="form-group">
+        <div class="v-center">
+          <label class="mb-0">Select group call leader</label>
+          <div class="invalid-feedback ml-auto" [class.invalid]="!leader && submitted">Required!</div>
+        </div>
+        <app-select-leader [leader]="leader" (onSelect)="changeLeader($event)"></app-select-leader>
+      </div>
+      <div class="form-group mb-2">
+        <div class="v-center">
+          <label class="mb-0">Invite contacts & guests</label>
+          <div class="invalid-feedback ml-auto" [class.invalid]="!contacts.length && submitted">Required!</div>
+        </div>
+        <app-select-contact
+          [placeholder]="'Search your contacts or add an email'"
+          [formPlaceholder]="'Search your contacts or add an email'"
+          [fromSearch]="false"
+          (onSelect)="selectContact($event)"
+          #contactSelector>
+        </app-select-contact>
+      </div>
+      <div class="mb-3 contacts" *ngIf="contacts.length">
+        <div class="contact v-center mb-1" *ngFor="let contact of contacts">
+          <div class="avatar bgc-blue text-white text-center">{{contact.avatarName}}</div>
+          <div class="c-blue name mx-1 font-weight-bold f-3">{{contact.fullName}}</div>
+          <i class="d-block i-icon i-trash bgc-red op-56" *ngIf="!contact._id || keepContactIds.indexOf(contact._id) === -1" (click)="removeContact(contact)"></i>
+        </div>
+      </div>
+      <div class="my-3">
+        <label class="mb-0">Propose date & time</label>
+        <ng-container *ngFor="let dateTime of callDateTimes; let row = index">
+          <div class="row mx-0 v-center mb-2">
+            <div class="col-6 mx-0 px-0">
+              <app-date-input type="prepend" [(value)]="dateTime.date" [minDate]="minDate"></app-date-input>
+            </div>
+            <div class="col-6 v-center pr-0">
+              <div class="form-group mb-0 flex-grow-1">
+                <select class="form-control" [(ngModel)]="dateTime.time" [name]="dateTime.id + row + '-time'">
+                  <option value="" disabled>From Time</option>
+                  <option *ngFor="let time of times" value="{{time.id}}">{{time.text}}</option>
+                </select>
+              </div>
+              <button type="button" class="v-center border-0 bgc-white ml-auto py-2" (click)="removeCallDateTime(dateTime)" *ngIf="callDateTimes.length > 1">
+                <i class="i-icon i-close bgc-dark" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+        <div class="d-flex justify-content-end mt-1" [class.mr-4]="callDateTimes.length > 1">
+          <button type="button" class="v-center border-0 bgc-trans" (click)="addCallDateTime()">
+            <i class="i-icon i-plus bgc-blue sm" aria-hidden="true"></i>
+            <span class="ml-2 f-3 c-blue font-weight-bold">Add another proposed date & time</span>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="mb-0">Duration</label>
+        <select class="form-control call-duration" [(ngModel)]="duration" name="callDuration" #callDuration="ngModel">
+          <option *ngFor="let time of durations" value="{{time}}">{{time}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="mb-0">Description (Optional)</label>
+        <app-html-editor
+          [(value)]="description"
+          placeholder="Enter Text..."
+          [noImage]="true"
+          [style]="{height: '100px'}"
+          #editor
+        >
+        </app-html-editor>
+      </div>
+    </ng-container>
+  </mat-dialog-content>
+  <mat-dialog-actions class="justify-content-end mx-0">
+    <button type="button" mat-dialog-close class="btn btn-white f-6 font-weight-bold ml-2">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary font-weight-bold f-6" [class.loading]="isLoading">
+      {{type == 'edit' ? 'Update' : 'Send'}}
+    </button>
+  </mat-dialog-actions>
+</form>

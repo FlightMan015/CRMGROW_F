@@ -1,0 +1,48 @@
+<div class="card border-0 rounded-lg px-2 py-5 px-sm-5">
+  <div class="mx-3 my-2">
+    <img class="logo mb-3" src="../../../assets/img/crmgrow-logo.svg">
+    <!-- <h4 class="text-center font-weight-bold mb-4">Welcome back!</h4> -->
+    <p class="f-3 text-center"><a class="font-weight-bold td-underline c-pointer" [routerLink]="['/signup' + queryParam]">Sign Up</a> for a free 14 day trial!</p>
+    <button type="button"
+      class="v-center social-btn btn border-primary w-100 mt-4 font-weight-bold"
+      (click)="signInGoogle()"
+    >
+      <img class="social-icon" src="../../../assets/img/google.svg" alt="">
+      <div class="social-text">Sign In with Google</div>
+    </button>
+    <button type="button"
+      class="v-center social-btn btn border-primary w-100 mt-2 font-weight-bold"
+      (click)="signInOutlook()"
+    >
+      <img class="social-icon" src="../../../assets/img/microsoft.svg" alt="">
+      <div class="social-text">Sign In with Microsoft 365</div>
+    </button>
+    <div class="v-center my-3">
+      <hr class="flex-grow-1"/>
+      <span class="mx-3">or</span>
+      <hr class="flex-grow-1"/>
+    </div>
+    <form #signForm="ngForm" (ngSubmit)="signForm.form.valid ? login() : false">
+      <div class="form-group" [ngClass]="{invalid: signForm.submitted && email.invalid && (email.dirty || email.touched || signForm.submitted)}">
+        <label for="email">Email</label>
+        <input type="email" tabindex="1" class="form-control" [(ngModel)]="user.email" name="email" id="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,4}$" #email="ngModel"/>
+        <span class="error" *ngIf="email.errors">
+          <ng-container *ngIf="email.errors.required">Email is required!</ng-container>
+          <ng-container *ngIf="email.errors.pattern">Email is invalid!</ng-container>
+        </span>
+      </div>
+      <div class="form-group" [ngClass]="{invalid: signForm.submitted && password.invalid && (password.dirty || password.touched || signForm.submitted)}">
+        <div class="d-flex">
+          <label for="password">Password</label>
+          <a class="f-3 ml-auto font-weight-bold td-none" [routerLink]="['/forgot-password']">Forgot Password?</a>
+        </div>
+        <input type="password"  tabindex="2" class="form-control" [(ngModel)]="user.password" name="password" id="password" required minlength="6" #password="ngModel"/>
+        <span class="error" *ngIf="password.errors">
+          <ng-container *ngIf="password.errors.required">Password is required!</ng-container>
+          <ng-container *ngIf="password.errors.minlength">Password must be at least 6 characters long!</ng-container>
+        </span>
+      </div>
+      <button type="submit" class="btn btn-primary d-block w-100 font-weight-bold mt-4" [class.loading]="submitting">Sign In</button>
+    </form>
+  </div>
+</div>

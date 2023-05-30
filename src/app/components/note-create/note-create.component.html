@@ -1,0 +1,67 @@
+<form #form="ngForm" (ngSubmit)="form.form.valid? submit() : false;" [class.was-validated]="form.submitted">
+  <h1 mat-dialog-title>New Note</h1>
+  <mat-dialog-content>
+    <ng-container *ngIf="type != 'deal' else dealContacts">
+      <ng-container *ngIf="isSelected; else selectContactTemplate">
+        <div class="f-6 mb-2">
+          adding to
+          <span class="f-6 c-blue font-weight-bold">{{contacts[0].fullName}}</span>
+          <ng-container *ngIf="contacts.length > 1">
+            and <span class="f-6 c-blue font-weight-bold">{{contacts.length - 1}} contact(s)</span>
+          </ng-container>
+        </div>
+      </ng-container>
+      <ng-template #selectContactTemplate>
+        <div class="form-group">
+          <div class="d-flex">
+            <label class="d-block mb-0">contact</label>
+            <span class="ml-auto error" *ngIf="!contacts.length">Required!</span>
+          </div>
+          <app-select-contact (onSelect)="selectContact($event)"></app-select-contact>
+        </div>
+      </ng-template>
+    </ng-container>
+    <ng-template #dealContacts>
+      <div class="form-group">
+        <div class="f-6 mb-2">
+          adding to
+        </div>
+        <div class="new-contacts-wrapper mt-2" (click)="setFocus()">
+          <app-input-contact-chip
+            [selectedContacts]="contacts"
+            [display]="'email'"
+            [onlyFromSearch]="true"
+            [onlySubscriber]="false"
+            [isDealContact]="true"
+            (onFocus)="setFocus()"
+            [focus]="isFocus()"
+            class="w-100"
+          >
+          </app-input-contact-chip>
+        </div>
+      </div>
+    </ng-template>
+    <div class="form-group has-feedback mt-2" (click)="blueAll()">
+      <div class="d-flex">
+        <label class="mb-0">content</label>
+        <span class="ml-auto error" *ngIf="!note.content">Required!</span>
+      </div>
+      <app-html-editor
+        [(value)]="note.content"
+        [hasToken]="false"
+        [hasTemplates]="false"
+        [noImage]="true"
+        [style]="{height: '120px'}"
+        #editor
+      >
+      </app-html-editor>
+      <div class="mt-2">
+        <app-audio-note [url]="note.audio" (onRecorded)="insertAudioNote($event)" (onRemoved)="removeAudioNote()"></app-audio-note>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button class="btn c-blue" mat-dialog-close>Cancel</button>
+    <button class="btn btn-primary" type="submit" [class.loading]="saving">Create</button>
+  </mat-dialog-actions>
+</form>

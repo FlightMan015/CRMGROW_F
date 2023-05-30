@@ -1,0 +1,135 @@
+<div class="page-content bg-white">
+  <div class="v-center mb-3">
+    <h1 class="page-title">Dashboard</h1>
+    <div class="ml-auto" [class.d-none]="selectedTab.id !== 'tasks'">
+      <button class="v-center btn btn-blue f-6 font-weight-bold text-white rounded shadow px-3" (click)="createTask()">
+        New Task
+      </button>
+    </div>
+  </div>
+  <div class="page-header mb-2">
+    <app-slide-tab [tabs]="tabs" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain" class="border-bottom pl-0 rounded-0">
+    </app-slide-tab>
+  </div>
+  <div>
+    <app-tasks [class.d-none]="selectedTab.id !== 'tasks'"></app-tasks>
+    <app-activities [class.d-none]="selectedTab.id === 'tasks'"></app-activities>
+  </div>
+</div>
+
+<!-- <div class="statistics-wrapper mb-3 d-flex flex-column mx-2">
+      <div class="small ml-auto mr-1 c-pointer" ngbDropdown>
+        <div class="text-uppercase opacity-8 f-1" ngbDropdownToggle>
+          {{duration}}
+        </div>
+        <div ngbDropdownMenu aria-labelledby="actionsDropdown" class="py-1">
+          <div ngbDropdownItem *ngFor="let duration of STATISTICS_DURATION" (click)="changeDuration(duration)">
+            <span class="f-1 text-uppercase">{{duration}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="statistics d-flex">
+        <div class="statistic border border-primary rounded v-center px-3 py-2 mx-1">
+         <div class="value c-blue f-28 mr-3">
+          16
+         </div>
+         <div class="description c-dark f-1 font-weight-bold text-uppercase">
+          materials sent
+         </div>
+        </div>
+        <div class="statistic border border-primary rounded v-center px-3 py-2 mx-1">
+          <div class="value c-blue f-28 mr-3">
+           16
+          </div>
+          <div class="description c-dark f-1 font-weight-bold text-uppercase">
+           materials reviewed
+          </div>
+        </div>
+        <div class="statistic border border-primary rounded v-center px-3 py-2 mx-1">
+        <div class="value c-blue f-28 mr-3">
+          16
+        </div>
+        <div class="description c-dark f-1 font-weight-bold text-uppercase">
+          contacts added
+        </div>
+        </div>
+      </div>
+    </div> -->
+  <!-- <div class="mt-5">
+    <div class="v-center">
+      <app-slide-tab [tabs]="analyticsTabs" [selected]="selectedAnalyticsTab" (onChange)="changeAnalyticsTab($event)">
+      </app-slide-tab>
+    </div>
+    <div class="my-3">
+      <ng-container *ngIf="selectedAnalyticsTab.id === 'video-sent'">
+        <app-analytics-video-sent></app-analytics-video-sent>
+      </ng-container>
+      <ng-container *ngIf="selectedAnalyticsTab.id === 'video-watched'">
+        <app-analytics-video-watched></app-analytics-video-watched>
+      </ng-container>
+      <ng-container *ngIf="selectedAnalyticsTab.id === 'contacts-added'">
+        <app-analytics-contacts-added></app-analytics-contacts-added>
+      </ng-container>
+    </div>
+  </div> -->
+
+<!-- DropUp Component -->
+
+<!-- <div class="d-flex mt-4">
+  <div class="shadow-dropdown ml-auto" ngbDropdown>
+    <div class="v-center c-pointer f-3 p-3 font-weight-bold" ngbDropdownToggle>
+      <span class="pr-2">Sort by deadline</span>
+    </div>
+    <div ngbDropdownMenu aria-labelledby="taskSortTypes">
+      <div class="py-2" ngbDropdownItem *ngFor="let type of DEADLINE_TYPES" (click)="changeDeadlineType(type)">
+        <span class="f-3 v-center" [class.font-weight-bold]="type.id === deadline.id">
+          {{type.label}}
+          <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1" *ngIf="type.id === deadline.id"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+</div> -->
+<!--  -->
+
+  <!-- <app-input-contacts></app-input-contacts>
+  <app-select-contact [resultItem]="result">
+    <ng-template #result let-data>
+      <div class="chip d-flex align-items-center">
+        <div class="form-avatar rounded-circle bg-dark mr-1">{{data.avatarName}}</div>
+        <div class="info">
+          <div class="f-4">{{data.fullName}}</div>
+        </div>
+      </div>
+    </ng-template>
+  </app-select-contact>
+  <app-select-contact></app-select-contact>
+  <app-select-leader></app-select-leader>
+  <app-input-automation></app-input-automation>
+  <app-input-template></app-input-template>
+  <app-actions-bar [actions]="actions" [isActive]="selected" (doCommand)="doAction($event)"></app-actions-bar> -->
+
+<!--
+  <div class="custom-mat-field">
+    <mat-form-field appearance="outline" floatLabel="never" class="d-block">
+      <mat-chip-list aria-label="Contact Selection" #contactList>
+        <input
+          #inputField
+          [formControl]="formControl"
+          [matChipInputFor]="contactList"
+          [matAutocomplete]="auto"
+          [matChipInputSeparatorKeyCodes]="separatorKeyCodes"
+        >
+      </mat-chip-list>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="onSelectOption($event)"
+        [autoActiveFirstOption]="true"
+      >
+        <mat-option>
+          <div style="height: 200px">OPTION</div>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div> -->
+

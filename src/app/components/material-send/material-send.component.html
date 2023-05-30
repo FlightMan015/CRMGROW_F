@@ -1,0 +1,328 @@
+<div class="v-center justify-content-between">
+    <h1 mat-dialog-title class="m-0">
+        Send Selected Material
+    </h1>
+    <button class="v-center border-0 bgc-trans" (click)="closeDialog()">
+        <i class="d-block i-icon i-close bgc-dark"></i>
+    </button>
+</div>
+<form #sendForm="ngForm" (ngSubmit)="sendForm.form.valid ? send() : false">
+    <mat-dialog-content>
+        <div class="d-flex mt-2 material-preivew">
+            <ng-container [ngSwitch]="data.material[0].material_type">
+                <img [src]="data.material[0].thumbnail" *ngSwitchCase="'video'" onerror="( this.src = './assets/img/video_thumb.jpg' );">
+                <img [src]="data.material[0].preview" *ngSwitchCase="'pdf'" onerror="( this.src = './assets/img/video_thumb.jpg' );">
+                <img [src]="data.material[0].preview" *ngSwitchCase="'image'" onerror="( this.src = './assets/img/video_thumb.jpg' );">
+            </ng-container>
+
+            <div class="ml-4">
+                <div class="f-6 font-weight-bold material-title">
+                    {{data.material[0].title}}
+                </div>
+                <div class="f-3 op-64 mt-2">
+                    {{(data.material[0]?.description || '') | stripTags | shorten: 100: '...'}}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex">
+            <div class="v-center mt-3 material-more px-1 py-0 mx-auto" *ngIf="data.material.length > 1">
+                <div class="v-center mx-1 my-1" *ngIf="videos.length > 1">
+                    <i class="d-block i-icon act-videos mr-1"></i>
+                    + {{videos.length}} Videos
+                </div>
+                <div class="v-center mx-1 my-1" *ngIf="pdfs.length > 1">
+                    <i class="d-block i-icon act-pdfs mr-1"></i>
+                    + {{pdfs.length}} Pdfs
+                </div>
+                <div class="v-center mx-1 my-1" *ngIf="images.length > 1">
+                    <i class="d-block i-icon act-images mr-1"></i>
+                    + {{images.length}} Images
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <span class="f-1 fw-600 op-40 text-uppercase mb-1">
+                select contact to who you want to send material
+            </span>
+            <ng-container *ngIf="selectedTab === 0; else emailContactTemplate;">
+                <app-select-contact
+                    [fromSearch]="false"
+                    [mustField]="'cell_phone'"
+                    (onSelect)="selectNewContacts($event)"
+                    [resultItem]="result"
+                    class="w-100"
+                >
+                    <ng-template #result let-data>
+                        <div class="chip d-flex align-items-center">
+                            <div class="form-avatar rounded-circle bg-dark mr-1">{{data.avatarName}}</div>
+                            <div class="info">
+                                <div class="f-2 font-weight-bold">{{data.fullName}}</div>
+                                <div class="f-0 font-weight-bold c-blue">{{data.cell_phone | phone_format}}</div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </app-select-contact>
+                <span class="d-block f-2 c-red pl-2" *ngIf="sendForm.submitted && !contacts.length">
+                    Please select contacts
+                </span>
+            </ng-container>
+            <ng-template #emailContactTemplate>
+                <app-input-contacts
+                    [placeholder]="'Search for Contact'"
+                    [display]="'email'"
+                    [selectedContacts]="contacts"
+                ></app-input-contacts>
+                <span class="d-block f-2 c-red pl-2" *ngIf="sendForm.submitted && !contacts.length">
+                    Please select contacts
+                </span>
+            </ng-template>
+        </div>
+        <ng-container *ngIf="data?.type == 'text'">
+            <div class="form-group mb-0">
+                <div class="v-center">
+                    <span class="f-1 fw-600 op-40 text-uppercase mb-1">
+                        message
+                    </span>
+                    <span
+                        class="c-red f-2 ml-auto"
+                        *ngIf="sendForm.submitted && content.errors"
+                    >
+                        Required!
+                    </span>
+                </div>
+                <textarea
+                    rows="10"
+                    class="form-control text-content"
+                    [(ngModel)]="textContent"
+                    name="content"
+                    #content="ngModel"
+                    [required]="selectedTab === 0"
+                    #messageText
+                ></textarea>
+            </div>
+        </ng-container>
+        <ng-container label="Send via Email" *ngIf="data?.type == 'email'">
+            <div class="form-group mt-2">
+                <div class="v-center">
+                    <span class="f-1 fw-600 op-40 text-uppercase mb-1">
+                        subject
+                    </span>
+                    <span
+                        class="c-red f-2 ml-auto"
+                        *ngIf="sendForm.submitted && mailSubject.errors"
+                    >
+                        Required!
+                    </span>
+                </div>
+                <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="subject"
+                    name="mailSubject"
+                    #mailSubject="ngModel"
+                    [required]="selectedTab === 1"
+                    (focus)="subjectFoucs()"
+                    #subjectField
+                />
+            </div>
+            <div class="mt-2">
+                <span class="f-1 fw-600 op-40 text-uppercase mb-1 d-block">
+                    message
+                </span>
+                <app-html-editor
+                    [(value)]="emailContent"
+                    placeholder="Enter Text"
+                    required="true"
+                    [(attach)]="attachments"
+                    [style]="{height: '200px'}"
+                    [hasAttachment]="true"
+                    [hasTemplates]="false"
+                    [hasCalendly]="isCalendly"
+                    [subject]="subject"
+                    (onFocus)="contentFoucs()"
+                    (onChangeTemplate)="onChangeTemplate($event)"
+                    (attachmentChange)="onAttachmentChange($event)"
+                    #emailEditor
+                    >
+                </app-html-editor>
+            </div>
+        </ng-container>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <div class="text-toolbar v-center mt-2 w-100">
+            <ng-container *ngIf="data?.type === 'email'">
+                <div ngbDropdown class="insert-template">
+                    <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Template">
+                        <i class="d-block i-icon i-template bgc-dark"></i>
+                    </div>
+                    <div ngbDropdownMenu class="light template-container">
+                        <div class="template dropdown-item border-top px-2">
+                            <div class="v-center h-100">
+                            <div class="f-3 font-weight-bold c-blue flex-grow-1 mr-1 h-100 v-center"
+                                (click)="createNew()"
+                            >
+                                Create New Template ...
+                            </div>
+                            </div>
+                        </div>
+                        <ng-container *ngFor="let template of (templateService.templates$ | async)">
+                            <div class="position-relative template-wrapper" *ngIf="template.type === 'email'">
+                                <div class="template dropdown-item v-center" (click)="selectEmailTemplate(template)">
+                                  <div class="f-3 font-weight-bold w-100 text-ellipse template-title">{{template.title || 'Unnamed Template'}}</div>
+                                </div>
+                                <a class="abrc-y" [routerLink]="['/templates/edit/' + template._id]" target="_blank">
+                                  <i class="d-block i-icon i-expand bgc-dark"></i>
+                                </a>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div ngbDropdown class="insert-token ml-2">
+                    <div class="v-center no-carot c-pointer" placement="top-left" ngbTooltip="Schedule" (click)="showSchedule()" style="width: fit-content;">
+                      <i class="d-block i-icon i-schedule-send bgc-blue" *ngIf="scheduleCheck"></i>
+                      <i class="d-block i-icon i-schedule-send bgc-dark" *ngIf="!scheduleCheck"></i> 
+                    </div>
+                  </div>
+                  <div class="insert-token ml-2 datetime" *ngIf="scheduleCheck">
+                    <div class="v-center no-carot c-pointer">{{strScheduleDate}}</div>
+                    <div class="v-center no-carot c-pointer">{{strScheduleTime}}</div>
+                  </div>
+                <div ngbDropdown class="insert-template ml-2">
+                    <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Emoji">
+                        <img class="emoji-icon" src="../../../assets/img/emoji.png">
+                    </div>
+                    <div ngbDropdownMenu class="light">
+                        <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertEmailContentValue($event.emoji.native)" title="Pick your emoji…">
+                        </emoji-mart>
+                    </div>
+                </div>
+                <div ngbDropdown class="insert-token bottom-left ml-2">
+                    <div class="v-center no-carot" ngbDropdownToggle>
+                        <span class="f-1 font-weight-bold mr-1">Token</span>
+                        <i class="d-block i-icon i-triangle-down bgc-dark"></i>
+                        <i class="d-block i-icon i-triangle-up bgc-dark"></i>
+                    </div>
+                    <div ngbDropdownMenu class="light template-container">
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_name}')">Your Name</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_email}')">Your Email</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_phone}')">Your Phone</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{user_company}')">Your Company</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_first_name}')">Contact Firstname</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_last_name}')">Contact Lastname</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_email}')">Contact Email</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertEmailContentValue('{contact_phone}')">Contact Phone</div>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="data?.type === 'text'">
+                <div ngbDropdown class="insert-template">
+                    <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Template">
+                        <i class="d-block i-icon i-template bgc-dark"></i>
+                    </div>
+                    <div ngbDropdownMenu class="light template-container">
+                        <div class="template dropdown-item border-top px-2">
+                            <div class="v-center h-100">
+                            <div class="f-3 font-weight-bold c-blue flex-grow-1 mr-1 h-100 v-center"
+                                (click)="createNew()"
+                            >
+                                Create New Template ...
+                            </div>
+                            </div>
+                        </div>
+                        <ng-container *ngFor="let template of (templateService.templates$ | async)">
+                            <div class="position-relative template-wrapper" *ngIf="template.type === 'text'">
+                                <div class="template dropdown-item v-center" (click)="selectTextTemplate(template)">
+                                  <div class="f-3 font-weight-bold w-100 text-ellipse template-title">{{template.title || 'Unnamed Template'}}</div>
+                                </div>
+                                <a class="abrc-y" [routerLink]="['/templates/edit/' + template._id]" target="_blank">
+                                  <i class="d-block i-icon i-expand bgc-dark"></i>
+                                </a>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div ngbDropdown class="insert-token ml-2">
+                    <div class="v-center no-carot c-pointer" placement="top-left" ngbTooltip="Schedule" (click)="showSchedule()" style="width: fit-content;">
+                      <i class="d-block i-icon i-schedule-send bgc-blue" *ngIf="scheduleCheck"></i>
+                      <i class="d-block i-icon i-schedule-send bgc-dark" *ngIf="!scheduleCheck"></i> 
+                    </div>
+                </div>
+                <div class="insert-token ml-2 datetime" *ngIf="scheduleCheck">
+                    <div class="v-center no-carot c-pointer">{{strScheduleDate}}</div>
+                    <div class="v-center no-carot c-pointer">{{strScheduleTime}}</div>
+                </div>
+                <div ngbDropdown class="insert-template ml-2">
+                    <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Emoji">
+                        <img class="emoji-icon" src="../../../assets/img/emoji.png">
+                    </div>
+                    <div ngbDropdownMenu class="light py-0">
+                        <emoji-mart class="emoji-mart" [set]="set" [darkMode]="false" (emojiSelect)="insertTextContentValue($event.emoji.native)" title="Pick your emoji…">
+                        </emoji-mart>
+                    </div>
+                </div>
+                <div ngbDropdown class="insert-template ml-2" *ngIf="isCalendly">
+                    <div class="v-center no-carot c-pointer" ngbDropdownToggle placement="bottom" ngbTooltip="Calendly">
+                        <i class="d-block i-icon i-calendly bgc-dark"></i>
+                    </div>
+                    <div ngbDropdownMenu class="light template-container">
+                        <ng-container *ngFor="let calendly of (connectService.calendlyAll$ | async)">
+                            <div class="template dropdown-item border-top px-2" (click)="selectCalendly(calendly.attributes.url)">
+                                <div class="v-center h-100">
+                                    <div class="f-3 font-weight-bold flex-grow-1 mr-1 h-100 v-center">{{(calendly.attributes.name || '') | shorten: 45: '...'}}</div>
+                                    <a class="ml-auto" [href]="calendly.attributes.url" target="blank">
+                                        <i class="d-block i-icon i-expand bgc-dark sm"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div ngbDropdown class="insert-token bottom-left ml-2">
+                    <div class="v-center no-carot" ngbDropdownToggle>
+                        <span class="f-1 font-weight-bold mr-1">Token</span>
+                        <i class="d-block i-icon i-triangle-down bgc-dark"></i>
+                        <i class="d-block i-icon i-triangle-up bgc-dark"></i>
+                    </div>
+                    <div ngbDropdownMenu class="light template-container">
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_name}')">Your Name</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_email}')">Your Email</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_phone}')">Your Phone</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{user_company}')">Your Company</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_first_name}')">Contact Firstname</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_last_name}')">Contact Lastname</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_email}')">Contact Email</div>
+                        <div class="f-2 py-1 px-2 c-pointer menu-item" (click)="insertTextContentValue('{contact_phone}')">Contact Phone</div>
+                    </div>
+                </div>
+            </ng-container>
+            <button class="btn btn-white f-6 font-weight-bold c-blue ml-auto mr-2" type="button" (click)="closeDialog()">Cancel</button>
+            <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="sending" *ngIf='!scheduleCheck' [disabled]="!isEnableSend && !scheduleCheck">Send</button>
+            <button class="btn btn-primary f-6 font-weight-bold" type="submit" [class.loading]="sending" *ngIf='scheduleCheck'>Schedule</button>
+        </div>
+        <ng-container *ngIf="!isEnableSend && !scheduleCheck">
+            <div class="d-flex align-items-center">
+                <span class="f-3">
+                    Now is out of the business hours.
+                </span>
+                <div class="d-flex align-items-center ml-1">
+                    <ng-template #popContent>
+                        <span class="f-2">Your business hours is {{startTime?.text}} - {{endTime?.text}}. Please click <a [routerLink]="['/settings/business-hour']">here</a> to change this.</span>
+                    </ng-template>
+                    <ng-template #popTitle>
+                        <span class="f-3">Business Hours</span>
+                    </ng-template>
+                    <span [ngbPopover]="popContent" [popoverTitle]="popTitle" placement="top">
+                        <i class="bgc-dark i-icon i-support d-block"></i>
+                    </span>
+                </div>
+            </div>
+        </ng-container>
+    </mat-dialog-actions>
+</form>
+
+<ng-template #createNewContent>
+  <app-template-create class="w-100" [value]="templateValue" [subject]="templateSubject" [type]="'text'" (onClose)="closeOverlay($event)">
+  </app-template-create>
+</ng-template>

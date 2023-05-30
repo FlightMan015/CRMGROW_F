@@ -1,0 +1,255 @@
+<div class="page-content p-2">
+  <ng-container>
+    <div class="v-center">
+      <div class="f-6 font-weight-bold">
+        Custom Text Codes
+      </div>
+      <div class="ml-auto v-center create-actions">
+        <button class="v-center btn btn-blue f-6 font-weight-bold text-white rounded shadow mr-2 px-3" (click)="addSmartCode()">
+          <span>Add New</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="v-center material-list-controls mt-3 mb-2">
+      <div class="form-group mb-0 search-form">
+        <div class="input-group-prepend">
+          <i class="i-icon i-search d-block bgc-dark"></i>
+        </div>
+        <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon" [(ngModel)]="searchStr" (ngModelChange)="filter()">
+        <ng-container *ngIf="searchStr">
+          <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+            <i class="i-icon i-close d-block bgc-dark"></i>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="mat-table-wrapper" [class.empty]="!filteredCodes.length">
+      <table class="w-100 page-table mt-3"
+        mat-table
+        [dataSource]="filteredCodes | paginate: {id: 'capturePages', itemsPerPage: pageSize.id, currentPage: page, totalItems: filteredCodes.length}">
+
+        <!-- <ng-container matColumnDef="select">
+          <th mat-header-cell
+            *matHeaderCellDef
+            class="pl-2">
+            <div class="custom-control custom-checkbox"
+              [class.indeterminate]="pageSelection.length && !isAllSelected()">
+              <input type="checkbox"
+                class="custom-control-input"
+                id="selectAllContacts"
+                (change)="$event ? masterToggle() : null"
+                [checked]="(storeService.pageContacts$ | async).length && isAllSelected()" />
+              <label class="custom-control-label"
+                for="selectAllContacts"></label>
+            </div>
+          </th>
+          <td mat-cell
+            *matCellDef="let element"
+            class="pl-2">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox"
+                class="custom-control-input"
+                id="contact-{{element._id}}"
+                (change)="toggle(element)"
+                [checked]="isSelected(element)" />
+              <label class="custom-control-label"
+                for="contact-{{element._id}}"></label>
+            </div>
+          </td>
+        </ng-container> -->
+
+        <!-- Code Column -->
+        <ng-container matColumnDef="smart_code">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell mat-sort-header class="pl-0">Custom Code</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            class="pl-0"
+            (click)="openSmartCode(element)">
+            <div class="v-center c-pointer pr-2">
+              <span class="fw-600">{{element.code}}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Tags Column -->
+        <ng-container matColumnDef="tags">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell mat-sort-header>Tags</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            (click)="openSmartCode(element)">
+            <div class="v-center c-pointer pr-2">
+              <span class="tag rounded mr-2"
+                *ngIf="element.tags.length">{{element.tags[0]}}</span>
+              <span class="f-2 op-56"
+                *ngIf="element.tags.length > 1">+{{element.tags.length-1}} more</span>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="contact_tags">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell
+              class="px-md-3 px-sm-2"
+              *ngIf="!selection.length"> tags </th>
+          </ng-container>
+          <td mat-cell
+            class="px-md-3 px-sm-2"
+            *matCellDef="let element"
+            (click)="openContact(element)">
+            <span class="tag rounded mr-2"
+              *ngIf="element.tags.length">{{element.tags[0]}}</span>
+            <span class="f-2 op-56">{{element.moreTag}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Message Column -->
+        <ng-container matColumnDef="message">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell mat-sort-header>Message To send</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            (click)="openSmartCode(element)">
+            <div class="v-center c-pointer">
+              <span class="message fw-600">{{element.message}}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Material Thumbnail Column -->
+        <ng-container matColumnDef="materials">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell mat-sort-header>Materials</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            (click)="openSmartCode(element)">
+            <div class="material-td fw-300">
+              <div class="thumbnail">
+                <ng-container [ngSwitch]="element?.type">
+                  <a *ngSwitchCase="'video'" target="_blank">
+                    <div class="thumb-prev-wrapper">
+                      <img [src]="element.thumbnail" class="thumbnail" onerror="( this.src = './assets/img/video_thumb.jpg');" />
+                      <img [src]="element.preview" class="preview" onerror="( this.src = './assets/img/video_thumb.jpg');" />
+                    </div>
+                  </a>
+                  <a *ngSwitchCase="'pdf'" target="_blank">
+                    <img class="thumbnail" src="{{element.preview}}" onerror="( this.src = './assets/img/pdf_overlay.png' );" />
+                  </a>
+                  <a *ngSwitchCase="'image'" target="_blank">
+                    <img class="thumbnail" src="{{element.preview}}" onerror="( this.src = './assets/img/image_overlay.png' );" />
+                  </a>
+                </ng-container>
+              </div>
+              <div class="material_count" *ngIf="element?.material_count > 1">+{{element.material_count - 1}}</div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Automation Column -->
+        <ng-container matColumnDef="automation">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell mat-sort-header>Automation</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            (click)="openSmartCode(element)">
+            <div class="v-center c-pointer">
+              <span class="message fw-600">{{element['automation_title']}}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="actions">
+          <ng-container *matHeaderCellDef>
+            <th mat-header-cell class="pr-0 action-col">Actions</th>
+          </ng-container>
+          <td mat-cell
+            *matCellDef="let element"
+            class="pr-0 action-col">
+            <div class="v-center c-pointer">
+              <button type="button" class="v-center btn bgc-trans c-blue border-0 py-1" (click)="editSmartCode(element)">
+                <i class="i-icon i-edit bgc-blue"></i>
+              </button>
+              <button type="button" class="v-center btn bgc-trans c-red border-0 py-1" (click)="deleteSmartCode(element)">
+                <i class="i-icon i-trash bgc-red"></i>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row
+            *matHeaderRowDef="DISPLAY_COLUMNS" [class.selected]="selection.length" class="table-header"></tr>
+        <tr mat-row
+            *matRowDef="let row; columns: DISPLAY_COLUMNS;"></tr>
+
+      </table>
+    </div>
+    <ng-container *ngIf="filteredCodes.length">
+      <!-- <div class="updating-status"
+        *ngIf="(contactService.loading$ | async) === STATUS.REQUEST">
+        LOADING
+      </div> -->
+      <div class="my-2 table-control mode-1">
+        <div class="pagination-wrapper m-auto">
+          <pagination-controls
+            (pageChange)="page = $event"
+            (pageBoundsCorrection)="page = $event"
+            id="capturePages"
+            maxSize="5"
+            previousLabel=""
+            nextLabel="">
+          </pagination-controls>
+        </div>
+        <div class="shadow-dropdown ml-auto page-size-control"
+          ngbDropdown
+          placement="top-right">
+          <div class="v-center c-pointer f-3 p-3 font-weight-bold"
+            ngbDropdownToggle>
+            <span class="pr-2 c-blue">Show {{pageSize.id}} rows per page</span>
+          </div>
+          <div ngbDropdownMenu
+            aria-labelledby="contactPageSize">
+            <div class="py-2"
+              ngbDropdownItem
+              *ngFor="let type of PAGE_COUNTS"
+              (click)="changePageSize(type)">
+              <span class="f-3 v-center"
+                [class.font-weight-bold]="type.id === pageSize.id">
+                Show {{type.label}} rows per page
+                <i class="i-icon i-check d-block bgc-blue sm ml-1 mb-1"
+                  *ngIf="type.id === pageSize.id"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!filteredCodes.length">
+      <div class="empty-list py-5">
+        <ng-container>
+          <div class="object-icon v-center">
+            <i class="i-icon i-sms-limits d-block bgc-dark"></i>
+          </div>
+          <ng-container *ngIf="!smartCodes.length">
+            <h4 class="font-weight-bold mt-4 mb-3">
+              There is no smart code for added yet.
+            </h4>
+          </ng-container>
+          <ng-container *ngIf="smartCodes.length">
+            <h4 class="font-weight-bold mt-4 mb-3">
+              There is no smart code to match your search.
+            </h4>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

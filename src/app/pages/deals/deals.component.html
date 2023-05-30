@@ -1,0 +1,239 @@
+<div class="page-content  position-relative">
+  <div class="mb-3">
+    <div class="page-header v-center" *ngIf="(dealsService.pipelines$ | async).length!==0 || (dealsService.pipelines$ | async).length!==0 && (dealsService.loadingStage$ | async)!=STATUS.REQUEST">
+      <div class="page-title-wrapper">
+        <h1 class="page-title mb-0">
+          <!-- Pipeline -->
+          {{selectedPipelineTitle}}
+        </h1>
+        <div class="pipeline-actions">
+          <div class="actions-opacity">
+            <div ngbDropdown placement="bottom-right" class="ml-auto stage-action">
+              <a ngbDropdownToggle class="v-center btn bgc-white c-dark f-3 no-carot px-0">
+                  <i class="d-block i-icon i-menu-more bgc-dark"></i>
+              </a>
+              <div ngbDropdownMenu class="light">
+                <button class="v-center border-0 py-2 c-dark dropdown-item hover-class" [routerLink]="['/pipeline-manager']">
+                  <i class="i-icon i-setting bgc-dark ml-1" aria-hidden="true"></i>
+                  <span class="ml-3 f-3 font-weight-bold">Go to setting</span>
+                </button>
+                <button class="v-center border-0 py-2 c-dark dropdown-item hover-class" (click)="onClickUpdatePipeLineName()">
+                    <i class="i-icon i-edit bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Edit pipeline</span>
+                </button>
+                <button class="v-center border-0 py-2 c-dark dropdown-item hover-class" (click)="deletePipeline()">
+                    <i class="i-icon i-trash bgc-dark ml-1" aria-hidden="true"></i>
+                    <span class="ml-3 f-3 font-weight-bold">Delete pipeline</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-button-wrapper">
+        <ng-container *ngIf="!onClickCreatePipe ; else createPipeLineTemplate">
+          <button *ngIf="(dealsService.pipelines$ | async).length!==0 && !editStageState && (dealsService.stages$ | async).length!==0" class="btn btn-primary font-weight-bold shadow" (click)="addNewDeal()">New Deal</button>
+          <a *ngIf="(dealsService.pipelines$ | async).length!==0 && !editStageState" class="btn border border-primary bg-white font-weight-bold ml-2" (click)="editStages()">Edit Stages</a>
+          <a *ngIf="(dealsService.pipelines$ | async).length!==0 && editStageState" class="btn btn-primary font-weight-bold shadow" (click)="saveStages()">Save</a>
+          <div *ngIf="!editStageState && !onClickCreatePipe" [class.ml-auto]="(dealsService.pipelines$ | async).length==0" class="pipeline-dropdown ml-2" ngbDropdown>
+            <div class="dropdown-toggle font-weight-bold c-dark c-pointer px-2 rounded btn border border-primary justify-content-end" ngbDropdownToggle>
+              <span class="pr-2">
+                <ng-container *ngIf="(dealsService.pipelines$ | async).length == 0 && (dealsService.loadStageStatus| async) == STATUS.SUCCESS ; else pipelineTemplate">
+                  <span class="font-weight-bold ml-2">none</span>
+                </ng-container>
+                <ng-template #pipelineTemplate>
+                  <span class="font-weight-bold ml-2">{{ dealsService.selectedPipeline.getValue()?.title }}</span>
+                </ng-template>
+              </span>
+            </div>
+            <div ngbDropdownMenu aria-labelledby="taskSortTypes" class="dropdown-height">
+              <div class="py-2" ngbDropdownItem *ngFor="let pipeline of (dealsService.pipelines$ | async)" (click)="onSelectPipeLine(pipeline)">
+                <span>
+                  {{pipeline.title}}
+                </span>
+              </div>
+              <div ngbDropdownItem>
+                <button
+                class="btn btn-blue f-3 font-weight-bold text-white w-100"
+                (click)="onClickCreatePipeLine()"
+                >
+                  Add new pipeline
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #createPipeLineTemplate>
+          <button class="btn btn-primary font-weight-bold shadow" (click)="onSavePipeLine()">Save</button>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="(dealsService.pipelines$ | async).length!==0 || onClickCreatePipe; else emptyListStage">
+    <div class="updating-status" *ngIf="(dealsService.stages$ | async)?.length && (dealsService.loadingStage$ | async) === STATUS.REQUEST">
+      LOADING
+    </div>
+    <div class="kanban-view" cdkDropListGroup [class.editmode]="onClickCreatePipe && (dealsService.stages$ | async).length!==0 || editStageState && (dealsService.stages$ | async).length!==0">
+      <div
+        class="stages-container d-flex stages"
+        cdkDropListOrientation="horizontal"
+        cdkDropList
+        [cdkDropListData]="(dealsService.stages$ | async)"
+        (cdkDropListDropped)="dropstage($event)"
+      >
+        <div class="stage" cdkDrag [cdkDragDisabled]="!editStageState" *ngFor="let dealStage of (dealsService.stages$ | async)">
+            <div class="stage-title bgc-pale p-4" cdkDragHandle [class.stage-border]="searchStageID && searchStageID == dealStage._id">
+                <div class="f-4 title-wrapper font-weight-bold">
+                    <span class="title-a">{{dealStage.title}}</span>
+                </div>
+                <ng-container *ngIf="!onClickCreatePipe">
+                  <div class="f-6 font-weight-bold text-primary">
+                    {{dealStage.deals.length}} <span class="f-1 font-weight-bold c-dark op-56 text-uppercase">Deals</span>
+                  </div>
+                </ng-container>
+                <div class="d-flex deal-action-show">
+                  <i *ngIf="dealStage.duration" [ngbTooltip]="dealStage.duration==1?dealStage.duration+'day':dealStage.duration+'days'" placement="bottom" class="d-block i-icon i-schedule-send bgc-blue"></i>
+                  <i *ngIf="dealStage.automation" [ngbTooltip]="dealStage.automation.title" placement="bottom" class="i-icon i-automation d-block bgc-blue ml-2"></i>
+                </div>
+                <div class="deals-actions">
+                    <div class="actions-opacity">
+                      <div ngbDropdown placement="bottom-right" class="ml-auto stage-action">
+                        <a ngbDropdownToggle class="v-center btn bgc-white c-dark f-3 no-carot px-0">
+                            <i class="d-block i-icon i-menu-more bgc-dark"></i>
+                        </a>
+                        <div ngbDropdownMenu class="light">
+                          <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="rename(dealStage)">
+                            <i class="i-icon i-edit bgc-dark ml-1" aria-hidden="true"></i>
+                            <span class="ml-3 f-3 font-weight-bold">Rename</span>
+                          </button>
+                          <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="setTimeDuration(dealStage)">
+                              <i class="i-icon i-schedule-send bgc-dark ml-1" aria-hidden="true"></i>
+                              <span class="ml-3 f-3 font-weight-bold">Time Duration</span>
+                          </button>
+                          <button class="v-center border-0 py-2 c-dark dropdown-item" (click)="assignAutomation(dealStage)">
+                              <i class="i-icon bgc-dark d-block mr-1 i-automation ng-star-inserted" aria-hidden="true"></i>
+                              <span class="ml-3 f-3 font-weight-bold">Assign Automation</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <div class="title-triangle">
+                  <i class="d-block i-icon i-triangle-right bgc-dark"></i>
+                </div>
+            </div>
+            <div
+                class="pt-1 pr-1"
+                [class.deals-container]="!onClickCreatePipe"
+                id="{{dealStage._id}}"
+                [cdkDropListConnectedTo]="(dealsService.stageIdArray$ | async)"
+                cdkDropList
+                [cdkDropListData]="dealStage.deals"
+                (cdkDropListDropped)="drop($event, dealStage._id)"
+            >
+              <ng-container *ngIf="!onClickCreatePipe">
+                <div
+                    class="deal mt-2 mr-2 p-3 c-pointer"
+                    *ngFor="let deal of dealStage.deals" cdkDrag
+                    (click)="dealDetail(deal._id)"
+                >
+                    <div class="deal-detail position-relative">
+                        <div class="v-center justify-content-between">
+                            <div class="f-6 font-weight-bold">
+                                {{ deal.title }}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                          <div class="d-flex flex-column">
+                            <div class="v-center justify-content-between mt-2 contacts-info" *ngIf="deal.contacts.length > 0">
+                                <div class="v-center">
+                                    <div class="v-center justify-content-center avatar fw-600 c-white">{{getAvatarName(deal.contacts[0])}}</div>
+                                    <div class="ml-2 f-3 fw-600">
+                                        {{deal.contacts[0]?.first_name}} {{deal.contacts[0]?.last_name}}
+                                    </div>
+                                </div>
+                                <div class="v-center justify-content-center avatar" *ngIf="deal.contacts.length > 1">
+                                    <div class="c-white">+{{deal.contacts.length - 1}}</div>
+                                </div>
+                            </div>
+                            <div class="f-3 op-64 mt-2" *ngIf="deal.value">
+                                ${{deal.value}}
+                            </div>
+                            <div class="v-center justify-content-between mt-2" *ngIf="dealStage.duration != undefined && dealStage.duration != 0 && deal.put_at && deal._id !== moveDealId">
+                              <div class="v-center">
+                                <div class="v-center justify-content-center timer-avatar" placement="right" ngbTooltip="{{getDurationDate(deal, dealStage.duration)}}" [ngStyle]="{'background-color': getStatus1(deal, dealStage.duration)}">
+                                  <i class="i-icon s-14 i-timer" [ngStyle]="{'background-color': getStatus(deal, dealStage.duration)}"></i>
+                                </div>
+                                <div class="ml-2 f-3 fw-400">
+                                  {{ getLeftDays(deal, dealStage.duration) }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <i *ngIf="deal.running_automation" class="i-icon i-automation sm d-block bgc-dark ml-2"></i>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+              </ng-container>
+
+                <!-- <div class="v-center justify-content-center add-deal mt-3 mr-3">
+                    <i class="i-icon i-plus d-block bgc-blue c-pointer" (click)="addDeals(dealStage)"></i>
+                </div> -->
+            </div>
+        </div>
+        <button class="addNewStageBtn" (click)="addStages()"  *ngIf="onClickCreatePipe && (dealsService.stages$ | async).length!==0 || editStageState && (dealsService.stages$ | async).length!==0">
+          <i class="i-hover d-block i-icon s-8 i-plus bgc-dark"></i>
+        </button>
+      </div>
+    </div>
+    <ng-container  *ngIf="(dealsService.stages$ | async).length==0 && (dealsService.loadingStage$ | async) === STATUS.SUCCESS">
+      <div class="loading-style empty-list">
+        <div class="object-icon v-center">
+            <i class="i-icon i-deals d-block bgc-dark"></i>
+        </div>
+        <h5>Please add new stage.</h5>
+        <button class="v-center btn btn-blue text-white br-default py-2" (click)="addStages()">
+          <span class="f-6 font-weight-bold">New Stage</span>
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #emptyListStage>
+    <ng-container [ngSwitch]="(dealsService.loadingStage$ | async)">
+      <div class="empty-list" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-deals d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+              There are no pipelines yet.
+          </h4>
+          <p>Please create new pipeline.</p>
+          <button class="v-center btn btn-blue text-white br-default py-2" (click)="onClickCreatePipeLine()">
+              <!-- <i class="d-block i-icon i-plus bgc-white"></i> -->
+              <span class="f-6 font-weight-bold">New Pipeline</span>
+          </button>
+      </div>
+      <div class="empty-list" *ngSwitchCase="STATUS.FAILURE">
+          <div class="object-icon v-center">
+              <i class="i-icon i-deals d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+              There are no pipelines yet.
+          </h4>
+          <p>Please create new pipeline.</p>
+          <button class="v-center btn btn-blue text-white br-default py-2" (click)="onClickCreatePipeLine()">
+              <!-- <i class="d-block i-icon i-plus bgc-white"></i> -->
+              <span class="f-6 font-weight-bold">New Pipeline</span>
+          </button>
+      </div>
+      <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading pipelines ...</h4>
+      </div>
+    </ng-container>
+  </ng-template>
+</div>

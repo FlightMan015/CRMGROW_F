@@ -1,0 +1,40 @@
+<div class="v-center justify-content-between">
+  <h1 class="m-0" mat-dialog-title>
+      {{data['title']}}
+  </h1>
+  <i class="d-block i-icon i-close bgc-dark" mat-dialog-close></i>
+</div>
+<mat-dialog-content class="description">
+  <div class="text-center f-5 c-dark mt-3">
+    {{data['message']}}
+  </div>
+  <div class="d-flex flex-column mt-3">
+    <div class="custom-control custom-radio">
+      <input type="radio"
+        class="custom-control-input "
+        id="company-format-1"
+        name="company-format-option"
+        [(ngModel)]="formatOption"
+        #format_option="ngModel"
+        value="normally"
+        />
+      <label class="custom-control-label"
+        for="company-format-1">Format profile & keep subscription</label>
+    </div>
+    <div class="custom-control custom-radio mt-2">
+      <input type="radio"
+        class="custom-control-input "
+        id="company-format-2"
+        name="company-format-option"
+        [(ngModel)]="formatOption"
+        #format_option="ngModel"
+        value="completely" />
+      <label class="custom-control-label"
+        for="company-format-2">Delete profile & remove subscription</label>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="mx-0">
+  <button class="btn btn-white f-6 font-weight-bold c-blue mr-2" [mat-dialog-close]="false">{{data['cancelLabel'] || 'Cancel'}}</button>
+  <button class="btn btn-red f-6 font-weight-bold text-white" (click)="deleteProfile()" cdkFocusInitial [class.loading]="removing">{{data['confirmLabel'] || 'OK'}}</button>
+</mat-dialog-actions>

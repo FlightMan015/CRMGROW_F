@@ -1,0 +1,196 @@
+<script src="../team-share-contact/team-share-contact.component.ts"></script>
+<div class="page-content">
+  <div class="d-flex justify-content-between with-tab panel-header contact-header">
+    <div class="f-6 font-weight-bold">Automations</div>
+    <button type="button" class="btn btn-white-blue v-center" (click)="shareAutomation()"
+      *ngIf="role=='editor' || role == 'owner'">
+      <span class="f-3 font-weight-bold c-blue">Share Automation</span>
+    </button>
+  </div>
+  <div class="v-center my-2">
+    <div class="form-group mb-0 search-form">
+      <div class="input-group-prepend">
+        <i class="i-icon i-search d-block bgc-dark"></i>
+      </div>
+      <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="search-addon"
+        [(ngModel)]="searchStr" (ngModelChange)="changeSearchStr()" [class.disabled]="automations.length <= 0">
+      <ng-container *ngIf="searchStr">
+        <div class="cancel-action c-pointer" (click)="clearSearchStr()">
+          <i class="i-icon i-close d-block bgc-dark"></i>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="position-relative">
+    <ng-container *ngIf="automations.length">
+      <table class="w-100 page-table automation-table" mat-table multiTemplateDataRows
+        [dataSource]="filteredResult | paginate: {itemsPerPage: 8, currentPage: page, id: 'automationTable', total: filteredResult.length}">
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef class="title">
+            <div class="v-center c-pointer head-sort" (click)="sort('title')">
+              <span [class]="selectedSort == 'title' ? 'fw-600 c-dark' : ''">Title</span>
+              <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.title ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'title'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let automation" class="title">
+            <a [routerLink]="['/autoflow/edit/' + automation._id]" class="td-none"
+              *ngIf="!automation.isFolder; else folderTitle">
+              <span class="f-3 font-weight-bold">{{automation.title}}</span>
+            </a>
+            <ng-template #folderTitle>
+              <a [routerLink]="['/team/' + team?._id + '/automations/' + automation._id]">
+                <div class="v-center c-pointer">
+                  <i class="i-icon bgc-dark i-folder mr-1"></i>
+                  <span class="f-3 font-weight-bold">{{automation.title}}</span>
+                </div>
+              </a>
+            </ng-template>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="owner">
+          <th mat-header-cell *matHeaderCellDef class="auth">
+            <div class="v-center c-pointer head-sort" (click)="sort('role')">
+              <span [class]="selectedSort == 'role' ? 'fw-600 c-dark' : ''">Owner</span>
+              <i class="i-icon d-block bgc-black ml-2" [class]="searchCondition.role ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'role'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let automation" class="auth">
+            <!--            <div class="role" [class.admin]="automation.role == 'admin'" [class.team]="automation.role === 'team' && automation.user === userId" [class.shared]="automation.role === 'team' && automation.user !== userId"></div>-->
+            <div class="f-3">{{getOwner(automation)}}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="label">
+          <th mat-header-cell *matHeaderCellDef class="label">
+            <div class="v-center c-pointer head-sort">
+              <span [class]="selectedSort == 'type' ? 'font-weight-bold c-dark' : ''">LABEL</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let automation" class="label">
+            <ng-container>
+              <div class="v-center">
+                <div class="f-2 font-weight-bold ml-1">{{automation.label}}</div>
+              </div>
+            </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="action-count">
+          <th mat-header-cell *matHeaderCellDef class="action-count">Actions</th>
+          <td mat-cell *matCellDef="let automation" class="action-count">
+            <div class="f-3" *ngIf="!automation.isFolder">{{automation.automations && automation.automations.length}}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="contacts">
+          <th mat-header-cell *matHeaderCellDef class="contacts">Contacts</th>
+          <td mat-cell *matCellDef="let automation" class="contacts">
+            <div class="f-3" *ngIf="!automation.isFolder">{{automation.contacts}}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="created">
+          <th mat-header-cell *matHeaderCellDef class="created">
+            <div class="v-center justify-content-end c-pointer head-sort" (click)="sort('created_at')">
+              <span [class]="selectedSort == 'created_at' ? 'fw-600 c-dark' : ''">Added</span>
+              <i class="i-icon d-block bgc-black ml-2"
+                [class]="searchCondition.created_at ? 'i-sort-down' : 'i-sort-up'"
+                *ngIf="selectedSort == 'created_at'"></i>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let automation" class="created">
+            <div class="f-3">{{automation.created_at | date: 'MM/dd/yyyy'}}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="assign-action">
+          <th mat-header-cell *matHeaderCellDef class="assign-action"></th>
+          <td mat-cell *matCellDef="let automation" class="assign-action">
+            <div class="v-center items pr-3" *ngIf="automation?.user?._id === userId; else downloadAction">
+              <button class="v-center btn p-1 c-dark" (click)="unshareAutomation(automation)" placement="bottom"
+                ngbTooltip="Stop share">
+                <i class="i-icon i-share-off bgc-dark" aria-hidden="true"></i>
+              </button>
+            </div>
+            <ng-template #downloadAction>
+              <div class="v-center items pr-3">
+                <span class="c-dark font-weight-bold" *ngIf="d_status[automation._id]">
+                  <i class="small-spinner"></i>
+                </span>
+                <button class="v-center btn p-1 c-dark" (click)="downloadAutomation(automation)" placement="bottom"
+                  ngbTooltip="Download To Own List" *ngIf="!d_status[automation._id]">
+                  <i class="i-icon i-download bgc-dark" aria-hidden="true"></i>
+                </button>
+              </div>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="DISPLAY_COLUMNS.length">
+            <div class="automation-detail"
+              [@detailExpand]="element._id == selectedAutomation ? 'expanded' : 'collapsed'">
+              <ng-container *ngIf="detailLoading; else contactsList">
+                <div class="loader"></div>
+                <div class="text-center f-8 font-weight-bold">
+                  Loading the assigned contacts
+                </div>
+              </ng-container>
+              <ng-template #contactsList>
+                <h5 class="font-weight-bold border-bottom pb-2">Assigned Contacts</h5>
+                <div class="chip d-flex p-1 contact-chip c-pointer" *ngFor="let contact of contacts">
+                  <div class="form-avatar rounded-circle bg-dark mr-1">{{contact.avatarName}}</div>
+                  <div class="info">
+                    <div class="f-5 font-weight-bold">{{contact.fullName}}</div>
+                    <div class="f-2">{{contact.email}}</div>
+                    <div class="f-2">{{contact.cell_phone}}</div>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="DISPLAY_COLUMNS"></tr>
+        <tr mat-row *matRowDef="let element; columns: DISPLAY_COLUMNS;" class="example-element-row"
+          [class.example-expanded-row]="selectedAutomation === element._id">
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="automation-detail-row"></tr>
+      </table>
+      <ng-container *ngIf="filteredResult.length > 0">
+        <div class="d-flex justify-content-center align-items-center mt-4">
+          <div class="ml-3 pagination-wrapper">
+            <pagination-controls (pageChange)="page = $event" id="automationTable" maxSize="5" previousLabel=""
+              nextLabel=""></pagination-controls>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="!(storeService.sharedAutomations$ | async).length; else showingStatusAutomations">
+      <ng-container [ngSwitch]="(teamService.sharedAutomationsLoadStatus | async)">
+        <div class="empty-list py-5" *ngSwitchCase="STATUS.SUCCESS">
+          <div class="object-icon v-center">
+            <i class="i-icon i-automation d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            There is no automations for shared yet.
+          </h4>
+        </div>
+        <div class="list-loading text-center" *ngSwitchCase="STATUS.REQUEST">
+          <div class="loader mt-5 lg"></div>
+          <h4 class="fw-600 mt-2">Loading automations...</h4>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #showingStatusAutomations>
+      <ng-container *ngIf="!filteredResult.length">
+        <div class="empty-list py-5">
+          <div class="object-icon v-center">
+            <i class="i-icon i-automation d-block bgc-dark"></i>
+          </div>
+          <h4 class="font-weight-bold mt-4 mb-3">
+            There is no automations to match your filter conditions.
+          </h4>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>

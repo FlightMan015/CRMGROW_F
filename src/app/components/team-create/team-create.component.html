@@ -1,0 +1,58 @@
+<h1 mat-dialog-title>Create a new team</h1>
+<form #teamForm="ngForm" (ngSubmit)="submitted = true; teamForm.form.valid ? create() : false"
+      [class.was-validated]="submitted">
+  <mat-dialog-content>
+    <div class="form-group">
+      <div class="v-center mt-3">
+        <ng-container *ngIf="team.picture; else emptyAvatar">
+          <div class="avatar-wrapper">
+            <img class="avatar rectangle f-1 font-weight-bold" [src]="team.picture" alt="NO LOGO ADDED"/>
+            <button type="button" class="bgc-red btn rounded-circle btn-icon" (click)="closeAvatar()">
+              <i class="i-icon i-close bg-white d-block"></i>
+            </button>
+          </div>
+        </ng-container>
+        <ng-template #emptyAvatar>
+          <div class="avatar-wrapper empty rectangle" (click)="openAvatar()">
+            <div class="f-1 font-weight-bold text-uppercase">No Logo Added</div>
+          </div>
+        </ng-template>
+        <div class="description ml-4" (click)="openAvatar()">
+          <div class="v-center">
+            <i class="i-icon i-upload bgc-black d-block"></i>
+            <div class="ml-3">
+              <div class="f-6 font-weight-bold c-black">Do you want to upload the team logo?</div>
+              <div class="f-1 mt-1">You can upload .jpg or .png and the file size can be up to 2MB.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="my-3">
+        <label>Team name</label>
+        <input type="text" class="form-control" [(ngModel)]="team.name"
+           placeholder="Provide name of the team"
+           name="callSubject"
+           #callSubject="ngModel" required>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <div class="v-center justify-content-between w-100">
+      <div class="d-flex share-option">
+        <label>Private</label>
+        <div class="border-0">
+          <label class="custom-toggle mb-0 ml-2" placement="top"
+            ngbTooltip="Set as {{isPublic ? 'Private' : 'Public'}}">
+            <input type="checkbox" [checked]="isPublic" (change)="setPrivate()">
+            <span class="custom-toggle-slider rounded-circle"></span>
+          </label>
+        </div>
+        <label class="ml-2">Public</label>
+      </div>
+      <div class="v-center justify-content-end">
+        <button class="btn bt-white" type="button" mat-dialog-close>Cancel</button>
+        <button class="btn btn-primary ml-2" [class.loading]="creating" type="submit">Create team</button>
+      </div>
+    </div>
+  </mat-dialog-actions>
+</form>

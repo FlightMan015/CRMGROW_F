@@ -1,0 +1,17 @@
+.plan {
+  border: 1px solid #D9D9DF;
+  cursor: pointer;
+  &.selected {
+    border: 1px solid #0000ff;
+  }
+
+  .check-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .description {
+    color: #797B8E;
+  }
+}

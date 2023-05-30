@@ -1,0 +1,135 @@
+.page-content {
+  padding: 0;
+}
+
+.automation-table {
+  .action-count,
+  .contacts,
+  .created {
+    text-align: right;
+  }
+
+  .icon-button {
+    cursor: pointer;
+  }
+
+  .button-more {
+    a {
+      &::after {
+        content: none;
+      }
+    }
+  }
+  .label {
+    text-transform: capitalize;
+  }
+  th {
+    height: 45px;
+    color: rgba(0, 0, 0, 0.54);
+    padding-left: 10px;
+    .head-sort {
+      span {
+        line-height: 1;
+      }
+
+      i {
+        width: 8px;
+        height: 12px;
+        min-width: 8px;
+      }
+    }
+  }
+
+  @media screen and (max-width: 576px) {
+    .action-count,
+    .contacts,
+    .created {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 375px) {
+    .auth {
+      display: none;
+    }
+  }
+}
+
+.i-triangle-up.disabled {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+tr.mat-row {
+  &.automation-detail-row {
+    height: unset;
+
+    td {
+      padding: 0px;
+
+      .automation-detail {
+        padding: 15px;
+        border-radius: 10px;
+        background-color: #eee;
+        min-height: 150px;
+
+        .loader {
+          width: 100px;
+          height: 100px;
+        }
+      }
+    }
+  }
+}
+
+tr td {
+  background-color: white;
+  &.auth {
+    padding-right: 0px;
+    padding-left: 10px;
+  }
+}
+
+.contact-chip {
+  .form-avatar {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 20px;
+  }
+}
+
+input.disabled {
+  pointer-events: none;
+  background-color: #f8f8f8;
+}
+
+:host ::ng-deep {
+  th.mat-header-cell:first-of-type,
+  td.mat-cell:first-of-type,
+  td.mat-footer-cell:first-of-type {
+    padding-left: 0;
+  }
+
+  .assign-action {
+    width: 120px;
+    .actions {
+      opacity: 0;
+    }
+
+    // button {
+    //   opacity: 0;
+    //   margin-left: auto;
+
+    //   @media screen and (max-width: 768px) {
+    //     opacity: 1;
+    //   }
+    // }
+  }
+
+  tr:hover {
+    .assign-action .actions {
+      opacity: 1;
+    }
+  }
+}

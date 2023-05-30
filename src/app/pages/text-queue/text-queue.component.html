@@ -1,0 +1,263 @@
+<div class="page-content d-flex">
+  <div class="campaign-bulk-mailing-item-page">
+    <div class="v-center justify-content-between">
+      <div class="page-title font-weight-bold">
+        <span>Bulk Texting</span>
+      </div>
+    </div>
+    <div class="bulk-contents mt-3">
+      <div class="bulk-mailing-status">
+        <div class="status-item blue-item" (click)="changePanel('awaiting')" *ngIf="status.awaiting">
+          <div class="v-center category">
+            <i class="i-icon i-opened-mail" aria-hidden="true"></i>
+            <span class="f-1 font-weight-bold ml-2 text-uppercase">Awaiting</span>
+          </div>
+          <div class="mt-2 f-30 count-number">{{loading ? '--' : status.awaiting}}</div>
+        </div>
+        <div class="status-item green-item" (click)="changePanel('delivered')">
+          <div class="v-center category">
+            <i class="i-icon i-delivered-mail" aria-hidden="true"></i>
+            <span class="f-1 font-weight-bold ml-2 text-uppercase">Delivered</span>
+          </div>
+          <div class="mt-2 f-30 count-number">{{loading ? '--' : status.delivered}}</div>
+        </div>
+        <div class="status-item red-item" (click)="changePanel('failed')">
+          <div class="v-center category">
+            <i class="i-icon i-delivered-mail" aria-hidden="true"></i>
+            <span class="f-1 font-weight-bold ml-2 text-uppercase">Failed</span>
+          </div>
+          <div class="mt-2 f-30 count-number">{{loading ? '--' : status.failed}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="templates-container mt-5 form-group">
+      <div>
+        <div class="d-flex">
+          <label>Text Content</label>
+          <a class="ml-auto" *ngIf="isAbleEdit && !isEditing" (click)="changeContentForm()">
+            <i class="i-icon d-block bgc-dark i-edit"></i>
+          </a>
+        </div>
+        <ng-container *ngIf="!loading">
+          <ng-container *ngIf="!isEditing; else editForm">
+            <div class="f-3 fw-600 c-dark">{{textTasks[0]?.action.content || '' | stripTags | shorten: 150: '...'}}</div>
+          </ng-container>
+          <ng-template #editForm>
+            <app-template [inline]="true" [initMode]="'inline-edit'" [initTemplate]="template" [wrapperClass]="'inline-form-editor'" (onClosePage)="onChangeTextTemplate($event)">
+            </app-template>
+          </ng-template>
+        </ng-container>
+      </div>
+      <div class="mt-5" *ngIf="!loading && materials.length">
+        <label>Material Sent</label>
+        <div class="material-container v-center mb-1" *ngFor="let material of materials">
+          <img class="thumbnail" [src]="material.preview">
+          <div class="ml-3">
+            <div class="title f-3 font-weight-bold c-dark">{{(material.title || '') | shorten: 70: '...'}}</div>
+            <div class="description mt-2 f-1 c-dark">
+              {{(material.description || '') | stripTags | shorten: 200: '...'}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-container *ngIf="loading">
+      <div class="loader lg"></div>
+    </ng-container>
+    <div class="session-container mt-5" *ngIf="!loading">
+      <table class="table session-table" *ngIf="taskTotalCount">
+        <thead>
+        <th class="session">#</th>
+        <th class="sent">Waiting</th>
+        <th class="sent">Failed</th>
+        <th class="sent">Delivered</th>
+        <th class="date">Time</th>
+        <th class="completed">Status</th>
+        <th class="action"></th>
+        </thead>
+        <tbody>
+          <tr class="task-row" *ngFor="let task of textTasks | paginate: {id: 'taskPage', itemsPerPage: taskPageSize, currentPage: taskPage || 1, totalItems: taskTotalCount}; let i = index;">
+            <td class="session f-3" (click)="loadTaskContacts(task)">{{i + 1}}</td>
+            <td class="sent f-3">{{task.awaiting || 0}}</td>
+            <td class="sent f-3">{{task.failed}}</td>
+            <td class="sent f-3">{{task.delivered}}</td>
+            <td class="date f-2">
+              <div>{{task.due_date | date: 'MM/dd/yyyy hh:mm'}}</div>
+            </td>
+            <td class="completed f-3 text-capitalize">{{task.status}}</td>
+            <td class="action">
+              <ng-container *ngIf="task.status != 'completed'">
+                <div class="icon-button v-center justify-content-center c-pointer" (click)="cancelTask(task)" placement="left" ngbTooltip="Cancel">
+                  <i class="i-icon bgc-dark i-trash"></i>
+                </div>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination-wrapper v-center">
+        <div class="pagination-content">
+          <ng-container *ngIf="taskTotalCount > 10">
+            <pagination-controls (pageChange)="changeTaskPage($event)"
+              (pageBoundsCorrection)="changeTaskPage($event)"
+              id="taskPage"
+              maxSize="5"
+              previousLabel=""
+              nextLabel=""
+            >
+            </pagination-controls>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="action-panel position-relative" *ngIf="!loading">
+    <div class="action-panel-header d-flex" >
+      <ng-container *ngIf="contacts[currentPanel].loading && contacts[currentPanel].data.length">
+        <div class="updating-status">
+          LOADING...
+        </div>
+      </ng-container>
+    </div>
+    <table class="w-100 page-table"
+      mat-table
+      multiTemplateDataRows
+      [dataSource]="(contacts[currentPanel].data || []) | paginate: {id: 'panelPage', itemsPerPage: contacts[currentPanel].pageSize, currentPage: contacts[currentPanel]?.page || 1, totalItems: status[currentPanel]}"
+    >
+      <ng-container matColumnDef="contact_name">
+        <th mat-header-cell *matHeaderCellDef>Contact Name</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="v-center c-pointer" (click)="openContact(element)">
+            <div class="contact-avatar f-3 mr-2">
+              {{element.avatarName}}
+            </div>
+            <span class="contact-name">
+              <ng-container *ngIf="element?.not_found; else normalTemplate;">
+                {{element.fullName | shorten: 8: '...'}}
+              </ng-container>
+              <ng-template #normalTemplate>
+                {{element.fullName}}
+              </ng-template>
+            </span>
+          </div>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="contact_label">
+        <ng-container *matHeaderCellDef="let element">
+          <ng-container *ngIf="element?.not_found; else normalTemplate;">
+            <th mat-header-cell colspan="10"></th>
+          </ng-container>
+          <ng-template #normalTemplate>
+            <th mat-header-cell>Label</th>
+          </ng-template>
+        </ng-container>
+        <ng-container *matCellDef="let element">
+          <ng-container *ngIf="element?.not_found; else normalTemplate;">
+            <td mat-cell colspan="10">
+              This contact has been deleted.
+            </td>
+          </ng-container>
+          <ng-template #normalTemplate>
+            <td mat-cell>
+              <app-label-select
+                [value]="element?.label"
+              ></app-label-select>
+            </td>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+      <ng-container matColumnDef="last_activity">
+        <ng-container *matHeaderCellDef="let element">
+          <th mat-header-cell *ngIf="!element?.not_found">
+            Last Activity
+          </th>
+        </ng-container>
+        <ng-container *matCellDef="let element">
+          <td mat-cell *ngIf="!element?.not_found">
+            <div class="v-center">
+              <i class="act-icon normal {{'act-'+element.last_activity?.type}} d-block mr-2"></i>
+              <span>{{element.last_activity?.content | shorten: 20: '...'}}</span>
+            </div>
+          </td>
+        </ng-container>
+      </ng-container>
+      <ng-container matColumnDef="contact_email">
+        <ng-container *matHeaderCellDef="let element">
+          <th mat-header-cell *ngIf="!element?.not_found">
+            Email
+          </th>
+        </ng-container>
+        <ng-container *matCellDef="let element">
+          <td mat-cell *ngIf="!element?.not_found">
+            {{element.email}}
+          </td>
+        </ng-container>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <ng-container *matHeaderCellDef="let element">
+          <th mat-header-cell *ngIf="!element?.not_found">
+            Status
+          </th>
+        </ng-container>
+        <ng-container *matCellDef="let element">
+          <td mat-cell *ngIf="!element?.not_found" class="text-capitalize">
+            {{element.status}}
+          </td>
+        </ng-container>
+      </ng-container>
+
+      <ng-container matColumnDef="action">
+        <ng-container *matHeaderCellDef="let element">
+          <th mat-header-cell *ngIf="!element?.not_found"></th>
+        </ng-container>
+        <ng-container *matCellDef="let element">
+          <td mat-cell *ngIf="!element?.not_found">
+            <ng-container *ngIf="element?.status == 'awaiting'">
+              <div class="icon-button v-center justify-content-center c-pointer" (click)="cancelContact(element)" placement="left" ngbTooltip="Cancel">
+                <i class="i-icon bgc-dark i-trash"></i>
+              </div>
+            </ng-container>
+          </td>
+        </ng-container>
+      </ng-container>
+
+      <ng-container matColumnDef="expandedDetail">
+        <td mat-cell *matCellDef="let element" colspan="10">
+          {{element?.failed_reason}}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row
+          *matHeaderRowDef="DISPLAY_COLUMNS" class="table-header"></tr>
+      <tr mat-row
+          *matRowDef="let row; columns: DISPLAY_COLUMNS;" [class.failed]="row.not_found || row.status === 'failed' || row.failed"></tr>
+      <tr mat-row
+          *matRowDef="let row; columns: ['expandedDetail'];" [class.d-none]="!(row.failed)" class="failed-reason"></tr>
+    </table>
+
+
+    <ng-container *ngIf="contacts[currentPanel].loading && !contacts[currentPanel].data.length">
+      <div class="list-loading text-center">
+        <div class="loader mt-2"></div>
+        <h6 class="fw-600 mt-2">Loading...</h6>
+      </div>
+    </ng-container>
+
+    <div class="pagination-wrapper v-center">
+      <div class="pagination-content" [class.visible-hidden]="currentPanel === 'task' || limit >= status[currentPanel]">
+        <pagination-controls (pageChange)="changeContactPage($event)"
+          (pageBoundsCorrection)="changeContactPage($event)"
+          id="panelPage"
+          maxSize="5"
+          previousLabel=""
+          nextLabel=""
+        >
+        </pagination-controls>
+      </div>
+      <div class="c-blue fw-600 f-3 page-status">
+        Show 15 contacts per page
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,320 @@
+@import  "src/variables.scss";
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.button-record, .button-add {
+    font-size: 16px;
+}
+
+.dropdown-menu {
+    &.show {
+        top: 0px !important;
+        left: -140px !important;
+    }
+}
+
+.actions-groups {
+    &.show {
+        .button-add {
+            &::after {
+                content: "x";
+                font-size: 16px;
+                vertical-align: unset;
+                border: unset;
+                width: 0.6em;
+            }
+        }
+    }
+    &.show, &:hover {
+        box-shadow: 0 5px 16px -5px rgba(16, 19, 54, 0.35);
+    }
+    .dropdown-menu {
+        min-width: 16rem;
+        top: 15px !important;
+        right: 12px !important;
+        left: unset!important;
+    }
+}
+
+.table-wrapper {
+    background: white;
+    margin-top: 10px;
+    border-radius: 5px;
+    padding: 0px 0px;
+}
+
+table {
+    th {
+        position: sticky;
+        top: 0px;
+        background-color: white;
+        z-index: 11;
+    }
+    th, td {
+        vertical-align: middle !important;
+        background-color: white;
+        opacity: 1;
+        &.selectHeader {
+            background-color: #f3f3f3 !important;
+            height: 50px;
+        }
+    }
+    tr {
+        &.section-header {
+            td {
+                background-color: #f3f3f3 !important;
+                height: 50px;
+            }
+        }
+    }
+}
+.checkbox-col {
+    width: 36px;
+}
+.thumbnail-col {
+    margin: 0px;
+    width: 112px;
+}
+.thumbnail {
+    padding: 0px;
+    width: 96px;
+    height: 54px;
+    object-fit: contain;
+    border: none;
+    margin: 0px;
+    border-radius: 0px;
+    background-color: #dedede;
+}
+
+.thumb-prev-wrapper img {
+    width: 96px;
+    height: 54px;
+    object-fit: cover;
+}
+
+.thumb-prev-wrapper .preview {
+    display: none;
+}
+
+.thumb-prev-wrapper {
+    &:hover .preview {
+        display: block;
+    }
+    &:hover .thumbnail {
+        display: none;
+    }
+}
+
+.name-col {
+    h5 {
+        margin-bottom: 10px;
+        max-width: 400px;
+        height: 17px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        display: block;
+    }
+    span {
+        opacity: 0.64;
+        max-width: 400px;
+        height: 15px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        display: block;
+    }
+    .thumbnail {
+        display: none;
+    }
+
+    .thumb-prev-wrapper {
+        display: none;
+    }
+
+    .view-field {
+        display: none;
+    }
+    @media screen and (max-width: 1480px) {
+        h5 {
+            max-width: 350px;
+        }
+        span {
+            max-width: 350px;
+        }
+    }
+}
+
+td {
+    height: 90px;
+}
+
+.view-col {
+    width: 75px;
+}
+
+.time-col {
+    width: 120px;
+}
+
+.capture-col {
+    width: 100px;
+}
+
+.actions-col {
+    width: 350px;
+    .actions-wrapper {
+        width: 350px;
+        .custom-control {
+            display: none;
+        }
+        .small-button-more {
+            display: none;
+        }
+        .small {
+            margin: 0 20px;
+        }
+    }
+}
+
+.button-more {
+    a {
+        &::after {
+            content: none;
+        }
+    }
+}
+
+@media screen and (max-width: 1400px) {
+    th, td {
+        vertical-align: top !important;
+    }
+    .name-col {
+        h5 {
+            max-width: unset;
+            white-space: normal;
+        }
+        span {
+            max-width: unset;
+            display: unset;
+            white-space: normal;
+        }
+    }
+    .time-col {
+        width: 100px;
+    }
+    .actions-col {
+        width: 100px;
+        .actions-wrapper {
+            width: 100px;
+            flex-wrap: wrap;
+            .button-copy {
+                display: none;
+            }
+            .button-more {
+                display: none;
+            }
+            .small-button-more {
+                display: block;
+                width: 100% !important;
+                height: 36px !important;
+                border: 1px solid $color-blue !important;
+                margin-bottom: 0.25rem;
+                .dropdown-menu {
+                    &.show {
+                        top: 0px !important;
+                        left: 0px !important;
+                    }
+                }
+            }
+            .small {
+                margin: 0 auto 0.25rem auto;
+            }
+            .button-send, .material-action {
+                width: 100% !important;
+                height: 36px !important;
+                border: 1px solid $color-blue !important;
+                margin-bottom: 0.25rem;
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .table-wrapper {
+        margin-top: 0px;
+    }
+    .time-col {
+        display: none;
+    }
+    .capture-col {
+        display: none;
+    }
+    .actions-col .actions-wrapper .custom-control {
+        display: block;
+    }
+}
+
+@media screen and (max-width: 575px) {
+    .page-header {
+        display: block;
+
+        .create-actions {
+            & > * {
+                width: 50%;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+    }
+    .button-record, .button-add {
+        font-size: 13px;
+    }
+    th, td {
+      padding: 3px !important;
+    }
+    .thumbnail-col {
+      display: none;
+    }
+    .name-col {
+      .thumbnail {
+        display: block;
+        width: 150px;
+        height: 90px;
+        margin-bottom: 10px;
+      }
+      .preview {
+        width: 150px;
+        height: 90px;
+        margin-bottom: 10px;
+      }
+      .thumb-prev-wrapper {
+        display: block;
+      }
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .view-col {
+      display: none;
+    }
+    .name-col {
+      .view-field {
+        display: flex;
+        align-items: center;
+      }
+    }
+}
+
+:host ::ng-deep {
+    .tab-container {
+        .tab {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+    }
+}

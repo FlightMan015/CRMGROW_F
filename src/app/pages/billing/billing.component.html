@@ -1,0 +1,148 @@
+<div class="page-header">
+    <app-slide-tab [tabs]="tabs" [method]="'billing'" [selected]="selectedTab" (onChange)="changeTab($event)" type="plain" class="border-bottom pl-0 rounded-0">
+    </app-slide-tab>
+</div>
+<div *ngIf="selectedTab.id == 'methods'">
+    <ng-container *ngIf="loadingPayment">
+        <div class="list-loading text-center">
+            <div class="loader mt-5 lg"></div>
+            <h4 class="fw-600 mt-2">Loading payment informations...</h4>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="!loadingPayment; else emptyPayment">
+        <ng-container *ngIf="!previewCardNumber; else showTable">
+            <div class="empty-list mt-5 pt-5">
+                <div class="object-icon v-center">
+                  <i class="i-icon i-billing d-block bgc-dark"></i>
+                </div>
+                <h4 class="font-weight-bold mt-3 mb-3">
+                    There are no credit cards associated with your account.
+                </h4>
+                <a class="btn btn-primary" (click)="createCard()">
+                  <span class="font-weight-bold f-3">Add a  Credit Card</span>
+                </a>
+            </div>
+        </ng-container>
+        <ng-template #showTable>
+            <table class="table mt-5">
+                <thead>
+                    <tr>
+                        <th class="f-2 card-col">credit or debit card</th>
+                        <th class="f-2 date-col">expiration date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="card-col pt-3 pb-0">
+                            <div class="v-center">
+                                <div class="card-img">
+                                    <ng-container [ngSwitch]="card.card_brand">
+                                        <img src="../../../assets/img/card_visa.svg" *ngSwitchCase="'Visa'">
+                                        <img src="../../../assets/img/card_amex.svg" *ngSwitchCase="'American Express'">
+                                        <img src="../../../assets/img/card_master.svg" *ngSwitchCase="'MasterCard'">
+                                        <img src="../../../assets/img/card_jcb.svg" *ngSwitchCase="'JCB'">
+                                        <img src="../../../assets/img/card_discover.svg" *ngSwitchCase="'Discover'">
+                                        <img src="../../../assets/img/card_diners.svg" *ngSwitchCase="'Diners'">
+                                        <img src="../../../assets/img/card_visa.svg" *ngSwitchDefault>
+                                    </ng-container>
+                                </div>
+                                <div class="f-4 ml-3">
+                                    {{previewCardNumber}}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="f-4 expire-col pt-3 pb-0">
+                            {{card.exp_month}} / {{card.exp_year}}
+                        </td>
+                        <td class="pt-3 pb-0">
+                            <i class="d-block i-icon i-edit bgc-blue ml-auto c-pointer" (click)="editCard()"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="current-plan-list">
+                <div class="v-center justify-content-between w-100 mb-auto">
+                    <span class="c-seablue">Your current plan</span>
+                </div>
+                <hr/>
+                <div class="d-flex align-items-start">
+                    <ng-container *ngIf="currentPackage?.package">
+                        <div class="v-center justify-content-between w-100 mb-auto">
+                            <span class="c-plan-item">{{currentPackage?.package}}</span>
+                        </div>
+                        <div class="v-center justify-content-between">
+                            <button class="btn c-sub-cancel"  (click)="cancelAccount()">Cancel</button>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </ng-template>
+    </ng-container>
+    <ng-template #emptyPayment>
+        <div class="list-loading text-center">
+            <div class="loader mt-5 lg"></div>
+        </div>
+    </ng-template>
+</div>
+<div *ngIf="selectedTab.id == 'invoices'">
+    <ng-container *ngIf="loadingInvoice">
+        <div class="list-loading text-center">
+            <div class="loader mt-5 lg"></div>
+            <h4 class="fw-600 mt-2">Loading invoice informations...</h4>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="!loadingInvoice">
+        <ng-container *ngIf="!invoices.length; else invoiceTable">
+            <div class="empty-list mt-5 pt-5">
+                <div class="object-icon v-center">
+                  <i class="i-icon i-billing d-block bgc-dark"></i>
+                </div>
+                <h4 class="font-weight-bold mt-3 mb-3">
+                    There are no invoices.
+                </h4>
+            </div>
+        </ng-container>
+        <ng-template #invoiceTable>
+            <table class="table mt-5">
+                <thead>
+                    <tr>
+                        <th class="f-2 number-col">
+                            description
+                        </th>
+                        <th class="f-2 status-col">
+                            status
+                        </th>
+                        <th class="f-2 gross-col">
+                            amount
+                        </th>
+                        <th class="f-2 download-col">
+                            actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let invoice of invoices; let index=index;">
+                        <tr *ngIf="invoice.status == 'succeeded'">
+                            <td class="number-col f-4 pt-3 pb-0">
+                                Invoice for CRM Grow {{invoice.date | date: 'dd/MM/yyyy'}}
+                            </td>
+                            <td class="status-col f-4 pt-3 pb-0">
+                                {{invoice.status}}
+                            </td>
+                            <td class="gross-col f-4 pt-3 pb-0">
+                                $ {{invoice.amount}}
+                            </td>
+                            <td class="download-col f-4 c-blue pt-3 pb-0">
+                                <a class="download-invoice v-center justify-content-start c-pointer" [href]="invoice.invoice_pdf" *ngIf="invoice.invoice_pdf">
+                                    <i class="i-icon i-download bgc-blue d-block"></i>
+                                    <span class="ml-2">Download invoice</span>
+                                </a>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+              </table>
+        </ng-template>
+    </ng-container>
+</div>
